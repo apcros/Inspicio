@@ -14,3 +14,6 @@
 Route::get('/', function () {
 
 });
+
+Route::get('/login/{authvendor}','OAuthLogin@step_one');
+Route::get('/oauth/callback/{authvendor}','OAuthLogin@step_two');
