@@ -29,14 +29,30 @@ class OAuthLogin extends Controller
 
         Log::info('Exchanging GitHub temporary code ('.$code.') to access token');
         $client->fetch_access_token($code);
+
         Log::info('Access token fetched.');
 
         Log::info('Fetching user data associated with token');
         $user_data = $client->get_user_info();
-        Log::info('Data fetched, user is : ');
-        /*
-            TODO : Save token to db
-        */
-        return response()->json($user_data);
+
+        if(!isset($user_data->login)) {
+            return 'Login error';
+        }
+
+        Log::info('Data fetched, user is : '.$user_data->login);
+
+        if($this->is_registered($user_data->login)) {
+            // TODO - 1 - Save token in DB
+            // TODO - 2 - Set all session variable to log user
+        } else {
+            // TODO - We need to ask the user to register himself. (Especially for email)
+        }
+
+        return 'OK';
     }
+
+    private function is_registered($nick) {
+        return true;
+    }
+
 }
