@@ -16,9 +16,9 @@ class OAuthLogin extends Controller
     public function step_one()
     {
         $client = new Github(env('GITHUB_CLIENT_ID'), env('GITHUB_SECRET'));
-        //TODO use env for redirect_uri
+
         //TODO make use of the CSRF token
-        $redirect_to = $client->get_authorize_url('DUMMY','http://127.0.0.1/inspicio/public/oauth/callback/github');
+        $redirect_to = $client->get_authorize_url('DUMMY',env('APP_URL').'/oauth/callback/github');
         Log::info('Redirecting user to OAuth on Github..');
         return redirect($redirect_to);
     }
