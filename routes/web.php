@@ -11,9 +11,10 @@
 |
 */
 
-Route::get('/', function () {
+Route::get('/','Home@displayDiscover');
 
-});
+Route::get('/choose-auth','Home@chooseAuthProvider');
 
-Route::get('/login/{authvendor}','OAuthLogin@step_one');
+Route::get('/logout','OAuthLogin@logout');
+Route::get('/login/oauth/{authvendor}','OAuthLogin@step_one');
 Route::get('/oauth/callback/{authvendor}','OAuthLogin@step_two');

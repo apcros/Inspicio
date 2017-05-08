@@ -47,12 +47,11 @@ class OAuthLogin extends Controller
             $user = DB::table('users')->where('nickname',$user_data->login)->first();
             session(['user_nickname' => $user->nickname, 'user_email' => $user->email, 'user_id' => $user->id]);
             Log::info($user->email.' Logged in !');
-            return 'Logged in !';
+            return view('home');
         } else {
-            // TODO - We need to ask the user to register himself. (Especially for email)
+            return view('register');
         }
 
-        return 'OK';
     }
 
     private function is_registered($nick) {
@@ -61,4 +60,8 @@ class OAuthLogin extends Controller
         return isset($user);
     }
 
+    public function logout(Request $request) {
+        $request->session()->flush();
+        return view('home');
+    }
 }

@@ -19,8 +19,11 @@ class Home extends Controller
     }
 
     public function displayDiscover(Request $request) {
-
+        return view('home');
     }
 
+    public function chooseAuthProvider() {
+        return view('choose-auth-provider');
+    }
 
 }
