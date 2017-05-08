@@ -8,6 +8,7 @@ use App\Classes\Github;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 class OAuthLogin extends Controller
 {
@@ -28,7 +29,7 @@ class OAuthLogin extends Controller
         $client = new Github(env('GITHUB_CLIENT_ID'), env('GITHUB_SECRET'));
 
         Log::info('Exchanging GitHub temporary code ('.$code.') to access token');
-        $client->fetch_access_token($code);
+        $access_token = $client->fetch_access_token($code);
 
         Log::info('Access token fetched.');
 
@@ -42,8 +43,11 @@ class OAuthLogin extends Controller
         Log::info('Data fetched, user is : '.$user_data->login);
 
         if($this->is_registered($user_data->login)) {
-            // TODO - 1 - Save token in DB
-            // TODO - 2 - Set all session variable to log user
+            DB::table('users')->where('nickname',$user_data->login)->update(['auth_provider' => 'github','auth_token' => $access_token]);
+            $user = DB::table('users')->where('nickname',$user_data->login)->first();
+            session(['user_nickname' => $user->nickname, 'user_email' => $user->email, 'user_id' => $user->id]);
+            Log::info($user->email.' Logged in !');
+            return 'Logged in !';
         } else {
             // TODO - We need to ask the user to register himself. (Especially for email)
         }
@@ -52,7 +56,9 @@ class OAuthLogin extends Controller
     }
 
     private function is_registered($nick) {
-        return true;
+
+        $user = DB::table('users')->where('nickname',$nick)->first();
+        return isset($user);
     }
 
 }

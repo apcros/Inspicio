@@ -20,7 +20,7 @@ class CreateBase extends Migration
 
             $table->string('auth_token');
             $table->string('auth_provider');
-            $table->string('nickname');
+            $table->string('nickname')->unique();
             $table->integer('rank');
             $table->timestamps();
 
