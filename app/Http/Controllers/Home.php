@@ -45,20 +45,30 @@ class Home extends Controller
         $name = $request->input('name');
         $auth_token = $request->input('auth_token');
         $auth_provider = $request->input('auth_provider');
-        $guid = Uuid::uuid4()->toString();
-
+        $user_id = Uuid::uuid4()->toString();
+        $account_id = Uuid::uuid4()->toString();
         try {
-            Log::info("Creating a new user : $email / $name");
+            Log::info("Creating a new user : $email / $name / $user_id");
             DB::table('users')->insert(
                 [
-                'id'            => $guid,
+                'id'            => $user_id,
                 'email'         => $email,
                 'name'          => $name,
-                'auth_token'    => $auth_token,
-                'auth_provider' => $auth_provider,
                 'nickname'      => $request->session()->get('user_nickname'),
                 'rank'          => 1,
                 'points'        => 5,
+                'created_at'    => \Carbon\Carbon::now(),
+                'updated_at'    => \Carbon\Carbon::now(),
+                ]
+            );
+            DB::table('accounts')->insert(
+                [
+                'id'            => $account_id,
+                'provider'      => $auth_provider,
+                'login'         => $request->session()->get('user_nickname'),
+                'token'         => $auth_token,
+                'user_id'       => $user_id,
+                'is_main'       => true,
                 'created_at'    => \Carbon\Carbon::now(),
                 'updated_at'    => \Carbon\Carbon::now(),
                 ]
@@ -69,7 +79,7 @@ class Home extends Controller
             return view('home', ['error_message' => $e->getMessage()]);
         }
 
-        Session(['user_email' => $email, 'user_id' => $guid]);
+        Session(['user_email' => $email, 'user_id' => $user_id]);
         return redirect('/');
     }
 

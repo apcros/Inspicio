@@ -17,14 +17,24 @@ class CreateBase extends Migration
             $table->uuid('id');
             $table->string('name');
             $table->string('email')->unique();
-
-            $table->string('auth_token');
-            $table->string('auth_provider');
-            $table->string('nickname')->unique();
+            $table->string('nickname');
             $table->integer('rank');
             $table->integer('points');
             $table->timestamps();
+            $table->primary('id');
+        });
 
+        Schema::create('accounts', function (Blueprint $table) {
+            $table->uuid('id');
+            $table->string('login');
+            $table->uuid('user_id');
+            $table->string('token');
+            $table->string('provider');
+            $table->boolean('is_main');
+            $table->unique(array('login','provider'));
+            $table->timestamps();
+
+            $table->foreign('user_id')->references('id')->on('users');
             $table->primary('id');
         });
 

@@ -42,10 +42,15 @@ class OAuthLogin extends Controller
 
         Log::info('Achieved stepTwo OAuth, user is : '.$user_data->login);
 
-        if($this->isRegistered($user_data->login)) {
+        $user = $this->getUser($user_data->login, 'github');
 
-            DB::table('users')->where('nickname',$user_data->login)->update(['auth_provider' => 'github','auth_token' => $access_token, 'updated_at' => \Carbon\Carbon::now()]);
-            $user = DB::table('users')->where('nickname',$user_data->login)->first();
+        if($user) {
+
+            DB::table('accounts')->where([
+                ['is_main', '=', true],
+                ['user_id', '=', $user->id],
+            ])->update(['provider' => 'github','token' => $access_token, 'updated_at' => \Carbon\Carbon::now()]);
+
             session(['user_nickname' => $user->nickname, 'user_email' => $user->email, 'user_id' => $user->id]);
 
             Log::info($user->email.' Logged in !');
@@ -57,10 +62,22 @@ class OAuthLogin extends Controller
 
     }
 
-    private function isRegistered($nick) {
+    private function getUser($login, $provider) {
 
-        $user = DB::table('users')->where('nickname',$nick)->first();
-        return isset($user);
+        //If there's an account with that login, provider and it's the main account (= account used to login)
+        // Then we can fetch the associated user
+        $account = DB::table('accounts')->where([
+            ['login',       '=', $login],
+            ['is_main',     '=', true],
+            ['provider',    '=', $provider]
+        ])->first();
+
+        if(isset($account)) {
+            $user = DB::table('users')->where('id',$account->user_id)->first();
+            return $user;
+        }
+
+        return false;
     }
 
     public function logout(Request $request) {
