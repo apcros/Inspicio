@@ -28,28 +28,31 @@ class OAuthLogin extends Controller
         $code = $request->input('code');
         $client = new Github(env('GITHUB_CLIENT_ID'), env('GITHUB_SECRET'));
 
-        Log::info('Exchanging GitHub temporary code ('.$code.') to access token');
+        Log::debug('Exchanging GitHub temporary code ('.$code.') to access token');
         $access_token = $client->fetch_access_token($code);
 
-        Log::info('Access token fetched.');
+        Log::debug('Access token fetched.');
 
-        Log::info('Fetching user data associated with token');
+        Log::debug('Fetching user data associated with token');
         $user_data = $client->get_user_info();
 
         if(!isset($user_data->login)) {
             return 'Login error';
         }
 
-        Log::info('Data fetched, user is : '.$user_data->login);
+        Log::info('Achieved stepTwo OAuth, user is : '.$user_data->login);
 
         if($this->isRegistered($user_data->login)) {
-            DB::table('users')->where('nickname',$user_data->login)->update(['auth_provider' => 'github','auth_token' => $access_token]);
+
+            DB::table('users')->where('nickname',$user_data->login)->update(['auth_provider' => 'github','auth_token' => $access_token, 'updated_at' => \Carbon\Carbon::now()]);
             $user = DB::table('users')->where('nickname',$user_data->login)->first();
             session(['user_nickname' => $user->nickname, 'user_email' => $user->email, 'user_id' => $user->id]);
+
             Log::info($user->email.' Logged in !');
-            return view('home');
+            return redirect('/');
         } else {
-            return view('register');
+            session(['user_nickname' => $user_data->login]);
+            return view('register', ['auth_token' => $access_token, 'auth_provider' => 'github']);
         }
 
     }

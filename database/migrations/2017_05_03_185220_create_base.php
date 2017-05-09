@@ -22,6 +22,7 @@ class CreateBase extends Migration
             $table->string('auth_provider');
             $table->string('nickname')->unique();
             $table->integer('rank');
+            $table->integer('points');
             $table->timestamps();
 
             $table->primary('id');
