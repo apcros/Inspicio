@@ -29,18 +29,18 @@
 			            <li><a href="/logout">Logout</a></li>
 			          </ul>
 			        </li>
-		        	<li><a href="/account"></a></li>
+			        <li class="dropdown">
+			          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Review requests <span class="caret"></span></a>
+			          <ul class="dropdown-menu">
+			            <li><a href="/reviews/mine">Show mine</a></li>
+			            <li><a href="/reviews/tracked">Show tracked</a></li>
+			            <li><a href="/reviews/create">Create new</a></li>
+			          </ul>
+			        </li>
 		        @else
 		        	<li><a href="/choose-auth">Login</a></li>
 		        @endif
-		        <li class="dropdown">
-		          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Review requests <span class="caret"></span></a>
-		          <ul class="dropdown-menu">
-		            <li><a href="/reviews/mine">Show mine</a></li>
-		            <li><a href="/reviews/tracked">Show tracked</a></li>
-		            <li><a href="/reviews/create">Create new</a></li>
-		          </ul>
-		        </li>
+
 		      </ul>
 		    </div>
 		  </div>

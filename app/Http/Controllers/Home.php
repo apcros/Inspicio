@@ -22,6 +22,14 @@ class Home extends Controller
         return view('home');
     }
 
+    public function displayNewReview(Request $request) {
+
+    }
+
+    public function createNewReview(Request $request) {
+
+    }
+
     public function chooseAuthProvider() {
         return view('choose-auth-provider');
     }

@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\DB;
 class OAuthLogin extends Controller
 {
 
-    public function step_one()
+    public function stepOne()
     {
         $client = new Github(env('GITHUB_CLIENT_ID'), env('GITHUB_SECRET'));
 
@@ -23,7 +23,7 @@ class OAuthLogin extends Controller
         return redirect($redirect_to);
     }
 
-    public function step_two(Request $request)
+    public function stepTwo(Request $request)
     {
         $code = $request->input('code');
         $client = new Github(env('GITHUB_CLIENT_ID'), env('GITHUB_SECRET'));
@@ -42,7 +42,7 @@ class OAuthLogin extends Controller
 
         Log::info('Data fetched, user is : '.$user_data->login);
 
-        if($this->is_registered($user_data->login)) {
+        if($this->isRegistered($user_data->login)) {
             DB::table('users')->where('nickname',$user_data->login)->update(['auth_provider' => 'github','auth_token' => $access_token]);
             $user = DB::table('users')->where('nickname',$user_data->login)->first();
             session(['user_nickname' => $user->nickname, 'user_email' => $user->email, 'user_id' => $user->id]);
@@ -54,7 +54,7 @@ class OAuthLogin extends Controller
 
     }
 
-    private function is_registered($nick) {
+    private function isRegistered($nick) {
 
         $user = DB::table('users')->where('nickname',$nick)->first();
         return isset($user);
