@@ -14,6 +14,6 @@ Route::get('/','Home@displayDiscover');
 Route::get('/choose-auth','Home@chooseAuthProvider');
 Route::post('/register','Home@register');
 Route::get('/logout','OAuthLogin@logout');
-Route::get('/login/oauth/{authvendor}','OAuthLogin@stepOne');
-Route::get('/oauth/callback/{authvendor}','OAuthLogin@stepTwo');
+Route::get('/login/oauth/{provider}','OAuthLogin@stepOne');
+Route::get('/oauth/callback/{provider}','OAuthLogin@stepTwo');
 
