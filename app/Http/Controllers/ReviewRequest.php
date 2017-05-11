@@ -25,16 +25,18 @@ class ReviewRequest extends Controller
         foreach ($accounts as $key => $account) {
             $client = $this->getClient($account->provider);
             $client->setToken($account->token);
-            $repos[$account->provider.'_'.$account->login] = $client->listRepositories();
+
+            // We don't risk overwriting anything as the couple provider/login is unique by design
+            $repos[$account->provider][$account->login] = $client->listRepositories();
         }
 
-        return var_dump($repos);
+        return view('newreview',['repos' => $repos]);
     }
     
     public function getOpenedPullRequestForRepo(Request $request) {
 
     }
-    
+
     public function create(Request $request) {
 
     }

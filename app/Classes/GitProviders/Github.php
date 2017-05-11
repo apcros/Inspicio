@@ -90,9 +90,10 @@ class Github implements GitProviderInterface
 		$std_repos = array();
 		foreach ($repos as $key => $repo) {
 			$std_repos[] = array(
-				'name' 	=> $repo->full_name,
-				'id'	=> $repo->id,
-				'url'	=> $repo->url, 
+				'name' 		=> $repo->full_name,
+				'id'		=> $repo->id,
+				'url'		=> $repo->url,
+				'language' 	=> $repo->language
 			);
 		}
 		return $std_repos;
