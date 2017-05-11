@@ -13,24 +13,9 @@ use \Ramsey\Uuid\Uuid;
 class Home extends Controller
 {
 
-    public function displayMyTrackedReviews(Request $request) {
-
-    }
-
-    public function displayMyOpenReviews(Request $request) {
-
-    }
 
     public function displayDiscover(Request $request) {
         return view('home');
-    }
-
-    public function displayNewReview(Request $request) {
-
-    }
-
-    public function createNewReview(Request $request) {
-
     }
 
     public function chooseAuthProvider() {

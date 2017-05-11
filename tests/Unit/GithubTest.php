@@ -3,7 +3,7 @@
 namespace Tests\Unit;
 
 use Tests\TestCase;
-use App\Classes\Github;
+use App\Classes\GitProviders\Github;
 use App\Classes\UserAgent;
 
 class GithubTest extends TestCase

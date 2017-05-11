@@ -12,7 +12,7 @@ class GitProviderFactoryTest extends TestCase
     {
     	$factory = new GitProviderFactory('github');
 
-        $this->assertInstanceOf(\App\Classes\Github::class,$factory->getProviderEngine());
+        $this->assertInstanceOf(\App\Classes\GitProviders\Github::class,$factory->getProviderEngine());
     }
 
     public function testUnknownFactory()
