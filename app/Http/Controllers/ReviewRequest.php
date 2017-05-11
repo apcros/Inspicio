@@ -26,8 +26,7 @@ class ReviewRequest extends Controller
             $client = $this->getClient($account->provider);
             $client->setToken($account->token);
 
-            // We don't risk overwriting anything as the couple provider/login is unique by design
-            $repos[$account->provider][$account->login] = $client->listRepositories();
+            $repos[$account->id][] = $client->listRepositories();
         }
 
         return view('newreview',['repos' => $repos]);
