@@ -55,13 +55,15 @@ class CreateBase extends Migration
             $table->string('name');
             $table->text('description');
             $table->string('url');
-
             $table->string('status');
             $table->string('language');
+            $table->string('repository');
+            $table->uuid('account_id');
             $table->uuid('author_id');
             $table->timestamps();
 
             $table->foreign('author_id')->references('id')->on('users');
+            $table->foreign('account_id')->references('id')->on('accounts');
             $table->primary('id');
         });
 

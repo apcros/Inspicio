@@ -10,4 +10,5 @@ interface GitProviderInterface {
 
 	public function listRepositories();
 	public function listPullRequestsForRepo($owner, $repository);
+	public function getPullRequest($owner, $repository, $pr_id);
 }

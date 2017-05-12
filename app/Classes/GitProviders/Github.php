@@ -107,6 +107,16 @@ class Github implements GitProviderInterface
 
 		Log::debug($raw_response);
 
+		//TODO standardize format
+		return json_decode($raw_response);
+	}
+
+	public function getPullRequest($owner, $repository, $pr_id) {
+		$url = $this->api.'/repos/'.$owner.'/'.$repository.'/pulls/'.$pr_id;
+		Log::debug('Fetching information for pull request : '.$url);
+		$raw_response = $this->ua->get($url);
+
+		//TODO standardize format
 		return json_decode($raw_response);
 	}
 

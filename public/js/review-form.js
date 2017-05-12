@@ -21,7 +21,8 @@ function loadOpenPullRequests(owner, repo, account_id) {
 	$.getJSON('/reviews/ajax/pulls/'+owner+'/'+repo+'/'+account_id, function (data) {
 		var html ='';
 		$.each(data, function (key, val) {
-			html += "<option value='"+val.id+"'>"+val.title+"</option>";
+			            //TODO use a standard name and not Github's html_url
+			html += "<option value='"+val.html_url+"'>"+val.title+"</option>";
 		});
 		$("#pull_request").html(html);
 		$("#repository").attr('disabled', false);
