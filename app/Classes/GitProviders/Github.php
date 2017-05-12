@@ -83,7 +83,7 @@ class Github implements GitProviderInterface
 
 	public function listRepositories() {
 		$raw_response = $this->ua->get($this->api.'/user/repos');
-		Log::debug($raw_response);
+
 		$repos = json_decode($raw_response);
 
 		//We need to standarize the format
@@ -99,8 +99,15 @@ class Github implements GitProviderInterface
 		return $std_repos;
 	}
 
-	public function listPullRequestsForRepo($repository) {
+	public function listPullRequestsForRepo($owner, $repository) {
 
+		$pulls_url = $this->api.'/repos/'.$owner.'/'.$repository.'/pulls';
+		Log::debug('Loading pull requests using : '.$pulls_url);
+		$raw_response = $this->ua->get($pulls_url);
+
+		Log::debug($raw_response);
+
+		return json_decode($raw_response);
 	}
 
 }

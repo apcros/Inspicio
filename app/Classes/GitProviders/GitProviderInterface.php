@@ -9,5 +9,5 @@ interface GitProviderInterface {
 	public function setToken($token);
 
 	public function listRepositories();
-	public function listPullRequestsForRepo($repository);
+	public function listPullRequestsForRepo($owner, $repository);
 }
