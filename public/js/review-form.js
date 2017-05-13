@@ -1,5 +1,6 @@
 $(document).ready(function(){
-	$('select').select2();
+	$('#repository').select2({placeholder: "Select a repository"});
+	$('#pull_request').select2({placeholder: "Select an open pull request"});
 });
 $('#new_pull_request').change(function() {
 	var check = $(this).prop('checked');
@@ -22,7 +23,7 @@ function loadOpenPullRequests(owner, repo, account_id) {
 		var html ='';
 		$.each(data, function (key, val) {
 			            //TODO use a standard name and not Github's html_url
-			html += "<option value='"+val.html_url+"'>"+val.title+"</option>";
+			html += "<option value='"+val.url+"'>"+val.name+"</option>";
 		});
 		$("#pull_request").html(html);
 		$("#repository").attr('disabled', false);

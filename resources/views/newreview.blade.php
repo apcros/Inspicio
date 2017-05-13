@@ -22,7 +22,8 @@
 		  </div>
 		  <div class="form-group">
 		    <label for="repository">Select your repository</label>
-		    <select name="repository" id="repository" class="form-control">
+		    <select name="repository" id="repository" class="form-control" placeholder="Select a repository">
+		    <option></option>
 		    @foreach ($reposPerAccount as $repos)
 		    	@foreach ($repos['repos'] as $repo)
 		    		<option value="{{$repo['name']}},{{$repos['account_id']}}">{{$repo['name']}}</option>
@@ -36,7 +37,7 @@
 		  </div>
 		  <div class="form-group">
 		    <label for="pull_request">Select an open pull request</label>
-		    <select name="pull_request" id="pull_request" class="form-control">
+		    <select name="pull_request" id="pull_request" class="form-control" placeholder="Select an open pull request">
 			</select>
 		  </div>
 		  <div class="checkbox">

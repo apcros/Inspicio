@@ -106,9 +106,17 @@ class Github implements GitProviderInterface
 		$raw_response = $this->ua->get($pulls_url);
 
 		Log::debug($raw_response);
+		$prs = json_decode($raw_response);
+		$std_prs = array();
 
-		//TODO standardize format
-		return json_decode($raw_response);
+		foreach ($prs as $key => $pr) {
+			$std_prs[] = array(
+				'name' => $pr->title,
+				'url'  => $pr->html_url
+			);
+		}
+
+		return $std_prs;
 	}
 
 	public function getPullRequest($owner, $repository, $pr_id) {
