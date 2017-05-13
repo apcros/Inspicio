@@ -94,8 +94,7 @@ class ReviewRequest extends Controller
             return view('home', ['error_message' => $e->getMessage()]);
         }
 
-        return 'OK';
-        //TODO redirect to the pull request created
+        return redirect('/reviews/'.$review_request_id.'/view');
     }
 
     public function approve(Request $request) {
@@ -106,12 +105,14 @@ class ReviewRequest extends Controller
 
     }
 
-    public function viewAsPublic(Request $request) {
+    public function view(Request $request, $reviewid) {
+        $review = DB::table('requests')->where('id',$reviewid)->first();
 
-    }
+        if(!$review) {
+            return view('view-review-public', ['error_message' => 'Review Request not found !']);
+        }
 
-    public function viewAsOwner(Request $request) {
-
+        return view('view-review-public', ['review' => $review]);
     }
 
     public function viewAllMine(Request $request) {
