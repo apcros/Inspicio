@@ -16,7 +16,7 @@
 		    <span class="badge">0 Reviewers</span>
 		  </div>
 		  <div class="panel-footer">
-		  		<a href="#" class="btn btn-info">Follow this review</a> <!-- TODO : Dynamic button, if follow, then it's an approve button!-->
+		  		<a href="#" onclick="alert('not implemented yet')" class="btn btn-info">Follow this review</a> <!-- TODO : Dynamic button, if follow, then it's an approve button!-->
 		  		<a href="{{$review->url}}" target="_blank" class="btn btn-info">View</a>
 		  </div>
 		</div>
