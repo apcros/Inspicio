@@ -21,6 +21,7 @@ function loadOpenPullRequests(owner, repo, account_id) {
 	//TODO : Do that in a nicer way
 	$.getJSON('/reviews/ajax/pulls/'+owner+'/'+repo+'/'+account_id, function (data) {
 		var html ='';
+
 		$.each(data, function (key, val) {
 			            //TODO use a standard name and not Github's html_url
 			html += "<option value='"+val.url+"'>"+val.name+"</option>";

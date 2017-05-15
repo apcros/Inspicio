@@ -18,3 +18,4 @@ Route::get('/reviews/create','ReviewRequest@createForm');
 Route::post('/reviews/create','ReviewRequest@create');
 
 Route::get('/reviews/ajax/pulls/{owner}/{repository}/{account_id}','ReviewRequest@getOpenedPullRequestForRepo');
+Route::get('/reviews/{reviewid}/track', 'ReviewRequest@track');

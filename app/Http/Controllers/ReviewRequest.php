@@ -91,7 +91,7 @@ class ReviewRequest extends Controller
             ]);
         } catch (\Illuminate\Database\QueryException $e) {
             Log::error("Error caught while adding Pull request : ".$e->getMessage());
-            return view('home', ['error_message' => $e->getMessage()]);
+            return view('home', ['error_message' => 'An error ocurred while trying to add your review request']);
         }
 
         return redirect('/reviews/'.$review_request_id.'/view');
@@ -101,19 +101,33 @@ class ReviewRequest extends Controller
 
     }
 
-    public function track(Request $request) {
+    public function track(Request $request, $reviewid) {
 
-    }
-
-    public function view(Request $request, $reviewid) {
-        $review = DB::table('requests')->where('id',$reviewid)->first();
+        $review = $this->getReview($reviewid);
 
         if(!$review) {
             return view('view-review-public', ['error_message' => 'Review Request not found !']);
         }
 
-        return view('view-review-public', ['review' => $review]);
+        //There's already a front-end check, but never trust client
+        if($review->author_id == session('user_id')) {
+            return $this->view($reviewid,['error_message' => 'Error, You can\'t follow your own review requests !']);
+        }
+
+        try {
+            DB::table('request_tracking')->insert([
+                'user_id'       => session('user_id'),
+                'request_id'    => $reviewid
+            ]);
+        } catch (\Illuminate\Database\QueryException $e) {
+            Log::error('Error when USER '.session('user_id').' attempted to track code review '.$reviewid.' : '.$e->getMessage());
+            return $this->view($reviewid,['error_message' => 'An error ocurred !']);
+
+        }
+
+        return $this->view($reviewid,['info_message' => 'You are now following this review request !']);
     }
+
 
     public function viewAllMine(Request $request) {
 
@@ -125,5 +139,27 @@ class ReviewRequest extends Controller
 
     private function availableAccounts() {
         return DB::table('accounts')->where('user_id',session('user_id'))->get();
+    }
+
+    private function getReview($reviewid) {
+         return $review = DB::table('requests')->where('id',$reviewid)->first();
+    }
+    public function view($reviewid, $template_vars = []) {
+        $review = $this->getReview($reviewid);
+
+        if(!$review) {
+            return view('view-review-public', ['error_message' => 'Review Request not found !']);
+        }
+
+        $user_id = session('user_id');
+
+        $tracked = DB::table('request_tracking')->where([
+            ['request_id',  '=', $review->id],
+            ['user_id',     '=', $user_id]])->first();
+
+        $template_vars['review']    = $review;
+        $template_vars['tracked']   = $tracked;
+
+        return view('view-review-public', $template_vars);
     }
 }

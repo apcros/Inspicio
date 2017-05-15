@@ -56,6 +56,11 @@
 				    {{ $error_message }}
 				</div>
 			@endif
+			@if (isset($info_message))
+				<div class="alert alert-info">
+				    {{ $info_message }}
+				</div>
+			@endif
 			@yield('content')
 		</div>
 	</body>
