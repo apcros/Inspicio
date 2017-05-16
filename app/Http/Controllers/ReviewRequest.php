@@ -97,8 +97,26 @@ class ReviewRequest extends Controller
         return redirect('/reviews/'.$review_request_id.'/view');
     }
 
-    public function approve(Request $request) {
+    public function approve(Request $request, $reviewid) {
+        //TODO : Maybe move getReview to a middleware ?
+        $review = $this->getReview($reviewid);
 
+        if(!$review) {
+            return view('view-review-public', ['error_message' => 'Review Request not found !']);
+        }
+        $user_id = session('user_id');
+
+        try {
+            DB::table('request_tracking')->where([
+                ['user_id',     '=', $user_id],
+                ['request_id',  '=', $reviewid]
+            ])->update(['status' => 'approved']);
+
+        } catch (\Illuminate\Database\QueryException $e) {
+            Log::error('Error when USER '.session('user_id').' attempted to approve code review '.$reviewid.' : '.$e->getMessage());
+            return $this->displayReview($reviewid, ['error_message' => 'Error while trying to approve the review request']);
+        }
+        return $this->displayReview($reviewid, ['info_message' => 'Sucessfully approved !']);
     }
 
     public function track(Request $request, $reviewid) {
@@ -111,21 +129,22 @@ class ReviewRequest extends Controller
 
         //There's already a front-end check, but never trust client
         if($review->author_id == session('user_id')) {
-            return $this->view($reviewid,['error_message' => 'Error, You can\'t follow your own review requests !']);
+            return $this->displayReview($reviewid,['error_message' => 'Error, You can\'t follow your own review requests !']);
         }
 
         try {
             DB::table('request_tracking')->insert([
                 'user_id'       => session('user_id'),
-                'request_id'    => $reviewid
+                'request_id'    => $reviewid,
+                'status'        => 'unapproved'
             ]);
         } catch (\Illuminate\Database\QueryException $e) {
             Log::error('Error when USER '.session('user_id').' attempted to track code review '.$reviewid.' : '.$e->getMessage());
-            return $this->view($reviewid,['error_message' => 'An error ocurred !']);
+            return $this->displayReview($reviewid,['error_message' => 'An error ocurred !']);
 
         }
 
-        return $this->view($reviewid,['info_message' => 'You are now following this review request !']);
+        return $this->displayReview($reviewid,['info_message' => 'You are now following this review request !']);
     }
 
 
@@ -144,7 +163,7 @@ class ReviewRequest extends Controller
     private function getReview($reviewid) {
          return $review = DB::table('requests')->where('id',$reviewid)->first();
     }
-    public function view($reviewid, $template_vars = []) {
+    public function displayReview($reviewid, $template_vars = []) {
         $review = $this->getReview($reviewid);
 
         if(!$review) {

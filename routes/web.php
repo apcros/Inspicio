@@ -17,4 +17,4 @@ Route::get('/logout','OAuthLogin@logout');
 Route::get('/login/oauth/{provider}','OAuthLogin@stepOne');
 Route::get('/oauth/callback/{provider}','OAuthLogin@stepTwo');
 
-Route::get('/reviews/{reviewid}/view','ReviewRequest@view');
+Route::get('/reviews/{reviewid}/view','ReviewRequest@displayReview');

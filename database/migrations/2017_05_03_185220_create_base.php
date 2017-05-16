@@ -70,6 +70,7 @@ class CreateBase extends Migration
         Schema::create('request_tracking', function (Blueprint $table) {
             $table->uuid('user_id');
             $table->uuid('request_id');
+            $table->string('status');
             $table->timestamps();
 
             $table->foreign('user_id')->references('id')->on('users');

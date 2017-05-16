@@ -19,10 +19,18 @@
 		  		@if (session('user_id') != $review->author_id)
 
 			  		@if (isset($tracked))
-			  			<!-- Below should probably be a POST !-->
-			  			<a href="/reviews/{{$review->id}}/approve" class="btn btn-primary">Approve</a>
+			  			@if ($tracked->status == 'approved')
+			  				<button class="btn btn-primary" disabled>Approved</button>
+			  			@else
+				  			<form class="pull-left" method="POST" action="/reviews/{{$review->id}}/approve">
+				  				<button class="btn btn-primary">Approve</button>{{csrf_field()}}
+				  			</form>
+			  			@endif
+
 			  		@else
-			  			<a href="/reviews/{{$review->id}}/track" class="btn btn-info">Follow this review</a>
+			  			<form class="pull-left" method="POST" action="/reviews/{{$review->id}}/track">
+				  			<button class="btn btn-info">Follow this review</button>{{csrf_field()}}
+				  		</form>
 			  		@endif
 
 			  		<a href="{{$review->url}}" target="_blank" class="btn btn-info">View</a>
