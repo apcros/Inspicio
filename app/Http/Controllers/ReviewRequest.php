@@ -149,7 +149,22 @@ class ReviewRequest extends Controller
 
 
     public function viewAllMine(Request $request) {
+        $user_id = session('user_id');
+        $reviews = DB::table('requests')->where('author_id',$user_id)->get();
 
+        $followers_per_review = array();
+        foreach ($reviews as $key => $review) {
+             $followers = DB::table('request_tracking')
+                ->join('users', 'request_tracking.user_id','=','users.id')
+                ->select('request_tracking.status','users.nickname','users.id')
+                ->where('request_id',$review->id)
+                ->get();
+
+             if($followers) {
+                $followers_per_review[$review->id] = $followers;
+             }
+        }
+        return view('my-reviews',['reviews' => $reviews, 'followers' => $followers_per_review]);
     }
 
     public function viewAllTracked(Request $request) {
