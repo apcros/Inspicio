@@ -26,5 +26,4 @@ class GithubTest extends TestCase {
 
 		$this->assertEquals($client->fetchAccessToken('dummy'), 'thisisafaketoken');
 	}
-
 }

@@ -10,42 +10,29 @@ use Illuminate\Support\Facades\Log;
 use \Ramsey\Uuid\Uuid;
 
 class ReviewRequest extends Controller {
-	//TODO : Move that to a Facade to avoid duplication
-	private function getClient($provider) {
-		$factory = new GitProviderFactory($provider);
-		return $factory->getProviderEngine();
-	}
+	public function approve(Request $request, $reviewid) {
+		//TODO : Maybe move getReview to a middleware ?
+		$review = $this->getReview($reviewid);
 
-	public function createForm(Request $request) {
-
-		$accounts = $this->availableAccounts();
-		$reposPerAccount = array();
-
-		foreach ($accounts as $key => $account) {
-			$client = $this->getClient($account->provider);
-			$client->setToken($account->token);
-
-			$reposPerAccount[] = array(
-				'account_id' => $account->id,
-				'repos' => $client->listRepositories(),
-			);
+		if (!$review) {
+			return view('view-review-public', ['error_message' => 'Review Request not found !']);
 		}
 
-		return view('newreview', ['reposPerAccount' => $reposPerAccount]);
-	}
+		$user_id = session('user_id');
 
-	public function getOpenedPullRequestForRepo($owner, $repo, $account_id) {
+		try {
+			DB::table('request_tracking')->where([
+				['user_id', '=', $user_id],
+				['request_id', '=', $reviewid],
+			])->update(['status' => 'approved']);
 
-		$account = DB::table('accounts')->where([
-			['user_id', '=', session('user_id')],
-			['id', '=', $account_id]])->first();
+		} catch (\Illuminate\Database\QueryException $e) {
+			Log::error('Error when USER ' . session('user_id') . ' attempted to approve code review ' . $reviewid . ' : ' . $e->getMessage());
 
-		$client = $this->getClient($account->provider);
-		$client->setToken($account->token);
+			return $this->displayReview($reviewid, ['error_message' => 'Error while trying to approve the review request']);
+		}
 
-		$raw_response = $client->listPullRequestsForRepo($owner, $repo);
-
-		return json_encode($raw_response);
+		return $this->displayReview($reviewid, ['info_message' => 'Sucessfully approved !']);
 	}
 
 	public function create(Request $request) {
@@ -66,7 +53,8 @@ class ReviewRequest extends Controller {
 		}
 
 		if (!$pull_request_url) {
-			// No pull request url, we need to create one
+
+// No pull request url, we need to create one
 			// TODO
 		}
 
@@ -74,46 +62,76 @@ class ReviewRequest extends Controller {
 
 		try {
 			DB::table('requests')->insert([
-				'id' => $review_request_id,
-				'name' => $title,
+				'id'          => $review_request_id,
+				'name'        => $title,
 				'description' => $description,
-				'url' => $pull_request_url,
-				'status' => 'open',
-				'language' => $language,
-				'author_id' => session('user_id'),
-				'repository' => $owner_repo,
-				'account_id' => $account_id,
-				'created_at' => \Carbon\Carbon::now(),
-				'updated_at' => \Carbon\Carbon::now(),
+				'url'         => $pull_request_url,
+				'status'      => 'open',
+				'language'    => $language,
+				'author_id'   => session('user_id'),
+				'repository'  => $owner_repo,
+				'account_id'  => $account_id,
+				'created_at'  => \Carbon\Carbon::now(),
+				'updated_at'  => \Carbon\Carbon::now(),
 			]);
 		} catch (\Illuminate\Database\QueryException $e) {
 			Log::error("Error caught while adding Pull request : " . $e->getMessage());
+
 			return view('home', ['error_message' => 'An error ocurred while trying to add your review request']);
 		}
 
 		return redirect('/reviews/' . $review_request_id . '/view');
 	}
 
-	public function approve(Request $request, $reviewid) {
-		//TODO : Maybe move getReview to a middleware ?
+	public function createForm(Request $request) {
+
+		$accounts = $this->availableAccounts();
+		$reposPerAccount = array();
+
+		foreach ($accounts as $key => $account) {
+			$client = $this->getClient($account->provider);
+			$client->setToken($account->token);
+
+			$reposPerAccount[] = array(
+				'account_id' => $account->id,
+				'repos'      => $client->listRepositories(),
+			);
+		}
+
+		return view('newreview', ['reposPerAccount' => $reposPerAccount]);
+	}
+
+	public function displayReview($reviewid, $template_vars = []) {
 		$review = $this->getReview($reviewid);
 
 		if (!$review) {
 			return view('view-review-public', ['error_message' => 'Review Request not found !']);
 		}
+
 		$user_id = session('user_id');
 
-		try {
-			DB::table('request_tracking')->where([
-				['user_id', '=', $user_id],
-				['request_id', '=', $reviewid],
-			])->update(['status' => 'approved']);
+		$tracked = DB::table('request_tracking')->where([
+			['request_id', '=', $review->id],
+			['user_id', '=', $user_id]])->first();
 
-		} catch (\Illuminate\Database\QueryException $e) {
-			Log::error('Error when USER ' . session('user_id') . ' attempted to approve code review ' . $reviewid . ' : ' . $e->getMessage());
-			return $this->displayReview($reviewid, ['error_message' => 'Error while trying to approve the review request']);
-		}
-		return $this->displayReview($reviewid, ['info_message' => 'Sucessfully approved !']);
+		$template_vars['review'] = $review;
+		$template_vars['tracked'] = $tracked;
+
+		return view('view-review-public', $template_vars);
+	}
+
+	public function getOpenedPullRequestForRepo($owner, $repo, $account_id) {
+
+		$account = DB::table('accounts')->where([
+			['user_id', '=', session('user_id')],
+			['id', '=', $account_id]])->first();
+
+		$client = $this->getClient($account->provider);
+		$client->setToken($account->token);
+
+		$raw_response = $client->listPullRequestsForRepo($owner, $repo);
+
+		return json_encode($raw_response);
 	}
 
 	public function track(Request $request, $reviewid) {
@@ -124,19 +142,20 @@ class ReviewRequest extends Controller {
 			return view('view-review-public', ['error_message' => 'Review Request not found !']);
 		}
 
-		//There's already a front-end check, but never trust client
+//There's already a front-end check, but never trust client
 		if ($review->author_id == session('user_id')) {
 			return $this->displayReview($reviewid, ['error_message' => 'Error, You can\'t follow your own review requests !']);
 		}
 
 		try {
 			DB::table('request_tracking')->insert([
-				'user_id' => session('user_id'),
+				'user_id'    => session('user_id'),
 				'request_id' => $reviewid,
-				'status' => 'unapproved',
+				'status'     => 'unapproved',
 			]);
 		} catch (\Illuminate\Database\QueryException $e) {
 			Log::error('Error when USER ' . session('user_id') . ' attempted to track code review ' . $reviewid . ' : ' . $e->getMessage());
+
 			return $this->displayReview($reviewid, ['error_message' => 'An error ocurred !']);
 
 		}
@@ -159,7 +178,9 @@ class ReviewRequest extends Controller {
 			if ($followers) {
 				$followers_per_review[$review->id] = $followers;
 			}
+
 		}
+
 		return view('my-reviews', ['reviews' => $reviews, 'followers' => $followers_per_review]);
 	}
 
@@ -171,25 +192,15 @@ class ReviewRequest extends Controller {
 		return DB::table('accounts')->where('user_id', session('user_id'))->get();
 	}
 
+	//TODO : Move that to a Facade to avoid duplication
+	private function getClient($provider) {
+		$factory = new GitProviderFactory($provider);
+
+		return $factory->getProviderEngine();
+	}
+
 	private function getReview($reviewid) {
 		return $review = DB::table('requests')->where('id', $reviewid)->first();
 	}
-	public function displayReview($reviewid, $template_vars = []) {
-		$review = $this->getReview($reviewid);
 
-		if (!$review) {
-			return view('view-review-public', ['error_message' => 'Review Request not found !']);
-		}
-
-		$user_id = session('user_id');
-
-		$tracked = DB::table('request_tracking')->where([
-			['request_id', '=', $review->id],
-			['user_id', '=', $user_id]])->first();
-
-		$template_vars['review'] = $review;
-		$template_vars['tracked'] = $tracked;
-
-		return view('view-review-public', $template_vars);
-	}
 }

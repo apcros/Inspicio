@@ -2,8 +2,8 @@
 namespace App\Classes;
 
 class UserAgent {
-
 	private $curl;
+
 	private $headers;
 
 	public function __construct() {
@@ -12,23 +12,26 @@ class UserAgent {
 		$this->setOpt(CURLOPT_RETURNTRANSFER, 1);
 	}
 
-	public function setHeaders($headers) {
-		$this->headers = $headers;
+	public function addHeader($header) {
+		$this->headers[] = $header;
 		$this->setOpt(CURLOPT_HTTPHEADER, $this->headers);
+	}
+
+	public function get($url) {
+
+		$this->setOpt(CURLOPT_HTTPGET, 1);
+		$this->setOpt(CURLOPT_URL, $url);
+
+		return $this->do_curl();
 	}
 
 	public function getHeaders() {
 		return $this->headers;
 	}
 
-	public function addHeader($header) {
-		$this->headers[] = $header;
-		$this->setOpt(CURLOPT_HTTPHEADER, $this->headers);
-	}
-
 	/*
-		Takes $data and post it to $url using curl
-	*/
+	Takes $data and post it to $url using curl
+	 */
 	public function post($url, $data) {
 
 		$this->setOpt(CURLOPT_POST, 1);
@@ -38,12 +41,9 @@ class UserAgent {
 		return $this->do_curl();
 	}
 
-	public function get($url) {
-
-		$this->setOpt(CURLOPT_HTTPGET, 1);
-		$this->setOpt(CURLOPT_URL, $url);
-
-		return $this->do_curl();
+	public function setHeaders($headers) {
+		$this->headers = $headers;
+		$this->setOpt(CURLOPT_HTTPHEADER, $this->headers);
 	}
 
 	private function do_curl() {
@@ -57,9 +57,10 @@ class UserAgent {
 	}
 
 	/*
-		A short cut to avoid having to repass the curl handler
-	*/
+	A short cut to avoid having to repass the curl handler
+	 */
 	private function setOpt($option, $val) {
 		curl_setopt($this->curl, $option, $val);
 	}
+
 }

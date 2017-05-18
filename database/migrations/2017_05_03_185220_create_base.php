@@ -6,6 +6,20 @@ use Illuminate\Support\Facades\Schema;
 
 class CreateBase extends Migration {
 	/**
+	 * Reverse the migrations.
+	 *
+	 * @return void
+	 */
+	public function down() {
+
+		Schema::dropIfExists('request_tracking');
+		Schema::dropIfExists('requests');
+		Schema::dropIfExists('skills');
+		Schema::dropIfExists('accounts');
+		Schema::dropIfExists('users');
+	}
+
+	/**
 	 * Run the migrations.
 	 *
 	 * @return void
@@ -75,19 +89,5 @@ class CreateBase extends Migration {
 			$table->foreign('request_id')->references('id')->on('requests');
 			$table->primary(['user_id', 'request_id']);
 		});
-	}
-
-	/**
-	 * Reverse the migrations.
-	 *
-	 * @return void
-	 */
-	public function down() {
-
-		Schema::dropIfExists('request_tracking');
-		Schema::dropIfExists('requests');
-		Schema::dropIfExists('skills');
-		Schema::dropIfExists('accounts');
-		Schema::dropIfExists('users');
 	}
 }

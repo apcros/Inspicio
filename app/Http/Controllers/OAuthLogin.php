@@ -9,10 +9,10 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class OAuthLogin extends Controller {
+	public function logout(Request $request) {
+		$request->session()->flush();
 
-	private function getClient($provider) {
-		$factory = new GitProviderFactory($provider);
-		return $factory->getProviderEngine();
+		return view('home');
 	}
 
 	public function stepOne($provider) {
@@ -20,6 +20,7 @@ class OAuthLogin extends Controller {
 		//TODO make use of the CSRF token
 		$redirect_to = $client->getAuthorizeUrl('DUMMY', env('APP_URL') . '/oauth/callback/' . $provider);
 		Log::info('Redirecting user to OAuth on ' . $provider);
+
 		return redirect($redirect_to);
 	}
 
@@ -54,18 +55,26 @@ class OAuthLogin extends Controller {
 			session(['user_nickname' => $user->nickname, 'user_email' => $user->email, 'user_id' => $user->id]);
 
 			Log::info($user->email . ' Logged in !');
+
 			return redirect('/');
 		} else {
 			session(['user_nickname' => $user_data->login]);
+
 			return view('register', ['auth_token' => $access_token, 'auth_provider' => $provider]);
 		}
 
 	}
 
+	private function getClient($provider) {
+		$factory = new GitProviderFactory($provider);
+
+		return $factory->getProviderEngine();
+	}
+
 	private function getUser($login, $provider) {
 
-		//If there's an account with that login, provider and it's the main account (= account used to login)
-		// Then we can fetch the associated user
+/*If there's an account with that login, provider and it's the main account (= account used to login)
+Then we can fetch the associated user*/
 		$account = DB::table('accounts')->where([
 			['login', '=', $login],
 			['is_main', '=', true],
@@ -74,14 +83,11 @@ class OAuthLogin extends Controller {
 
 		if (isset($account)) {
 			$user = DB::table('users')->where('id', $account->user_id)->first();
+
 			return $user;
 		}
 
 		return false;
 	}
 
-	public function logout(Request $request) {
-		$request->session()->flush();
-		return view('home');
-	}
 }

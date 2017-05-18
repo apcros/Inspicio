@@ -2,9 +2,11 @@
 namespace App\Classes;
 
 class GitProviderFactory {
-	private $provider;
-	private $client_id;
 	private $app_secret;
+
+	private $client_id;
+
+	private $provider;
 
 	public function __construct($provider) {
 		$this->provider = $provider;
@@ -18,5 +20,4 @@ class GitProviderFactory {
 		return new $provider_class($this->client_id, $this->app_secret);
 
 	}
-
 }

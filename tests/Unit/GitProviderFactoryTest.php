@@ -6,7 +6,6 @@ use App\Classes\GitProviderFactory;
 use Tests\TestCase;
 
 class GitProviderFactoryTest extends TestCase {
-
 	public function testHappyPath() {
 		$factory = new GitProviderFactory('github');
 
@@ -19,5 +18,4 @@ class GitProviderFactoryTest extends TestCase {
 		$this->expectException(\Error::class);
 		$factory->getProviderEngine();
 	}
-
 }
