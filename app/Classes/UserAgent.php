@@ -32,8 +32,8 @@ class UserAgent {
 	public function post($url, $data) {
 
 		$this->setOpt(CURLOPT_POST, 1);
-		$this->setOpt(CURLOPT_POSTFIELDS,$data);
-		$this->setOpt(CURLOPT_URL,$url);
+		$this->setOpt(CURLOPT_POSTFIELDS, $data);
+		$this->setOpt(CURLOPT_URL, $url);
 
 		return $this->do_curl();
 	}
@@ -41,7 +41,7 @@ class UserAgent {
 	public function get($url) {
 
 		$this->setOpt(CURLOPT_HTTPGET, 1);
-		$this->setOpt(CURLOPT_URL,$url);
+		$this->setOpt(CURLOPT_URL, $url);
 
 		return $this->do_curl();
 	}
@@ -49,9 +49,10 @@ class UserAgent {
 	private function do_curl() {
 		$raw_result = curl_exec($this->curl);
 
-		if ($raw_result === FALSE)
-			throw new \Exception(curl_error($this->curl).' - '.curl_errno($this->curl), 1);
-		
+		if ($raw_result === FALSE) {
+			throw new \Exception(curl_error($this->curl) . ' - ' . curl_errno($this->curl), 1);
+		}
+
 		return $raw_result;
 	}
 

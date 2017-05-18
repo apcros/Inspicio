@@ -3,11 +3,11 @@ namespace App\Classes\GitProviders;
 
 use App\Classes\UserAgent;
 use Illuminate\Support\Facades\Log;
+
 /**
-*  A simple API client for Github,  handle OAuth login
-*/
-class Github implements GitProviderInterface
-{
+ *  A simple API client for Github,  handle OAuth login
+ */
+class Github implements GitProviderInterface {
 	private $client_id;
 	private $app_secret;
 	private $token = '';
@@ -17,38 +17,37 @@ class Github implements GitProviderInterface
 
 	private $ua;
 
-	function __construct($client_id, $app_secret, $ua = null)
-	{
+	function __construct($client_id, $app_secret, $ua = null) {
 		$this->client_id = $client_id;
 		$this->app_secret = $app_secret;
 
 		//Makes mocking way easier
-		if($ua != null) {
+		if ($ua != null) {
 			$this->ua = $ua;
 		} else {
 			$this->ua = new UserAgent();
 			$this->ua->setHeaders(
 				array(
-			    'Content-type: application/json',
-			    'Accept: application/json',
-			    'User-Agent: Inspicio'
-			));
+					'Content-type: application/json',
+					'Accept: application/json',
+					'User-Agent: Inspicio',
+				));
 		}
 
 	}
 	/*
-		get_authorize_url will simply return a string where the user should be redirected to start the process of 
+		get_authorize_url will simply return a string where the user should be redirected to start the process of
 		oauth auth.
 	*/
 	public function getAuthorizeUrl($csrf_token, $redirect_uri) {
-		return $this->github.'/login/oauth/authorize?client_id='
-		.urlencode($this->client_id).'&state='
-		.urlencode($csrf_token).'&redirect_uri='
-		.urlencode($redirect_uri).'&scope=user';
+		return $this->github . '/login/oauth/authorize?client_id='
+		. urlencode($this->client_id) . '&state='
+		. urlencode($csrf_token) . '&redirect_uri='
+		. urlencode($redirect_uri) . '&scope=user';
 	}
 
 	public function setToken($token) {
-		$this->ua->addHeader('Authorization: token '.$token);
+		$this->ua->addHeader('Authorization: token ' . $token);
 		$this->token = $token;
 	}
 
@@ -57,17 +56,17 @@ class Github implements GitProviderInterface
 	*/
 	public function fetchAccessToken($code) {
 
-		$raw_response = $this->ua->post($this->github.'/login/oauth/access_token',json_encode(array(
+		$raw_response = $this->ua->post($this->github . '/login/oauth/access_token', json_encode(array(
 			'client_id' => $this->client_id,
 			'client_secret' => $this->app_secret,
-			'code' => $code
+			'code' => $code,
 		)));
 
 		$json = json_decode($raw_response);
 
-		if (isset($json->access_token))
+		if (isset($json->access_token)) {
 			$this->setToken($json->access_token);
-
+		}
 
 		return $this->token;
 	}
@@ -76,13 +75,13 @@ class Github implements GitProviderInterface
 		Simply returns the user, useful for auth purposes on the website
 	*/
 	public function getUserInfo() {
-		$raw_response = $this->ua->get($this->api.'/user');
-		Log::debug('User info : '.$raw_response);
+		$raw_response = $this->ua->get($this->api . '/user');
+		Log::debug('User info : ' . $raw_response);
 		return json_decode($raw_response);
 	}
 
 	public function listRepositories() {
-		$raw_response = $this->ua->get($this->api.'/user/repos');
+		$raw_response = $this->ua->get($this->api . '/user/repos');
 
 		$repos = json_decode($raw_response);
 
@@ -90,10 +89,10 @@ class Github implements GitProviderInterface
 		$std_repos = array();
 		foreach ($repos as $key => $repo) {
 			$std_repos[] = array(
-				'name' 		=> $repo->full_name,
-				'id'		=> $repo->id,
-				'url'		=> $repo->url,
-				'language' 	=> $repo->language
+				'name' => $repo->full_name,
+				'id' => $repo->id,
+				'url' => $repo->url,
+				'language' => $repo->language,
 			);
 		}
 		return $std_repos;
@@ -101,8 +100,8 @@ class Github implements GitProviderInterface
 
 	public function listPullRequestsForRepo($owner, $repository) {
 
-		$pulls_url = $this->api.'/repos/'.$owner.'/'.$repository.'/pulls';
-		Log::debug('Loading pull requests using : '.$pulls_url);
+		$pulls_url = $this->api . '/repos/' . $owner . '/' . $repository . '/pulls';
+		Log::debug('Loading pull requests using : ' . $pulls_url);
 		$raw_response = $this->ua->get($pulls_url);
 
 		Log::debug($raw_response);
@@ -112,7 +111,7 @@ class Github implements GitProviderInterface
 		foreach ($prs as $key => $pr) {
 			$std_prs[] = array(
 				'name' => $pr->title,
-				'url'  => $pr->html_url
+				'url' => $pr->html_url,
 			);
 		}
 
@@ -120,8 +119,8 @@ class Github implements GitProviderInterface
 	}
 
 	public function getPullRequest($owner, $repository, $pr_id) {
-		$url = $this->api.'/repos/'.$owner.'/'.$repository.'/pulls/'.$pr_id;
-		Log::debug('Fetching information for pull request : '.$url);
+		$url = $this->api . '/repos/' . $owner . '/' . $repository . '/pulls/' . $pr_id;
+		Log::debug('Fetching information for pull request : ' . $url);
 		$raw_response = $this->ua->get($url);
 
 		//TODO standardize format
