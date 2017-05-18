@@ -24,12 +24,12 @@ class Home extends Controller {
 			return view('home', ['error_message' => "Couldn't register your account, please try again"]);
 		}
 
-		$email = $request->input('email');
-		$name = $request->input('name');
-		$auth_token = $request->input('auth_token');
+		$email         = $request->input('email');
+		$name          = $request->input('name');
+		$auth_token    = $request->input('auth_token');
 		$auth_provider = $request->input('auth_provider');
-		$user_id = Uuid::uuid4()->toString();
-		$account_id = Uuid::uuid4()->toString();
+		$user_id       = Uuid::uuid4()->toString();
+		$account_id    = Uuid::uuid4()->toString();
 		try {
 			Log::info("Creating a new user : $email / $name / $user_id");
 			DB::table('users')->insert(
