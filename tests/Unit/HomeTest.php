@@ -43,7 +43,7 @@ class HomeTest extends TestCase {
 
 		$response = $this->withSession(['user_nickname' => 'bob_git_nickname'])->post('/register', $user_data);
 		$content  = $response->getContent();
-		$this->assertRegExp('/Redirecting to/', $content, 'Registered finished withotu errors');
+		$this->assertRegExp('/Redirecting to/', $content, 'Registered finished without errors');
 
 		$this->assertDatabaseHas('users', [
 			'email' => 'amazingtest@testest.co.uk',

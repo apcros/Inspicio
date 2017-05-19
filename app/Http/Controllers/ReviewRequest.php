@@ -20,6 +20,10 @@ class ReviewRequest extends Controller {
 
 		$user_id = session('user_id');
 
+        if ($review->author_id == $user_id) {
+            return $this->displayReview($reviewid, ['error_message' => 'Error, You can\'t approve your own review requests !']);
+        }
+
 		try {
 			DB::table('request_tracking')->where([
 				['user_id', '=', $user_id],
