@@ -21,7 +21,7 @@ class Github implements GitProviderInterface {
 	private $ua;
 
 	function __construct($client_id, $app_secret, $ua = null) {
-		$this->client_id = $client_id;
+		$this->client_id  = $client_id;
 		$this->app_secret = $app_secret;
 
 //Makes mocking way easier
@@ -40,8 +40,8 @@ class Github implements GitProviderInterface {
 	}
 
 	/*
-	Gets the GiHub temporary "code" and turns it into an access_token
-	 */
+		Gets the GiHub temporary "code" and turns it into an access_token
+	*/
 	public function fetchAccessToken($code) {
 
 		$raw_response = $this->ua->post($this->github . '/login/oauth/access_token', json_encode(array(
@@ -60,9 +60,9 @@ class Github implements GitProviderInterface {
 	}
 
 	/*
-	get_authorize_url will simply return a string where the user should be redirected to start the process of
-	oauth auth.
-	 */
+		get_authorize_url will simply return a string where the user should be redirected to start the process of
+		oauth auth.
+	*/
 	public function getAuthorizeUrl($csrf_token, $redirect_uri) {
 		return $this->github . '/login/oauth/authorize?client_id='
 		. urlencode($this->client_id) . '&state='
@@ -81,8 +81,8 @@ class Github implements GitProviderInterface {
 	}
 
 	/*
-	Simply returns the user, useful for auth purposes on the website
-	 */
+		Simply returns the user, useful for auth purposes on the website
+	*/
 	public function getUserInfo() {
 		$raw_response = $this->ua->get($this->api . '/user');
 		Log::debug('User info : ' . $raw_response);
@@ -97,7 +97,7 @@ class Github implements GitProviderInterface {
 		$raw_response = $this->ua->get($pulls_url);
 
 		Log::debug($raw_response);
-		$prs = json_decode($raw_response);
+		$prs     = json_decode($raw_response);
 		$std_prs = array();
 
 		foreach ($prs as $key => $pr) {
@@ -108,6 +108,46 @@ class Github implements GitProviderInterface {
 		}
 
 		return $std_prs;
+	}
+
+	public function listBranchesForRepo($owner, $repository) {
+		$branch_url   = $this->api . '/repos/' . $owner . '/' . $repository . '/branches';
+		$raw_response = $this->ua->get($branch_url);
+
+		$branches     = json_decode($raw_response);
+		$std_branches = array();
+
+		foreach ($branches as $key => $branch) {
+			$std_branches[] = array(
+				'name' => $branch->name,
+			);
+		}
+
+		return $std_branches;
+	}
+
+	public function createPullRequest($owner, $repository, $head, $base, $title, $description) {
+		$raw_response = $this->ua->post($this->api . '/repos/' . $owner . '/' . $repository . '/pulls', [
+			'title' => $title,
+			'body'  => $description,
+			'head'  => $head,
+			'base'  => $base,
+		]);
+
+		$pull_request = json_decode($raw_response);
+
+		if (isset($pull_request->url)) {
+			return array(
+				'success' => 1,
+				'url'     => $pull_request->url,
+			);
+		} else {
+			return array(
+				'success' => 0,
+				'error'   => 'Failed to create pull request',
+			);
+		}
+
 	}
 
 	public function listRepositories() {

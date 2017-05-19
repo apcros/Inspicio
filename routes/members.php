@@ -17,5 +17,6 @@ Route::get('/reviews/create', 'ReviewRequest@createForm');
 Route::post('/reviews/create', 'ReviewRequest@create');
 
 Route::get('/reviews/ajax/pulls/{owner}/{repository}/{account_id}', 'ReviewRequest@getOpenedPullRequestForRepo');
+Route::get('/reviews/ajax/branches/{owner}/{repository}/{account_id}', 'ReviewRequest@getBranches');
 Route::post('/reviews/{reviewid}/track', 'ReviewRequest@track');
 Route::post('/reviews/{reviewid}/approve', 'ReviewRequest@approve');

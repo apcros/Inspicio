@@ -20,9 +20,9 @@ class ReviewRequest extends Controller {
 
 		$user_id = session('user_id');
 
-        if ($review->author_id == $user_id) {
-            return $this->displayReview($reviewid, ['error_message' => 'Error, You can\'t approve your own review requests !']);
-        }
+		if ($review->author_id == $user_id) {
+			return $this->displayReview($reviewid, ['error_message' => 'Error, You can\'t approve your own review requests !']);
+		}
 
 		try {
 			DB::table('request_tracking')->where([
@@ -40,11 +40,11 @@ class ReviewRequest extends Controller {
 	}
 
 	public function create(Request $request) {
-		$title = $request->input('title');
+		$title              = $request->input('title');
 		$repository_account = $request->input('repository');
-		$language = $request->input('language');
-		$pull_request_url = $request->input('pull_request');
-		$description = $request->input('description');
+		$language           = $request->input('language');
+		$pull_request_url   = $request->input('pull_request');
+		$description        = $request->input('description');
 
 		list($owner_repo, $account_id) = explode(',', $repository_account);
 
@@ -89,7 +89,7 @@ class ReviewRequest extends Controller {
 
 	public function createForm(Request $request) {
 
-		$accounts = $this->availableAccounts();
+		$accounts        = $this->availableAccounts();
 		$reposPerAccount = array();
 
 		foreach ($accounts as $key => $account) {
@@ -118,7 +118,7 @@ class ReviewRequest extends Controller {
 			['request_id', '=', $review->id],
 			['user_id', '=', $user_id]])->first();
 
-		$template_vars['review'] = $review;
+		$template_vars['review']  = $review;
 		$template_vars['tracked'] = $tracked;
 
 		return view('view-review-public', $template_vars);
@@ -134,6 +134,19 @@ class ReviewRequest extends Controller {
 		$client->setToken($account->token);
 
 		$raw_response = $client->listPullRequestsForRepo($owner, $repo);
+
+		return json_encode($raw_response);
+	}
+
+	public function getBranches($owner, $repo, $account_id) {
+		$account = DB::table('accounts')->where([
+			['user_id', '=', session('user_id')],
+			['id', '=', $account_id]])->first();
+
+		$client = $this->getClient($account->provider);
+		$client->setToken($account->token);
+
+		$raw_response = $client->listBranchesForRepo($owner, $repo);
 
 		return json_encode($raw_response);
 	}
