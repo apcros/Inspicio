@@ -32,9 +32,8 @@
 				  			<button class="btn btn-info">Follow this review</button>{{csrf_field()}}
 				  		</form>
 			  		@endif
-
-			  		<a href="{{$review->url}}" target="_blank" class="btn btn-info">View</a>
 			  	@endif
+			  		<a href="{{$review->url}}" target="_blank" class="btn btn-info">View</a>
 			  </div>
 		</div>
 

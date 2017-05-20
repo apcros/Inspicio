@@ -58,8 +58,21 @@ class ReviewRequest extends Controller {
 
 		if (!$pull_request_url) {
 
-// No pull request url, we need to create one
-			// TODO
+			$head_branch = $request->input('head_branch');
+			$base_branch = $request->input('base_branch');
+
+			$client = $this->getClient($account->provider);
+			$client->setToken($account->token);
+
+			list($owner, $repo) = explode('/', $owner_repo);
+
+			$pr_result = $client->createPullRequest($owner, $repo, $head_branch, $base_branch, $title, $description);
+
+			if ($pr_result['success'] == 0 || !isset($pr_result['url'])) {
+				return view('home', ['error_message' => 'Error while creating your code review request : ' . $pr_result['error']]);
+			}
+
+			$pull_request_url = $pr_result['url'];
 		}
 
 		$review_request_id = Uuid::uuid4()->toString();

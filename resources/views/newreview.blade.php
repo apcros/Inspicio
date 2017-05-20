@@ -46,6 +46,14 @@
 			    Or create a new one
 			  </label>
 			</div>
+		  <div class="form-group" id="new_pull_request_branches_select" hidden>
+		    <label for="head_branch">Select head branch</label>
+		    <select name="head_branch" id="head_branch" class="form-control" placeholder="Select the branch where your changes are">
+			</select>
+		    <label for="base_branch">Select base branch</label>
+		    <select name="base_branch" id="base_branch" class="form-control" placeholder="Select the branch where your changes will be pulled">
+			</select>
+		  </div>			
 		  <div class="form-group">
 		    <label for="description">Description</label>
 		    <textarea class="form-control" rows="3" name="description" id="description"></textarea>

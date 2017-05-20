@@ -67,7 +67,7 @@ class Github implements GitProviderInterface {
 		return $this->github . '/login/oauth/authorize?client_id='
 		. urlencode($this->client_id) . '&state='
 		. urlencode($csrf_token) . '&redirect_uri='
-		. urlencode($redirect_uri) . '&scope=user';
+		. urlencode($redirect_uri) . '&scope=user,repo';
 	}
 
 	public function getPullRequest($owner, $repository, $pr_id) {
@@ -127,26 +127,39 @@ class Github implements GitProviderInterface {
 	}
 
 	public function createPullRequest($owner, $repository, $head, $base, $title, $description) {
-		$raw_response = $this->ua->post($this->api . '/repos/' . $owner . '/' . $repository . '/pulls', [
+		$api_url = $this->api . '/repos/' . $owner . '/' . $repository . '/pulls';
+		Log::info('Creating pull-request on ' . $api_url);
+		$raw_response = $this->ua->post($api_url, json_encode([
 			'title' => $title,
 			'body'  => $description,
 			'head'  => $head,
 			'base'  => $base,
-		]);
-
+		]));
+		Log::debug($raw_response);
 		$pull_request = json_decode($raw_response);
+
+		$error_message = 'Failed to create pull request';
 
 		if (isset($pull_request->url)) {
 			return array(
 				'success' => 1,
-				'url'     => $pull_request->url,
-			);
-		} else {
-			return array(
-				'success' => 0,
-				'error'   => 'Failed to create pull request',
+				'url'     => $pull_request->html_url,
 			);
 		}
+
+		if (isset($pull_request->errors)) {
+			$error_message = 'Error(s) from API : ';
+
+			foreach ($pull_request->errors as $key => $error) {
+				$error_message .= '[' . $error->message . ']';
+			}
+
+		}
+
+		return array(
+			'success' => 0,
+			'error'   => $error_message,
+		);
 
 	}
 
