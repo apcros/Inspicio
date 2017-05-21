@@ -22,4 +22,19 @@ class ProfileTest extends TestCase {
 
 		$this->assertRegExp('/John Doe/', $content, 'User account is displaying as expected');
 	}
+
+	public function testLoadPublicProfile() {
+		$this->seed('DatabaseSeederForTests');
+
+		$response = $this->get('/members/7636b30e-6db2-41b6-91b3-33560b9638c2/profile');
+		$response->assertStatus(200);
+
+		$content = $response->getContent();
+		$this->assertRegExp('/John Doe/', $content, 'User profile is displayed as expected');
+		$this->assertRegExp('/e4dc3896-4a40-49b8-b3f2-0dc45916437a/', $content, 'There is a link to the user code review request');
+
+		$response = $this->get('/members/00000000-0000-0000-0000-000000000000/profile');
+		$content  = $response->getContent();
+		$this->assertRegExp('/User not found/', $content, 'Error message returned sucessfully');
+	}
 }
