@@ -17,28 +17,35 @@ class OAuthLogin extends Controller {
 
 	public function stepOne($provider) {
 		$client = $this->getClient($provider);
-		//TODO make use of the CSRF token
-		$redirect_to = $client->getAuthorizeUrl('DUMMY', env('APP_URL') . '/oauth/callback/' . $provider);
+
+		$token = csrf_token();
+		session(['oauth_csrf' => $token]);
+		$redirect_to = $client->getAuthorizeUrl($token, env('APP_URL') . '/oauth/callback/' . $provider);
 		Log::info('Redirecting user to OAuth on ' . $provider);
 
 		return redirect($redirect_to);
 	}
 
 	public function stepTwo(Request $request, $provider) {
-		$code = $request->input('code');
+		$code  = $request->input('code');
+		$state = $request->input('state');
 
 		$client = $this->getClient($provider);
 
 		Log::debug('Exchanging ' . $provider . ' temporary code (' . $code . ') to access token');
 		$access_token = $client->fetchAccessToken($code);
 
-		Log::debug('Access token fetched.');
-
 		Log::debug('Fetching user data associated with token');
 		$user_data = $client->getUserInfo();
 
 		if (!isset($user_data->login)) {
-			return 'Login error';
+			return view('choose-auth-provider', ['error_message' => 'Failed to login']);
+		}
+
+		if ($state != session('oauth_csrf')) {
+			Log::error('CSRF mismatch');
+			return view('choose-auth-provider', ['error_message' => 'CSRF Token mismatch']);
+
 		}
 
 		Log::info('Achieved stepTwo OAuth, user is : ' . $user_data->login);
