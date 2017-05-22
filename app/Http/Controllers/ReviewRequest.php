@@ -215,7 +215,30 @@ class ReviewRequest extends Controller {
 	}
 
 	public function viewAllTracked(Request $request) {
+		$user_id = session('user_id');
 
+		//TODO get rid of this awful code duplication, Single query ?
+		$unapproved = DB::table('request_tracking')
+            ->join('requests', 'request_tracking.request_id', '=', 'requests.id')
+            ->select('requests.id', 'requests.name', 'requests.language', 'requests.updated_at')
+            ->orderBy('requests.updated_at', 'desc')
+            ->where([
+                ['request_tracking.user_id', '=', $user_id],
+                ['request_tracking.status', '=', 'unapproved'],
+            ])
+			->get();
+
+		$approved = DB::table('request_tracking')
+			->join('requests', 'request_tracking.request_id', '=', 'requests.id')
+			->select('requests.id', 'requests.name', 'requests.language', 'requests.updated_at')
+			->orderBy('requests.updated_at', 'desc')
+			->where([
+				['request_tracking.user_id', '=', $user_id],
+				['request_tracking.status', '=', 'approved'],
+			])
+			->get();
+
+		return view('my-tracked-reviews', ['reviews_unapproved' => $unapproved, 'reviews_approved' => $approved]);
 	}
 
 	private function availableAccounts() {

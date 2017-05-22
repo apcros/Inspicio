@@ -87,6 +87,11 @@ class ReviewTest extends TestCase {
 			'request_id' => $this->user_review_id,
 			'status'     => 'approved',
 		]);
+
+		$response = $this->withSession($this->user_data_bis)->get('/reviews/tracked');
+		$response->assertStatus(200);
+		$content = $response->getContent();
+		$this->assertRegExp('/'.$this->user_review_id.'/',$content, 'Review request is displayed correctly on the tracked page');
 	}
 
 	public function testTrackAndApprovalFail() {
