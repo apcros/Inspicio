@@ -21,23 +21,24 @@ $("#repository").on("select2:select", function (e) {
 });
 
 function loadOpenPullRequests(owner, repo, account_id) {
-	$("#repository").attr('disabled', true); //Disabling to avoid having result coming for another repo
-	//TODO : Do that in a nicer way
+	$("#repository").attr('disabled', true);
+
 	$.getJSON('/ajax/reviews/pulls/'+owner+'/'+repo+'/'+account_id, function (data) {
 		var html ='';
 
 		$.each(data, function (key, val) {
-			            //TODO use a standard name and not Github's html_url
+
 			html += "<option value='"+val.url+"'>"+val.name+"</option>";
 		});
 		$("#pull_request").html(html);
+
+	}).always(function() {
 		$("#repository").attr('disabled', false);
-	})
+	});
 }
 
 function loadBranches(owner, repo, account_id) {
-	$("#repository").attr('disabled', true); //Disabling to avoid having result coming for another repo
-	//TODO : Do that in a nicer way
+	$("#repository").attr('disabled', true);
 	$.getJSON('/ajax/reviews/branches/'+owner+'/'+repo+'/'+account_id, function (data) {
 		var html ='';
 
@@ -46,8 +47,10 @@ function loadBranches(owner, repo, account_id) {
 		});
 		$("#head_branch").html(html);
 		$("#base_branch").html(html);
+
+	}).always(function() {
 		$("#repository").attr('disabled', false);
-	})
+	});
 }
 function loadRepoMetaData(repo) {
 	var metadata = document.getElementById(repo+'_metadata').value.split(',');
