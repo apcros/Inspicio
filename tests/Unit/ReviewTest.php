@@ -81,7 +81,7 @@ class ReviewTest extends TestCase {
 		$response = $this->withSession($this->user_data_bis)->post('/reviews/' . $this->user_review_id . '/approve');
 		$response->assertStatus(200);
 		$content = $response->getContent();
-		$this->assertRegExp('/Sucessfully approved/', $content, 'Code review request approved with success');
+		$this->assertRegExp('/Successfully approved/', $content, 'Code review request approved with success');
 		$this->assertDatabaseHas('request_tracking', [
 			'user_id'    => $this->user_data_bis['user_id'],
 			'request_id' => $this->user_review_id,
@@ -98,10 +98,10 @@ class ReviewTest extends TestCase {
 		$this->seed('DatabaseSeederForTests');
 		$response = $this->withSession($this->user_data)->post('/reviews/' . $this->user_review_id . '/track');
 		$content  = $response->getContent();
-		$this->assertRegExp('/Error, You can&#039;t follow your own review requests/', $content, 'User can\'t follow his own reviews');
+		$this->assertRegExp('/Error, You can\'t follow your own review requests/', $content, 'User can\'t follow his own reviews');
 
 		$response = $this->withSession($this->user_data)->post('/reviews/' . $this->user_review_id . '/approve');
 		$content  = $response->getContent();
-		$this->assertRegExp('/You can&#039;t approve your own review requests !/', $content, 'User can\'t approve his own reviews');
+		$this->assertRegExp('/You can\'t approve your own review requests !/', $content, 'User can\'t approve his own reviews');
 	}
 }

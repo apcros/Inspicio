@@ -15,13 +15,19 @@ class ReviewRequest extends Controller {
 		$review = $this->getReview($reviewid);
 
 		if (!$review) {
-			return view('view-review-public', ['error_message' => 'Review Request not found !']);
+			return response()->json([
+				'success' => 0,
+				'message' => 'Review Request not found !',
+			]);
 		}
 
 		$user_id = session('user_id');
 
 		if ($review->author_id == $user_id) {
-			return $this->displayReview($reviewid, ['error_message' => 'Error, You can\'t approve your own review requests !']);
+			return response()->json([
+				'success' => 0,
+				'message' => 'Error, You can\'t approve your own review requests !',
+			]);
 		}
 
 		try {
@@ -33,10 +39,16 @@ class ReviewRequest extends Controller {
 		} catch (\Illuminate\Database\QueryException $e) {
 			Log::error('Error when USER ' . session('user_id') . ' attempted to approve code review ' . $reviewid . ' : ' . $e->getMessage());
 
-			return $this->displayReview($reviewid, ['error_message' => 'Error while trying to approve the review request']);
+			return response()->json([
+				'success' => 0,
+				'message' => 'Error while trying to approve the review request',
+			]);
 		}
 
-		return $this->displayReview($reviewid, ['info_message' => 'Sucessfully approved !']);
+		return response()->json([
+			'success' => 1,
+			'message' => 'Successfully approved !',
+		]);
 	}
 
 	public function create(Request $request) {
@@ -169,12 +181,19 @@ class ReviewRequest extends Controller {
 		$review = $this->getReview($reviewid);
 
 		if (!$review) {
-			return view('view-review-public', ['error_message' => 'Review Request not found !']);
+			return response()->json([
+				'success' => 0,
+				'message' => 'Review Request not found !',
+			]);
 		}
 
 //There's already a front-end check, but never trust client
 		if ($review->author_id == session('user_id')) {
-			return $this->displayReview($reviewid, ['error_message' => 'Error, You can\'t follow your own review requests !']);
+			return response()->json([
+				'success' => 0,
+				'message' => 'Error, You can\'t follow your own review requests !',
+			]);
+
 		}
 
 		try {
@@ -186,11 +205,17 @@ class ReviewRequest extends Controller {
 		} catch (\Illuminate\Database\QueryException $e) {
 			Log::error('Error when USER ' . session('user_id') . ' attempted to track code review ' . $reviewid . ' : ' . $e->getMessage());
 
-			return $this->displayReview($reviewid, ['error_message' => 'An error ocurred !']);
+			return response()->json([
+				'success' => 0,
+				'message' => 'An error ocurred !',
+			]);
 
 		}
 
-		return $this->displayReview($reviewid, ['info_message' => 'You are now following this review request !']);
+		return response()->json([
+			'success' => 1,
+			'message' => 'You are now following this review request !',
+		]);
 	}
 
 	public function viewAllMine(Request $request) {
@@ -219,13 +244,13 @@ class ReviewRequest extends Controller {
 
 		//TODO get rid of this awful code duplication, Single query ?
 		$unapproved = DB::table('request_tracking')
-            ->join('requests', 'request_tracking.request_id', '=', 'requests.id')
-            ->select('requests.id', 'requests.name', 'requests.language', 'requests.updated_at')
-            ->orderBy('requests.updated_at', 'desc')
-            ->where([
-                ['request_tracking.user_id', '=', $user_id],
-                ['request_tracking.status', '=', 'unapproved'],
-            ])
+			->join('requests', 'request_tracking.request_id', '=', 'requests.id')
+			->select('requests.id', 'requests.name', 'requests.language', 'requests.updated_at')
+			->orderBy('requests.updated_at', 'desc')
+			->where([
+				['request_tracking.user_id', '=', $user_id],
+				['request_tracking.status', '=', 'unapproved'],
+			])
 			->get();
 
 		$approved = DB::table('request_tracking')

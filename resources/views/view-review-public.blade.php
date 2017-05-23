@@ -22,19 +22,15 @@
 			  			@if ($tracked->status == 'approved')
 			  				<button class="btn btn-primary" disabled>Approved</button>
 			  			@else
-				  			<form class="pull-left" method="POST" action="/reviews/{{$review->id}}/approve">
-				  				<button class="btn btn-primary">Approve</button>{{csrf_field()}}
-				  			</form>
+				  			<button onclick="approveReview('{{$review->id}}')" id="review-action" class="btn btn-primary">Approve</button>{{csrf_field()}}
 			  			@endif
 
 			  		@else
-			  			<form class="pull-left" method="POST" action="/reviews/{{$review->id}}/track">
-				  			<button class="btn btn-info">Follow this review</button>{{csrf_field()}}
-				  		</form>
+				  			<button onclick="followReview('{{$review->id}}')" id="review-action" class="btn btn-info">Follow this review</button>{{csrf_field()}}
 			  		@endif
 			  	@endif
 			  		<a href="{{$review->url}}" target="_blank" class="btn btn-info">View</a>
 			  </div>
 		</div>
-
+		<script type="text/javascript" src="{{ asset('js/async-action-reviews.js') }}"></script>
 @endsection
