@@ -3,7 +3,7 @@ function followReview(id) {
 	$.post(window.location.origin+"/ajax/reviews/"+id+"/track", function(data) {
 		if(data.success) {
 			displayPopup('snackbar-success', data.message, 4000);
-			$("#review-action").attr('onlick', "approveReview('"+id+"');");
+			$("#review-action").attr('onclick', "approveReview('"+id+"');");
 			$("#review-action").html('Approve');
 		} else {
 			displayPopup('snackbar-error', 'Error '+data.message, 4000);
