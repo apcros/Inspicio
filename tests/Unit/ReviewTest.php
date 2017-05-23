@@ -68,7 +68,7 @@ class ReviewTest extends TestCase {
 	public function testTrackAndApproval() {
 		$this->seed('DatabaseSeederForTests');
 
-		$response = $this->withSession($this->user_data_bis)->post('/reviews/' . $this->user_review_id . '/track');
+		$response = $this->withSession($this->user_data_bis)->post('/ajax/reviews/' . $this->user_review_id . '/track');
 		$response->assertStatus(200);
 		$content = $response->getContent();
 		$this->assertRegExp('/You are now following this review request/', $content, 'Code review request followed with success');
@@ -78,7 +78,7 @@ class ReviewTest extends TestCase {
 			'status'     => 'unapproved',
 		]);
 
-		$response = $this->withSession($this->user_data_bis)->post('/reviews/' . $this->user_review_id . '/approve');
+		$response = $this->withSession($this->user_data_bis)->post('/ajax/reviews/' . $this->user_review_id . '/approve');
 		$response->assertStatus(200);
 		$content = $response->getContent();
 		$this->assertRegExp('/Successfully approved/', $content, 'Code review request approved with success');
@@ -96,11 +96,11 @@ class ReviewTest extends TestCase {
 
 	public function testTrackAndApprovalFail() {
 		$this->seed('DatabaseSeederForTests');
-		$response = $this->withSession($this->user_data)->post('/reviews/' . $this->user_review_id . '/track');
+		$response = $this->withSession($this->user_data)->post('/ajax/reviews/' . $this->user_review_id . '/track');
 		$content  = $response->getContent();
 		$this->assertRegExp('/Error, You can\'t follow your own review requests/', $content, 'User can\'t follow his own reviews');
 
-		$response = $this->withSession($this->user_data)->post('/reviews/' . $this->user_review_id . '/approve');
+		$response = $this->withSession($this->user_data)->post('/ajax/reviews/' . $this->user_review_id . '/approve');
 		$content  = $response->getContent();
 		$this->assertRegExp('/You can\'t approve your own review requests !/', $content, 'User can\'t approve his own reviews');
 	}

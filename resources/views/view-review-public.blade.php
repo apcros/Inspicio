@@ -22,11 +22,11 @@
 			  			@if ($tracked->status == 'approved')
 			  				<button class="btn btn-primary" disabled>Approved</button>
 			  			@else
-				  			<button onclick="approveReview('{{$review->id}}')" id="review-action" class="btn btn-primary">Approve</button>{{csrf_field()}}
+				  			<button onclick="approveReview('{{$review->id}}')" id="review-action" class="btn btn-primary">Approve</button>
 			  			@endif
 
 			  		@else
-				  			<button onclick="followReview('{{$review->id}}')" id="review-action" class="btn btn-info">Follow this review</button>{{csrf_field()}}
+				  			<button onclick="followReview('{{$review->id}}')" id="review-action" class="btn btn-info">Follow this review</button>
 			  		@endif
 			  	@endif
 			  		<a href="{{$review->url}}" target="_blank" class="btn btn-info">View</a>

@@ -1,6 +1,6 @@
 function followReview(id) {
 	$("#review-action").attr('disabled', true);
-	$.post(window.location.origin+"/reviews/"+id+"/track", function(data) {
+	$.post(window.location.origin+"/ajax/reviews/"+id+"/track", function(data) {
 		if(data.success) {
 			displayPopup('snackbar-success', data.message, 4000);
 			$("#review-action").attr('onlick', "approveReview('"+id+"');");
@@ -20,7 +20,7 @@ function followReview(id) {
 
 function approveReview(id) {
 	$("#review-action").attr('disabled', true);
-	$.post(window.location.origin+"/reviews/"+id+"/approve", function(data) {
+	$.post(window.location.origin+"/ajax/reviews/"+id+"/approve", function(data) {
 		if(data.success) {
 			displayPopup('snackbar-success', data.message, 4000);
 			$("#review-action").html('Approved');

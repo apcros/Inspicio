@@ -23,7 +23,7 @@ $("#repository").on("select2:select", function (e) {
 function loadOpenPullRequests(owner, repo, account_id) {
 	$("#repository").attr('disabled', true); //Disabling to avoid having result coming for another repo
 	//TODO : Do that in a nicer way
-	$.getJSON('/reviews/ajax/pulls/'+owner+'/'+repo+'/'+account_id, function (data) {
+	$.getJSON('/ajax/reviews/pulls/'+owner+'/'+repo+'/'+account_id, function (data) {
 		var html ='';
 
 		$.each(data, function (key, val) {
@@ -38,7 +38,7 @@ function loadOpenPullRequests(owner, repo, account_id) {
 function loadBranches(owner, repo, account_id) {
 	$("#repository").attr('disabled', true); //Disabling to avoid having result coming for another repo
 	//TODO : Do that in a nicer way
-	$.getJSON('/reviews/ajax/branches/'+owner+'/'+repo+'/'+account_id, function (data) {
+	$.getJSON('/ajax/reviews/branches/'+owner+'/'+repo+'/'+account_id, function (data) {
 		var html ='';
 
 		$.each(data, function (key, val) {
