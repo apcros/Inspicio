@@ -68,20 +68,26 @@ class ReviewTest extends TestCase {
 	public function testTrackAndApproval() {
 		$this->seed('DatabaseSeederForTests');
 
-		$response = $this->withSession($this->user_data_bis)->post('/ajax/reviews/' . $this->user_review_id . '/track');
-		$response->assertStatus(200);
-		$content = $response->getContent();
-		$this->assertRegExp('/You are now following this review request/', $content, 'Code review request followed with success');
+		$response = $this->withSession($this->user_data_bis)
+			->json('POST', '/ajax/reviews/' . $this->user_review_id . '/track')
+			->assertJson([
+				'success' => 1,
+				'message' => "You are now following this review request",
+			]);
+
 		$this->assertDatabaseHas('request_tracking', [
 			'user_id'    => $this->user_data_bis['user_id'],
 			'request_id' => $this->user_review_id,
 			'status'     => 'unapproved',
 		]);
 
-		$response = $this->withSession($this->user_data_bis)->post('/ajax/reviews/' . $this->user_review_id . '/approve');
-		$response->assertStatus(200);
-		$content = $response->getContent();
-		$this->assertRegExp('/Successfully approved/', $content, 'Code review request approved with success');
+		$response = $this->withSession($this->user_data_bis)
+			->json('POST', '/ajax/reviews/' . $this->user_review_id . '/approve')
+			->assertJson([
+				'success' => 1,
+				'message' => "Successfully approved",
+			]);
+
 		$this->assertDatabaseHas('request_tracking', [
 			'user_id'    => $this->user_data_bis['user_id'],
 			'request_id' => $this->user_review_id,
@@ -91,17 +97,39 @@ class ReviewTest extends TestCase {
 		$response = $this->withSession($this->user_data_bis)->get('/reviews/tracked');
 		$response->assertStatus(200);
 		$content = $response->getContent();
-		$this->assertRegExp('/'.$this->user_review_id.'/',$content, 'Review request is displayed correctly on the tracked page');
+		$this->assertRegExp('/' . $this->user_review_id . '/', $content, 'Review request is displayed correctly on the tracked page');
 	}
 
 	public function testTrackAndApprovalFail() {
 		$this->seed('DatabaseSeederForTests');
-		$response = $this->withSession($this->user_data)->post('/ajax/reviews/' . $this->user_review_id . '/track');
-		$content  = $response->getContent();
-		$this->assertRegExp('/Error, You can\'t follow your own review requests/', $content, 'User can\'t follow his own reviews');
+		$response = $this->withSession($this->user_data)
+			->json('POST', '/ajax/reviews/' . $this->user_review_id . '/track')
+			->assertJson([
+				'success' => 0,
+				'message' => "You can't follow your own review requests",
+			]);
 
-		$response = $this->withSession($this->user_data)->post('/ajax/reviews/' . $this->user_review_id . '/approve');
-		$content  = $response->getContent();
-		$this->assertRegExp('/You can\'t approve your own review requests !/', $content, 'User can\'t approve his own reviews');
+		$response = $this->withSession($this->user_data)
+			->json('POST', '/ajax/reviews/' . $this->user_review_id . '/approve')
+			->assertJson([
+				'success' => 0,
+				'message' => "You can't approve your own review requests",
+			]);
+	}
+
+	public function testClose() {
+		$this->seed('DatabaseSeederForTests');
+		$this->withSession($this->user_data_bis)
+			->json('POST', '/ajax/reviews/' . $this->user_review_id . '/close')
+			->assertJson([
+				'success' => 0,
+				'message' => 'You can only close your own review requests',
+			]);
+		$this->withSession($this->user_data)
+			->json('POST', '/ajax/reviews/' . $this->user_review_id . '/close')
+			->assertJson([
+				'success' => 1,
+				'message' => 'Code review closed',
+			]);
 	}
 }

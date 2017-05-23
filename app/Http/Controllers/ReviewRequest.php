@@ -9,6 +9,12 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use \Ramsey\Uuid\Uuid;
 
+//TODO : Remvoe code duplication caused by the :
+
+// - Check if exist or return
+
+// - Run query or return
+// - Return val
 class ReviewRequest extends Controller {
 	public function approve(Request $request, $reviewid) {
 		//TODO : Maybe move getReview to a middleware ?
@@ -26,7 +32,7 @@ class ReviewRequest extends Controller {
 		if ($review->author_id == $user_id) {
 			return response()->json([
 				'success' => 0,
-				'message' => 'Error, You can\'t approve your own review requests !',
+				'message' => 'You can\'t approve your own review requests',
 			]);
 		}
 
@@ -47,7 +53,7 @@ class ReviewRequest extends Controller {
 
 		return response()->json([
 			'success' => 1,
-			'message' => 'Successfully approved !',
+			'message' => 'Successfully approved',
 		]);
 	}
 
@@ -191,7 +197,7 @@ class ReviewRequest extends Controller {
 		if ($review->author_id == session('user_id')) {
 			return response()->json([
 				'success' => 0,
-				'message' => 'Error, You can\'t follow your own review requests !',
+				'message' => 'You can\'t follow your own review requests',
 			]);
 
 		}
@@ -214,13 +220,53 @@ class ReviewRequest extends Controller {
 
 		return response()->json([
 			'success' => 1,
-			'message' => 'You are now following this review request !',
+			'message' => 'You are now following this review request',
 		]);
+	}
+
+	public function close(Request $request, $reviewid) {
+		$review = $this->getReview($reviewid);
+
+		if (!$review) {
+			return response()->json([
+				'success' => 0,
+				'message' => 'Review Request not found !',
+			]);
+		}
+
+		if ($review->author_id != session('user_id')) {
+			return response()->json([
+				'success' => 0,
+				'message' => 'You can only close your own review requests',
+			]);
+		}
+
+		try {
+			DB::table('requests')->where('id', $review->id)->update(['status' => 'closed', 'updated_at' => \Carbon\Carbon::now()]);
+		} catch (\Illuminate\Database\QueryException $e) {
+			Log::error('Error when USER ' . session('user_id') . ' attempted to close code review ' . $reviewid . ' : ' . $e->getMessage());
+
+			return response()->json([
+				'success' => 0,
+				'message' => 'An error ocurred !',
+			]);
+
+		}
+
+		return response()->json([
+			'success' => 1,
+			'message' => 'Code review closed',
+		]);
+
 	}
 
 	public function viewAllMine(Request $request) {
 		$user_id = session('user_id');
-		$reviews = DB::table('requests')->where('author_id', $user_id)->get();
+		$reviews = DB::table('requests')
+            ->where('author_id', $user_id)
+            ->orderBy('status','desc')
+            ->orderBy('updated_at','desc')
+            ->get();
 
 		$followers_per_review = array();
 		foreach ($reviews as $key => $review) {

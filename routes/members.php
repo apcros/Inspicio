@@ -20,3 +20,4 @@ Route::get('/ajax/reviews/pulls/{owner}/{repository}/{account_id}', 'ReviewReque
 Route::get('/ajax/reviews/branches/{owner}/{repository}/{account_id}', 'ReviewRequest@getBranches');
 Route::post('/ajax/reviews/{reviewid}/track', 'ReviewRequest@track');
 Route::post('/ajax/reviews/{reviewid}/approve', 'ReviewRequest@approve');
+Route::post('/ajax/reviews/{reviewid}/close', 'ReviewRequest@close');

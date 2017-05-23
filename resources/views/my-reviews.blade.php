@@ -41,8 +41,11 @@
 				</div>
 			</p>
 			<a class="btn btn-info" href="/reviews/{{$review->id}}/view" target="_blank">View</a>
-			<a class="btn btn-warning">Close</a>
+			@if ($review->status == 'open')
+				<a onclick="closeReview('{{$review->id}}')" id="review-close-{{$review->id}}" class="btn btn-warning">Close</a>
+			@endif
 		</li>
 	@endforeach
 </ul>
+<script type="text/javascript" src="{{ asset('js/async-action-reviews.js') }}"></script>
 @endsection

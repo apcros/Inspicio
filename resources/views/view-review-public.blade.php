@@ -28,6 +28,8 @@
 			  		@else
 				  			<button onclick="followReview('{{$review->id}}')" id="review-action" class="btn btn-info">Follow this review</button>
 			  		@endif
+			  	@else
+			  		<a onclick="closeReview('{{$review->id}}')" id="review-close" class="btn btn-warning">Close</a>
 			  	@endif
 			  		<a href="{{$review->url}}" target="_blank" class="btn btn-info">View</a>
 			  </div>
