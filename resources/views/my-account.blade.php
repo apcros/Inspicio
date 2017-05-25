@@ -23,6 +23,7 @@
 			  <table class="table table-bordered">
 			  	<tr>
 			  		<th>Provider</th>
+			  		<th>Login</th>
 			  		<th>Added on</th>
 			  		<th>Last used</th>
 			  	</tr>
@@ -34,6 +35,7 @@
 				  			<span class="badge">Main account</span>
 				  		@endif
 			  		</td>
+			  		<td>{{$account->login}}</td>
 			  		<td>{{$account->created_at}}</td>
 			  		<td>{{$account->updated_at}}</td>
 			  	</tr>
@@ -41,7 +43,7 @@
 			  	</table>
 		  </div>
 		  <div class="panel-footer">
-		  	<a href="#" class="btn btn-info disabled "><i class="fa fa-github left" aria-hidden="true"></i> Link new GitHub</a>
+		  	<a href="/oauth/github/add" class="btn btn-info"><i class="fa fa-github left" aria-hidden="true"></i> Link new GitHub</a>
 		  	<a href="#" class="btn btn-info disabled"><i class="fa fa-bitbucket left" aria-hidden="true"></i> Link new Bitbucket</a>
 		  	<a href="#" class="btn btn-info disabled"><i class="fa fa-gitlab left" aria-hidden="true"></i> Link new  Gitlab</a>
 		  </div>

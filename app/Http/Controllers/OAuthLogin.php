@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use \Ramsey\Uuid\Uuid;
 
 class OAuthLogin extends Controller {
 	public function logout(Request $request) {
@@ -15,15 +16,64 @@ class OAuthLogin extends Controller {
 		return view('home');
 	}
 
-	public function stepOne($provider) {
+	public function stepOne($provider, $type) {
 		$client = $this->getClient($provider);
 
 		$token = csrf_token();
 		session(['oauth_csrf' => $token]);
-		$redirect_to = $client->getAuthorizeUrl($token, env('APP_URL') . '/oauth/callback/' . $provider);
+		$redirect_to = $client->getAuthorizeUrl($token, env('APP_URL') . '/oauth/callback/' . $provider . '/' . $type);
 		Log::info('Redirecting user to OAuth on ' . $provider);
 
 		return redirect($redirect_to);
+	}
+
+	//This is behind a route for member only
+	public function stepTwoNewAccount(Request $request, $provider) {
+		$code   = $request->input('code');
+		$state  = $request->input('state');
+		$client = $this->getClient($provider);
+
+		$access_token = $client->fetchAccessToken($code);
+		$user_data    = $client->getUserInfo();
+		$login        = $user_data->login;
+		$user_id      = session('user_id');
+
+		if (!isset($user_data->login)) {
+			return view('home', ['error_message' => 'Failed to add your account']);
+		}
+
+		if ($state != session('oauth_csrf')) {
+			Log::error('CSRF mismatch');
+
+			return view('home', ['error_message' => 'CSRF Token mismatch']);
+		}
+
+		$account = DB::table('accounts')->where([
+			['login', '=', $login],
+			['provider', '=', $provider],
+		])->first();
+
+		if ($account) {
+			//TODO : Consider if we want to allow multiple users to share the same git account ?
+			return view('home', ['error_message' => 'This account is already in use']);
+		}
+
+		$account_id = Uuid::uuid4()->toString();
+		DB::table('accounts')->insert(
+			[
+				'id'         => $account_id,
+				'provider'   => $provider,
+				'login'      => $login,
+				'token'      => $access_token,
+				'user_id'    => $user_id,
+				'is_main'    => false,
+				'created_at' => \Carbon\Carbon::now(),
+				'updated_at' => \Carbon\Carbon::now(),
+			]
+		);
+		Log::info("Added $provider account $login ($account_id) for $user_id");
+
+		return redirect('/account');
 	}
 
 	public function stepTwo(Request $request, $provider) {
@@ -44,12 +94,13 @@ class OAuthLogin extends Controller {
 
 		if ($state != session('oauth_csrf')) {
 			Log::error('CSRF mismatch');
+
 			return view('choose-auth-provider', ['error_message' => 'CSRF Token mismatch']);
 
 		}
 
 		Log::info('Achieved stepTwo OAuth, user is : ' . $user_data->login);
-
+		//Todo allow users to log in using their non main account
 		$user = $this->getUser($user_data->login, $provider);
 
 		if ($user) {
