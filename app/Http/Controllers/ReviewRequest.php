@@ -16,6 +16,7 @@ use \Ramsey\Uuid\Uuid;
 // - Run query or return
 // - Return val
 class ReviewRequest extends Controller {
+
 	public function approve(Request $request, $reviewid) {
 		//TODO : Maybe move getReview to a middleware ?
 		$review = $this->getReview($reviewid);
@@ -41,6 +42,7 @@ class ReviewRequest extends Controller {
 				['user_id', '=', $user_id],
 				['request_id', '=', $reviewid],
 			])->update(['status' => 'approved']);
+			$this->addPoint();
 
 		} catch (\Illuminate\Database\QueryException $e) {
 			Log::error('Error when USER ' . session('user_id') . ' attempted to approve code review ' . $reviewid . ' : ' . $e->getMessage());
@@ -53,7 +55,7 @@ class ReviewRequest extends Controller {
 
 		return response()->json([
 			'success' => 1,
-			'message' => 'Successfully approved',
+			'message' => 'Successfully approved (+1 point)',
 		]);
 	}
 
@@ -63,6 +65,10 @@ class ReviewRequest extends Controller {
 		$language           = $request->input('language');
 		$pull_request_url   = $request->input('pull_request');
 		$description        = $request->input('description');
+
+		if ($this->getPoints() == 0) {
+			return view('home', ['error_message' => "You don't have any points left. Please review someone else code to get points"]);
+		}
 
 		list($owner_repo, $account_id) = explode(',', $repository_account);
 
@@ -109,6 +115,7 @@ class ReviewRequest extends Controller {
 				'created_at'  => \Carbon\Carbon::now(),
 				'updated_at'  => \Carbon\Carbon::now(),
 			]);
+			$this->removePoint();
 		} catch (\Illuminate\Database\QueryException $e) {
 			Log::error("Error caught while adding Pull request : " . $e->getMessage());
 
@@ -122,6 +129,11 @@ class ReviewRequest extends Controller {
 
 		$accounts        = $this->availableAccounts();
 		$reposPerAccount = array();
+		$points          = $this->getPoints();
+
+		if ($points == 0) {
+			return view('home', ['error_message' => "You don't have any points left. Please review someone else code to get points"]);
+		}
 
 		foreach ($accounts as $key => $account) {
 			$client = $this->getClient($account->provider);
@@ -133,7 +145,7 @@ class ReviewRequest extends Controller {
 			);
 		}
 
-		return view('newreview', ['reposPerAccount' => $reposPerAccount]);
+		return view('newreview', ['reposPerAccount' => $reposPerAccount, 'points' => $points]);
 	}
 
 	public function displayReview($reviewid) {
@@ -316,7 +328,26 @@ class ReviewRequest extends Controller {
 		return DB::table('accounts')->where('user_id', session('user_id'))->get();
 	}
 
-	//TODO : Move that to a Facade to avoid duplication
+	private function getPoints() {
+		$user = DB::table('users')
+			->select('points')
+			->where('id', session('user_id'))
+			->first();
+
+		return $user->points;
+	}
+
+	/*
+		        add/removePoint are function to allow
+	*/
+	private function addPoint() {
+		DB::table('users')->increment('points');
+	}
+
+	private function removePoint() {
+		DB::table('users')->decrement('points');
+	}
+
 	private function getClient($provider) {
 		$factory = new GitProviderFactory($provider);
 

@@ -63,6 +63,11 @@ class ReviewTest extends TestCase {
 			'author_id'   => $this->user_data['user_id'],
 			'account_id'  => $this->user_account_id,
 		]);
+
+		$this->assertDatabaseHas('users', [
+			'id'     => $this->user_data['user_id'],
+			'points' => 4,
+		]);
 	}
 
 	public function testTrackAndApproval() {
@@ -85,13 +90,18 @@ class ReviewTest extends TestCase {
 			->json('POST', '/ajax/reviews/' . $this->user_review_id . '/approve')
 			->assertJson([
 				'success' => 1,
-				'message' => "Successfully approved",
+				'message' => "Successfully approved (+1 point)",
 			]);
 
 		$this->assertDatabaseHas('request_tracking', [
 			'user_id'    => $this->user_data_bis['user_id'],
 			'request_id' => $this->user_review_id,
 			'status'     => 'approved',
+		]);
+
+		$this->assertDatabaseHas('users', [
+			'id'     => $this->user_data_bis['user_id'],
+			'points' => 6,
 		]);
 
 		$response = $this->withSession($this->user_data_bis)->get('/reviews/tracked');

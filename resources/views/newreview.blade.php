@@ -16,6 +16,10 @@
 	  <div class="container-fluid center-align">
 		<form method="POST" action="/reviews/create">
 		 {{ csrf_field() }}
+		 <div class="alert alert-info">
+		 	<p>You currently have <b>{{$points}}</b> point(s). Upon creating this review request, one point will be deducted from this total.</p>
+		 	<p>You can do someone else code review to win more points.</p>
+		 </div>
 		  <div class="form-group">
 		    <label for="title">Title</label>
 		    <input type="text" class="form-control" name="title" id="title" placeholder="Enter a title for your code review request">
