@@ -100,13 +100,13 @@ class OAuthLogin extends Controller {
 		}
 
 		Log::info('Achieved stepTwo OAuth, user is : ' . $user_data->login);
-		//Todo allow users to log in using their non main account
+
 		$user = $this->getUser($user_data->login, $provider);
 
 		if ($user) {
 
 			DB::table('accounts')->where([
-				['is_main', '=', true],
+				['login', '=', $user_data->login],
 				['user_id', '=', $user->id],
 			])->update(['provider' => $provider, 'token' => $access_token, 'updated_at' => \Carbon\Carbon::now()]);
 
@@ -131,11 +131,8 @@ class OAuthLogin extends Controller {
 
 	private function getUser($login, $provider) {
 
-/*If there's an account with that login, provider and it's the main account (= account used to login)
-Then we can fetch the associated user*/
 		$account = DB::table('accounts')->where([
 			['login', '=', $login],
-			['is_main', '=', true],
 			['provider', '=', $provider],
 		])->first();
 
