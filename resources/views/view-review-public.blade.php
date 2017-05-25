@@ -12,8 +12,8 @@
 		    <b>Description :</b>
 		    <p>{{$review->description}}</p>
 		    <hr>
-		    Created by <a href="/members/{{$review->author_id}}/profile">__name__</a>
-		    <span class="badge">0 Reviewers</span>
+		    Created by <a href="/members/{{$review->author_id}}/profile">{{$review->nickname}}</a>
+		    <span class="badge">{{count($tracked)}} Reviewers</span>
 		  </div>
 		  <div class="panel-footer">
 		  		@if (session('user_id') != $review->author_id)

@@ -136,7 +136,7 @@ class ReviewRequest extends Controller {
 		return view('newreview', ['reposPerAccount' => $reposPerAccount]);
 	}
 
-	public function displayReview($reviewid, $template_vars = []) {
+	public function displayReview($reviewid) {
 		$review = $this->getReview($reviewid);
 
 		if (!$review) {
@@ -149,10 +149,10 @@ class ReviewRequest extends Controller {
 			['request_id', '=', $review->id],
 			['user_id', '=', $user_id]])->first();
 
-		$template_vars['review']  = $review;
-		$template_vars['tracked'] = $tracked;
-
-		return view('view-review-public', $template_vars);
+		return view('view-review-public', [
+			'review'  => $review,
+			'tracked' => $tracked,
+		]);
 	}
 
 	public function getOpenedPullRequestForRepo($owner, $repo, $account_id) {
@@ -263,10 +263,10 @@ class ReviewRequest extends Controller {
 	public function viewAllMine(Request $request) {
 		$user_id = session('user_id');
 		$reviews = DB::table('requests')
-            ->where('author_id', $user_id)
-            ->orderBy('status','desc')
-            ->orderBy('updated_at','desc')
-            ->get();
+			->where('author_id', $user_id)
+			->orderBy('status', 'desc')
+			->orderBy('updated_at', 'desc')
+			->get();
 
 		$followers_per_review = array();
 		foreach ($reviews as $key => $review) {
@@ -324,7 +324,12 @@ class ReviewRequest extends Controller {
 	}
 
 	private function getReview($reviewid) {
-		return $review = DB::table('requests')->where('id', $reviewid)->first();
+		return DB::table('requests')
+			->join('users', 'requests.author_id', '=', 'users.id')
+			->select('requests.*', 'users.nickname')
+			->orderBy('requests.updated_at', 'desc')
+			->where('requests.id', $reviewid)
+			->first();
 	}
 
 }
