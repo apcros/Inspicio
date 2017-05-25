@@ -45,7 +45,6 @@ class DatabaseSeederForTests extends Seeder {
 			'created_at' => \Carbon\Carbon::now(),
 			'updated_at' => \Carbon\Carbon::now(),
 		]);
-
 		DB::table('requests')->insert([
 			'id'          => 'e4dc3896-4a40-49b8-b3f2-0dc45916437a',
 			'name'        => 'Amazing code review request',
@@ -54,7 +53,7 @@ class DatabaseSeederForTests extends Seeder {
 			'status'      => 'open',
 			'author_id'   => '7636b30e-6db2-41b6-91b3-33560b9638c2',
 			'account_id'  => '4cff704c-efe4-4024-9fa1-e5c0d7eaf2c5',
-			'language'    => 'PHP',
+			'skill_id'    => 1,
 			'repository'  => 'testuser/testrepo',
 			'created_at'  => \Carbon\Carbon::now(),
 			'updated_at'  => \Carbon\Carbon::now(),

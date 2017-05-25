@@ -37,7 +37,12 @@
 		  </div>  
 		  <div class="form-group">
 		    <label for="language">Language</label>
-		    <input type="text" class="form-control" name="language" id="language" placeholder="PHP, Perl, JavaScript...">
+		    <select name="language" id="language" class="form-control" placeholder="Select a language">
+		    	<option></option>
+		    @foreach ($languages as $language)
+		    		<option value="{{$language->id}}">{{$language->name}}</option>
+		    @endforeach
+			</select>
 		  </div>
 		  <div class="form-group">
 		    <label for="pull_request">Select an open pull request</label>

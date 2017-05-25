@@ -108,7 +108,7 @@ class ReviewRequest extends Controller {
 				'description' => $description,
 				'url'         => $pull_request_url,
 				'status'      => 'open',
-				'language'    => $language,
+				'skill_id'    => $language,
 				'author_id'   => session('user_id'),
 				'repository'  => $owner_repo,
 				'account_id'  => $account_id,
@@ -145,7 +145,10 @@ class ReviewRequest extends Controller {
 			);
 		}
 
-		return view('newreview', ['reposPerAccount' => $reposPerAccount, 'points' => $points]);
+		return view('newreview', [
+			'reposPerAccount' => $reposPerAccount,
+			'points'          => $points,
+			'languages'       => DB::table('skills')->get()]);
 	}
 
 	public function displayReview($reviewid) {
@@ -276,6 +279,8 @@ class ReviewRequest extends Controller {
 		$user_id = session('user_id');
 		$reviews = DB::table('requests')
 			->where('author_id', $user_id)
+			->join('skills', 'requests.skill_id', '=', 'skills.id')
+			->select('requests.*', 'skills.name as language')
 			->orderBy('status', 'desc')
 			->orderBy('updated_at', 'desc')
 			->get();
@@ -303,7 +308,8 @@ class ReviewRequest extends Controller {
 		//TODO get rid of this awful code duplication, Single query ?
 		$unapproved = DB::table('request_tracking')
 			->join('requests', 'request_tracking.request_id', '=', 'requests.id')
-			->select('requests.id', 'requests.name', 'requests.language', 'requests.updated_at')
+			->join('skills', 'requests.skill_id', '=', 'skills.id')
+			->select('requests.id', 'requests.name', 'requests.updated_at', 'skills.name as language')
 			->orderBy('requests.updated_at', 'desc')
 			->where([
 				['request_tracking.user_id', '=', $user_id],
@@ -313,7 +319,8 @@ class ReviewRequest extends Controller {
 
 		$approved = DB::table('request_tracking')
 			->join('requests', 'request_tracking.request_id', '=', 'requests.id')
-			->select('requests.id', 'requests.name', 'requests.language', 'requests.updated_at')
+			->join('skills', 'requests.skill_id', '=', 'skills.id')
+			->select('requests.id', 'requests.name', 'requests.updated_at', 'skills.name as language')
 			->orderBy('requests.updated_at', 'desc')
 			->where([
 				['request_tracking.user_id', '=', $user_id],
@@ -357,7 +364,8 @@ class ReviewRequest extends Controller {
 	private function getReview($reviewid) {
 		return DB::table('requests')
 			->join('users', 'requests.author_id', '=', 'users.id')
-			->select('requests.*', 'users.nickname')
+			->join('skills', 'requests.skill_id', '=', 'skills.id')
+			->select('requests.*', 'users.nickname', 'skills.name as language')
 			->orderBy('requests.updated_at', 'desc')
 			->where('requests.id', $reviewid)
 			->first();

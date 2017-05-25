@@ -64,6 +64,7 @@ class DatabaseSeeder extends Seeder {
 	private function addRandomRequest() {
 		$id = Uuid::uuid4()->toString();
 		$user = DB::table('users')->inRandomOrder()->first();
+		$random_skill = DB::table('skills')->inRandomOrder()->first();
 		$account = DB::table('accounts')->where('user_id', $user->id)->first();
 		DB::table('requests')->insert([
 			'id'          => $id,
@@ -73,7 +74,7 @@ class DatabaseSeeder extends Seeder {
 			'status'      => 'open',
 			'author_id'   => $user->id,
 			'account_id'  => $account->id,
-			'language'    => str_random(3), //Maybe having a language list somewhere ?
+			'skill_id'    => $random_skill->id,
 			'repository'  => str_random(5) . '/' . str_random('5'),
 			'created_at'  => \Carbon\Carbon::now(),
 			'updated_at'  => \Carbon\Carbon::now(),

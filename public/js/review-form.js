@@ -1,6 +1,7 @@
 $(document).ready(function(){
 	$('#repository').select2({placeholder: "Select a repository"});
 	$('#pull_request').select2({placeholder: "Select an open pull request"});
+	$('#language').select2({placeholder: "Select a language"});
 	$('#base_branch').select2();
 	$('#head_branch').select2();
 });

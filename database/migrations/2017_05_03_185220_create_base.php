@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 class CreateBase extends Migration {
 	/**
@@ -14,9 +15,10 @@ class CreateBase extends Migration {
 
 		Schema::dropIfExists('request_tracking');
 		Schema::dropIfExists('requests');
-		Schema::dropIfExists('skills');
+		Schema::dropIfExists('user_skills');
 		Schema::dropIfExists('accounts');
 		Schema::dropIfExists('users');
+		Schema::dropIfExists('skills');
 	}
 
 	/**
@@ -25,6 +27,14 @@ class CreateBase extends Migration {
 	 * @return void
 	 */
 	public function up() {
+
+		Schema::create('skills', function (Blueprint $table) {
+			$table->increments('id');
+			$table->string('name');
+		});
+
+		DB::table('skills')->insert($this->getLanguages());
+
 		Schema::create('users', function (Blueprint $table) {
 			$table->uuid('id');
 			$table->string('name');
@@ -50,25 +60,25 @@ class CreateBase extends Migration {
 			$table->primary('id');
 		});
 
-		Schema::create('skills', function (Blueprint $table) {
-			$table->uuid('id');
+		Schema::create('user_skills', function (Blueprint $table) {
+			$table->increments('id');
 			$table->string('name');
 			$table->uuid('user_id');
 			$table->boolean('is_verified');
 			$table->integer('level');
+			$table->unsignedInteger('skill_id');
 			$table->timestamps();
 
 			$table->foreign('user_id')->references('id')->on('users');
-			$table->primary('id');
+			$table->foreign('skill_id')->references('id')->on('skills');
 		});
-
 		Schema::create('requests', function (Blueprint $table) {
 			$table->uuid('id');
 			$table->string('name');
 			$table->text('description');
 			$table->string('url');
 			$table->string('status');
-			$table->string('language');
+			$table->unsignedInteger('skill_id');
 			$table->string('repository');
 			$table->uuid('account_id');
 			$table->uuid('author_id');
@@ -76,6 +86,7 @@ class CreateBase extends Migration {
 
 			$table->foreign('author_id')->references('id')->on('users');
 			$table->foreign('account_id')->references('id')->on('accounts');
+            $table->foreign('skill_id')->references('id')->on('skills');
 			$table->primary('id');
 		});
 
@@ -90,4 +101,18 @@ class CreateBase extends Migration {
 			$table->primary(['user_id', 'request_id']);
 		});
 	}
+
+	private function getLanguages() {
+		$json_file = file_get_contents(database_path() . '/migrations/fixtures/languages.json');
+		$languages = json_decode($json_file);
+
+		$resultSet;
+
+		foreach ($languages as $key => $language) {
+			$resultSet[] = array('name' => $language);
+		}
+
+		return $resultSet;
+	}
+
 }

@@ -48,7 +48,7 @@ class ReviewTest extends TestCase {
 			'repository'   => 'supertest/amazing,' . $this->user_account_id,
 			'pull_request' => 'http://dummyurl.com',
 			'description'  => 'Wow great',
-			'language'     => 'PHP',
+			'language'     => 1,
 		]);
 
 		$response->assertStatus(302);
@@ -59,7 +59,7 @@ class ReviewTest extends TestCase {
 			'name'        => 'Another greate code review',
 			'repository'  => 'supertest/amazing',
 			'description' => 'Wow great',
-			'language'    => 'PHP',
+			'skill_id'    => 1,
 			'author_id'   => $this->user_data['user_id'],
 			'account_id'  => $this->user_account_id,
 		]);

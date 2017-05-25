@@ -12,7 +12,8 @@ class Profile extends Controller {
 		$user_id  = session('user_id');
 		$user     = DB::table('users')->where('id', $user_id)->first();
 		$accounts = DB::table('accounts')->where('user_id', $user_id)->get();
-		$skills   = DB::table('skills')->where('user_id', $user_id)->get();
+
+		$skills = $this->getAllSkills();
 
 		return view('my-account', [
 			'user'     => $user,
@@ -29,7 +30,7 @@ class Profile extends Controller {
 			return view('home', ['error_message' => 'User not found']);
 		}
 
-		$skills  = DB::table('skills')->where('user_id', $userid)->get();
+		$skills  = $this->getAllSkills();
 		$reviews = DB::table('requests')->where([
 			['author_id', '=', $userid],
 			['status', '=', 'open'],
@@ -39,6 +40,13 @@ class Profile extends Controller {
 			'user'    => $user,
 			'skills'  => $skills,
 			'reviews' => $reviews]);
+	}
+
+	private function getAllSkills() {
+		return DB::table('user_skills')
+			->join('skills', 'user_skills.skill_id', '=', 'skills.id')
+			->select('user_skills.*', 'skills.name')
+			->where('user_skills.user_id', session('user_id'))->get();
 	}
 
 }
