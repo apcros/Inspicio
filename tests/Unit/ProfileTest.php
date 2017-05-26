@@ -37,4 +37,34 @@ class ProfileTest extends TestCase {
 		$content  = $response->getContent();
 		$this->assertRegExp('/User not found/', $content, 'Error message returned sucessfully');
 	}
+
+	public function testSkill() {
+		$this->seed('DatabaseSeederForTests');
+
+		$this->withSession($this->user_data)
+			->json('POST', '/ajax/account/skills', ['skill' => 1, 'level' => 1])
+			->assertJson([
+				'success' => 1,
+				'message' => 'Skill added with success',
+			]);
+
+		$this->assertDatabaseHas('user_skills', [
+			'user_id'  => $this->user_data['user_id'],
+			'skill_id' => 1,
+		]);
+
+		$this->withSession($this->user_data)
+			->json('POST', '/ajax/account/skills', ['skill' => 1, 'level' => 1])
+			->assertJson([
+				'success' => 0,
+				'message' => 'You already have that skill',
+			]);
+
+		$this->withSession($this->user_data)
+			->json('POST', '/ajax/account/skills/1/delete')
+			->assertJson([
+				'success' => 1,
+				'message' => 'Skill deleted',
+			]);
+	}
 }

@@ -13,7 +13,7 @@ function showModalConfirm(title,text, callback_confirmed) {
 	'<div id="modal-confirm" class="modal fade bs-example-modal-sm" tabindex="-1" role="dialog">\
 	  <div class="modal-dialog modal-sm" role="document">\
 	    <div class="modal-content">\
-	    <div class="container">\
+	    <div class="modal-body">\
 	      <h3>'+title+'</h3>\
 	      <p>'+text+'</p>\
 	      </div>\

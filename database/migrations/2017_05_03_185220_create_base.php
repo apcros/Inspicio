@@ -62,7 +62,6 @@ class CreateBase extends Migration {
 
 		Schema::create('user_skills', function (Blueprint $table) {
 			$table->increments('id');
-			$table->string('name');
 			$table->uuid('user_id');
 			$table->boolean('is_verified');
 			$table->integer('level');

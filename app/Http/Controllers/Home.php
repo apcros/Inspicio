@@ -60,7 +60,7 @@ class Home extends Controller {
 			Log::error("Error caught while adding user : " . $e->getMessage());
 			//TODO catch duplicates and display a nice error message
 
-			return view('home', ['error_message' => $e->getMessage()]);
+			return view('home', ['error_message' => 'Failed to register']);
 		}
 
 		Session(['user_email' => $email, 'user_id' => $user_id]);

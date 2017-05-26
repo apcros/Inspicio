@@ -9,7 +9,6 @@
  */
 
 Route::get('/account', 'Profile@summary');
-Route::post('/account/skills', 'Profile@addSkills');
 
 Route::get('/reviews/mine', 'ReviewRequest@viewAllMine');
 Route::get('/reviews/tracked', 'ReviewRequest@viewAllTracked');
@@ -23,3 +22,6 @@ Route::get('/ajax/reviews/branches/{owner}/{repository}/{account_id}', 'ReviewRe
 Route::post('/ajax/reviews/{reviewid}/track', 'ReviewRequest@track');
 Route::post('/ajax/reviews/{reviewid}/approve', 'ReviewRequest@approve');
 Route::post('/ajax/reviews/{reviewid}/close', 'ReviewRequest@close');
+
+Route::post('/ajax/account/skills', 'Profile@addSkill');
+Route::post('/ajax/account/skills/{id}/delete', 'Profile@deleteSkill');
