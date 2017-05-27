@@ -33,7 +33,15 @@
 		  			@endif
 		  			</td>
 
-		  			<td>{{$skill->level}}</td>
+		  			<td>
+		  			@if ($skill->level == 1)
+		  				Beginner/Junior
+		  			@elseif ($skill->level == 2)
+		  				Intermediate
+		  			@else
+		  				Advanced/Senior
+		  			@endif
+		  			</td>
 		  		</tr>
 		  	@endforeach
 		  	</table>

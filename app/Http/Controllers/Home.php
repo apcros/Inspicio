@@ -15,7 +15,35 @@ class Home extends Controller {
 	}
 
 	public function displayDiscover(Request $request) {
-		return view('home');
+		$hot_reviews = DB::table('requests')
+			->join('users', 'requests.author_id', '=', 'users.id')
+			->join('skills', 'requests.skill_id', '=', 'skills.id')
+			->select(
+				'requests.*',
+				DB::raw('(SELECT count(request_tracking.request_id ) FROM request_tracking WHERE request_tracking.request_id = requests.id) as followers'),
+				'users.nickname as author',
+				'skills.name as language'
+			)
+			->orderBy('followers', 'desc')
+			->groupBy('skills.name', 'users.nickname', 'requests.id')
+			->limit(20)
+			->get();
+
+		$latest_reviews = DB::table('requests')
+			->join('users', 'requests.author_id', '=', 'users.id')
+			->join('skills', 'requests.skill_id', '=', 'skills.id')
+			->select(
+				'requests.*',
+				DB::raw('(SELECT count(request_tracking.request_id ) FROM request_tracking WHERE request_tracking.request_id = requests.id) as followers'),
+				'users.nickname as author',
+				'skills.name as language'
+			)
+			->orderBy('requests.created_at', 'desc')
+			->groupBy('skills.name', 'users.nickname', 'requests.id')
+			->limit(20)
+			->get();
+
+		return view('home', ['hot_reviews' => $hot_reviews, 'latest_reviews' => $latest_reviews]);
 	}
 
 	public function register(Request $request) {

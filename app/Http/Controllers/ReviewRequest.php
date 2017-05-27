@@ -164,9 +164,12 @@ class ReviewRequest extends Controller {
 			['request_id', '=', $review->id],
 			['user_id', '=', $user_id]])->first();
 
+		$followers = DB::table('request_tracking')->where('request_id', $review->id)->count();
+
 		return view('view-review-public', [
-			'review'  => $review,
-			'tracked' => $tracked,
+			'review'    => $review,
+			'tracked'   => $tracked,
+			'followers' => $followers,
 		]);
 	}
 

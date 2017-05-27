@@ -13,9 +13,10 @@
 		    <p>{{$review->description}}</p>
 		    <hr>
 		    Created by <a href="/members/{{$review->author_id}}/profile">{{$review->nickname}}</a>
-		    <span class="badge">{{count($tracked)}} Reviewers</span>
+		    <span class="badge">{{$followers}} Reviewers</span>
 		  </div>
 		  <div class="panel-footer">
+		  	@if(session('user_id'))
 		  		@if (session('user_id') != $review->author_id)
 
 			  		@if (isset($tracked))
@@ -31,6 +32,7 @@
 			  	@else
 			  		<a onclick="closeReview('{{$review->id}}')" id="review-close" class="btn btn-warning">Close</a>
 			  	@endif
+			@endif
 			  		<a href="{{$review->url}}" target="_blank" class="btn btn-info">View</a>
 			  </div>
 		</div>

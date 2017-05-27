@@ -13,7 +13,7 @@ class OAuthLogin extends Controller {
 	public function logout(Request $request) {
 		$request->session()->flush();
 
-		return view('home');
+		return redirect('/');
 	}
 
 	public function stepOne($provider, $type) {

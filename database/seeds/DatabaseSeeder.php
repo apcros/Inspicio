@@ -83,7 +83,12 @@ class DatabaseSeeder extends Seeder {
 
 	private function addRandomTracking() {
 		$user = DB::table('users')->inRandomOrder()->first();
-		$request = DB::table('requests')->whereNotIn('author_id', [$user->id])->inRandomOrder()->first();
+		$request = DB::table('requests')
+			->leftjoin('request_tracking', 'requests.id', '=', 'request_tracking.request_id')
+			->select('requests.*', 'request_tracking.user_id as rtuserid')
+			->whereNotIn('requests.author_id', [$user->id])
+			->whereNull('request_tracking.user_id')
+			->inRandomOrder()->first();
 		$status = array_rand(['unapproved', 'approved']);
 
 		DB::table('request_tracking')->insert([

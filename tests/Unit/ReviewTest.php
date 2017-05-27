@@ -16,7 +16,7 @@ class ReviewTest extends TestCase {
 	public function testViewReview() {
 		$this->seed('DatabaseSeederForTests');
 
-		$response = $this->get('/reviews/' . $this->user_review_id . '/view');
+		$response = $this->withSession($this->user_data_bis)->get('/reviews/' . $this->user_review_id . '/view');
 
 		$response->assertStatus(200);
 
