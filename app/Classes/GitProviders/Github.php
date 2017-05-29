@@ -164,9 +164,11 @@ class Github implements GitProviderInterface {
 	}
 
 	public function listRepositories() {
-		$raw_response = $this->ua->get($this->api . '/user/repos');
+		$raw_response = $this->ua->get($this->api . '/user/repos?per_page=100');
 
 		$repos = json_decode($raw_response);
+
+		Log::debug($raw_response);
 
 		//We need to standarize the format
 		$std_repos = array();
