@@ -13,7 +13,7 @@ class GithubTest extends TestCase {
 	 * @return void
 	 */
 	public function testAuthorizeUrl() {
-		$client = new Github('d&é"&éummy- test', 'dum"&é"&²émy test');
+		$client        = new Github('d&é"&éummy- test', 'dum"&é"&²émy test');
 		$authorize_url = $client->getAuthorizeUrl('dummy', 'dummy');
 
 		$this->assertEquals('https://github.com/login/oauth/authorize?client_id=d%26%C3%A9%22%26%C3%A9ummy-+test&state=dummy&redirect_uri=dummy&scope=user,repo', $authorize_url);
@@ -24,6 +24,10 @@ class GithubTest extends TestCase {
 		$mocked_ua->method('post')->willReturn('{"access_token": "thisisafaketoken"}');
 		$client = new Github("testest", "testest", $mocked_ua);
 
-		$this->assertEquals($client->fetchAccessToken('dummy'), 'thisisafaketoken');
+		$this->assertEquals($client->fetchAccessToken('dummy'), [
+			'token'         => 'thisisafaketoken',
+			'refresh_token' => null,
+			'expire_epoch'  => null,
+		]);
 	}
 }

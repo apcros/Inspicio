@@ -50,7 +50,9 @@ class CreateBase extends Migration {
 			$table->uuid('id');
 			$table->string('login');
 			$table->uuid('user_id');
-			$table->string('token'); //TODO : Add refresh token and expiration date, Github doesn't need it, bitbucket does.
+			$table->string('token');
+            $table->string('refresh_token')->nullable();
+            $table->integer('expire_epoch')->nullable();
 			$table->string('provider');
 			$table->boolean('is_main');
 			$table->unique(array('login', 'provider'));

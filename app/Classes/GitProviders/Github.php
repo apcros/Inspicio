@@ -20,6 +20,9 @@ class Github implements GitProviderInterface {
 
 	private $ua;
 
+	//Public attribute, I'll go burn in hell
+	public $csrf_enabled = true;
+
 	function __construct($client_id, $app_secret, $ua = null) {
 		$this->client_id  = $client_id;
 		$this->app_secret = $app_secret;
@@ -56,7 +59,10 @@ class Github implements GitProviderInterface {
 			$this->setToken($json->access_token);
 		}
 
-		return $this->token;
+		return [
+			'token'         => $this->token,
+			'refresh_token' => null,
+			'expire_epoch'  => null];
 	}
 
 	/*
@@ -186,6 +192,10 @@ class Github implements GitProviderInterface {
 	public function setToken($token) {
 		$this->ua->addHeader('Authorization: token ' . $token);
 		$this->token = $token;
+	}
+
+	public function refreshToken($refresh_token) {
+		Log::warning('RefreshToken called for Github, Tokens should not expire');
 	}
 
 }

@@ -72,9 +72,7 @@ class ReviewRequest extends Controller {
 
 		list($owner_repo, $account_id) = explode(',', $repository_account);
 
-		$account = DB::table('accounts')->where([
-			['user_id', '=', session('user_id')],
-			['id', '=', $account_id]])->first();
+		$account = $this->getAccount($account_id, session('user_id'));
 
 		if (!$account) {
 			return view('home', ['error_message' => 'Unexpected error']);
@@ -175,9 +173,7 @@ class ReviewRequest extends Controller {
 
 	public function getOpenedPullRequestForRepo($owner, $repo, $account_id) {
 
-		$account = DB::table('accounts')->where([
-			['user_id', '=', session('user_id')],
-			['id', '=', $account_id]])->first();
+		$account = $this->getAccount($account_id, session('user_id'));
 
 		$client = $this->getClient($account->provider);
 		$client->setToken($account->token);
@@ -188,9 +184,7 @@ class ReviewRequest extends Controller {
 	}
 
 	public function getBranches($owner, $repo, $account_id) {
-		$account = DB::table('accounts')->where([
-			['user_id', '=', session('user_id')],
-			['id', '=', $account_id]])->first();
+		$account = $this->getAccount($account_id, session('user_id'));
 
 		$client = $this->getClient($account->provider);
 		$client->setToken($account->token);
@@ -372,6 +366,35 @@ class ReviewRequest extends Controller {
 			->orderBy('requests.updated_at', 'desc')
 			->where('requests.id', $reviewid)
 			->first();
+	}
+
+	private function getAccount($account_id, $user_id) {
+		$account = DB::table('accounts')->where([
+			['user_id', '=', $user_id],
+			['id', '=', $account_id]])->first();
+
+		if ($account->refresh_token) {
+
+			if ($account->expire_epoch >= time()) {
+				$client = $this->getClient($account->provider);
+				$tokens = $client->refreshToken($account->refresh_token);
+
+				Log::info("Token expired, refreshing for $user_id (Account $account_id)");
+
+				DB::table('accounts')->where('id', $account_id)->update([
+					'token'        => $tokens['token'],
+					'expire_epoch' => $tokens['expire_epoch'],
+					'updated_at'   => \Carbon\Carbon::now(),
+				]);
+
+				$account = DB::table('accounts')->where([
+					['user_id', '=', $user_id],
+					['id', '=', $account_id]])->first();
+			}
+
+		}
+
+		return $account;
 	}
 
 }
