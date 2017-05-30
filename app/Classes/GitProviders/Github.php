@@ -76,16 +76,6 @@ class Github implements GitProviderInterface {
 		. urlencode($redirect_uri) . '&scope=user,repo';
 	}
 
-	public function getPullRequest($owner, $repository, $pr_id) {
-		$url = $this->api . '/repos/' . $owner . '/' . $repository . '/pulls/' . $pr_id;
-		Log::debug('Fetching information for pull request : ' . $url);
-		$raw_response = $this->ua->get($url);
-
-		//TODO standardize format
-
-		return json_decode($raw_response);
-	}
-
 	/*
 		Simply returns the user, useful for auth purposes on the website
 	*/

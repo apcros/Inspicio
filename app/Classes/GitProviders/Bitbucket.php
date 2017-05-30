@@ -65,10 +65,6 @@ class Bitbucket implements GitProviderInterface {
 
 	}
 
-	public function getPullRequest($owner, $repository, $pr_id) {
-
-	}
-
 	public function getUserInfo() {
 		$raw_response = $this->ua->get($this->api . '/2.0/user');
 
@@ -79,7 +75,20 @@ class Bitbucket implements GitProviderInterface {
 	}
 
 	public function listPullRequestsForRepo($owner, $repository) {
-		return [];
+		$raw_response = $this->ua->get($this->api . "/2.0/repositories/$owner/$repository/pullrequests?pagelen=50&state=OPEN");
+		Log::debug($raw_response);
+
+		$json    = json_decode($raw_response);
+		$std_prs = array();
+
+		foreach ($json->values as $key => $pr) {
+			$std_prs[] = array(
+				'name' => $pr->title,
+				'url'  => $pr->links->html->href,
+			);
+		}
+
+		return $std_prs;
 	}
 
 	public function createPullRequest($owner, $repository, $head, $base, $title, $description) {
@@ -87,11 +96,39 @@ class Bitbucket implements GitProviderInterface {
 	}
 
 	public function listBranchesForRepo($owner, $repository) {
-		return [];
+		$raw_response = $this->ua->get($this->api . "/2.0/repositories/$owner/$repository/refs/branches?pagelen=100");
+		Log::debug($raw_response);
+
+		$json = json_decode($raw_response);
+
+		$std_branches = array();
+
+		foreach ($json->values as $key => $branch) {
+			$std_branches[] = array(
+				'name' => $branch->name,
+			);
+		}
+
+		return $std_branches;
 	}
 
 	public function listRepositories() {
-		return [];
+		$raw_response = $this->ua->get($this->api . '/1.0/user/repositories?pagelen=100');
+		Log::debug($raw_response);
+
+		$repos     = json_decode($raw_response);
+		$std_repos = array();
+
+		foreach ($repos as $key => $repo) {
+			$std_repos[] = array(
+				'name'     => $repo->owner . '/' . $repo->slug,
+				'id'       => $repo->slug,
+				'url'      => $this->bitbucket . '/' . $repo->owner . '/' . $repo->slug,
+				'language' => $repo->language,
+			);
+		}
+
+		return $std_repos;
 	}
 
 	public function setToken($token) {
