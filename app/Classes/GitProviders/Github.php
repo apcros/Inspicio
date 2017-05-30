@@ -83,7 +83,9 @@ class Github implements GitProviderInterface {
 		$raw_response = $this->ua->get($this->api . '/user');
 		Log::debug('User info : ' . $raw_response);
 
-		return json_decode($raw_response);
+		$json = json_decode($raw_response);
+
+		return (object) ['login' => ucfirst(strtolower($json->login))];
 	}
 
 	public function listPullRequestsForRepo($owner, $repository) {
@@ -125,6 +127,7 @@ class Github implements GitProviderInterface {
 	public function createPullRequest($owner, $repository, $head, $base, $title, $description) {
 		$api_url = $this->api . '/repos/' . $owner . '/' . $repository . '/pulls';
 		Log::info('Creating pull-request on ' . $api_url);
+
 		$raw_response = $this->ua->post($api_url, json_encode([
 			'title' => $title,
 			'body'  => $description,
@@ -144,7 +147,7 @@ class Github implements GitProviderInterface {
 		}
 
 		if (isset($pull_request->errors)) {
-			$error_message = 'Error(s) from API : ';
+			$error_message = 'Error(s) from GitHub : ';
 
 			foreach ($pull_request->errors as $key => $error) {
 				$error_message .= '[' . $error->message . ']';

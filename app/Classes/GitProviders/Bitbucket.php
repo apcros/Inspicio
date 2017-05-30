@@ -37,6 +37,7 @@ class Bitbucket implements GitProviderInterface {
 	}
 
 	public function getAuthorizeUrl($csrf_token, $redirect_uri) {
+
 		return $this->bitbucket . '/site/oauth2/authorize?client_id='
 		. urlencode($this->client_id) . '&response_type=code';
 	}
@@ -71,7 +72,7 @@ class Bitbucket implements GitProviderInterface {
 		Log::debug($raw_response);
 		$json = json_decode($raw_response);
 
-		return (object) ['login' => $json->username];
+		return (object) ['login' => ucfirst(strtolower($json->username))];
 	}
 
 	public function listPullRequestsForRepo($owner, $repository) {
@@ -92,6 +93,43 @@ class Bitbucket implements GitProviderInterface {
 	}
 
 	public function createPullRequest($owner, $repository, $head, $base, $title, $description) {
+		$this->ua->addHeader('Content-Type: application/json');
+		$request_data = json_encode([
+			'source'      => [
+				'branch' => [
+					'name' => $head,
+				],
+			],
+			'title'       => $title,
+			'destination' => [
+				'branch' => [
+					'name' => $base,
+				],
+			],
+			'description' => $description,
+		]);
+
+		$raw_response = $this->ua->post($this->api . "/2.0/repositories/$owner/$repository/pullrequests", $request_data);
+		Log::debug($raw_response);
+
+		$json          = json_decode($raw_response);
+		$error_message = 'Failed to create pull request';
+
+		if (isset($json->links->html->href)) {
+			return [
+				'success' => 1,
+				'url'     => $json->links->html->href,
+			];
+		}
+
+		if (isset($json->error->message)) {
+			$error_message = 'Error from Bitbucket : '.$json->error->message;
+		}
+
+		return [
+			'success' => 0,
+			'error'   => $error_message,
+		];
 
 	}
 
@@ -149,6 +187,8 @@ class Bitbucket implements GitProviderInterface {
 		if (isset($json->access_token)) {
 			$this->setToken($json->access_token);
 		}
+
+		$epoch = time();
 
 		return [
 			'token'         => $this->token,

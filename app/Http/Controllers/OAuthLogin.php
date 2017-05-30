@@ -16,19 +16,18 @@ class OAuthLogin extends Controller {
 		return redirect('/');
 	}
 
-	public function stepOne($provider, $type) {
+	public function stepOne($provider) {
 		$client = $this->getClient($provider);
 
 		$token = csrf_token();
 		session(['oauth_csrf' => $token]);
-		$redirect_to = $client->getAuthorizeUrl($token, env('APP_URL') . '/oauth/callback/' . $provider . '/' . $type);
+		$redirect_to = $client->getAuthorizeUrl($token, env('APP_URL') . '/oauth/callback/' . $provider);
 		Log::info('Redirecting user to OAuth on ' . $provider);
 
 		return redirect($redirect_to);
 	}
 
-	//This is behind a route for member only
-	public function stepTwoNewAccount(Request $request, $provider) {
+	private function stepTwoNewAccount(Request $request, $provider) {
 		$code   = $request->input('code');
 		$state  = $request->input('state');
 		$client = $this->getClient($provider);
@@ -86,6 +85,10 @@ class OAuthLogin extends Controller {
 		$code  = $request->input('code');
 		$state = $request->input('state');
 
+		if (session('user_id')) {
+			return $this->stepTwoNewAccount($request, $provider);
+		}
+
 		$client = $this->getClient($provider);
 
 		Log::debug('Exchanging ' . $provider . ' temporary code (' . $code . ') to access token');
@@ -118,6 +121,7 @@ class OAuthLogin extends Controller {
 			DB::table('accounts')->where([
 				['login', '=', $user_data->login],
 				['user_id', '=', $user->id],
+				['provider', '=', $provider],
 			])->update([
 				'provider'      => $provider,
 				'token'         => $tokens['token'],
