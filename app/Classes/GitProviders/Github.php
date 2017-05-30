@@ -20,6 +20,9 @@ class Github implements GitProviderInterface {
 
 	private $ua;
 
+	//Public attribute, I'll go burn in hell
+	public $csrf_enabled = true;
+
 	function __construct($client_id, $app_secret, $ua = null) {
 		$this->client_id  = $client_id;
 		$this->app_secret = $app_secret;
@@ -56,7 +59,10 @@ class Github implements GitProviderInterface {
 			$this->setToken($json->access_token);
 		}
 
-		return $this->token;
+		return [
+			'token'         => $this->token,
+			'refresh_token' => null,
+			'expire_epoch'  => null];
 	}
 
 	/*
@@ -70,16 +76,6 @@ class Github implements GitProviderInterface {
 		. urlencode($redirect_uri) . '&scope=user,repo';
 	}
 
-	public function getPullRequest($owner, $repository, $pr_id) {
-		$url = $this->api . '/repos/' . $owner . '/' . $repository . '/pulls/' . $pr_id;
-		Log::debug('Fetching information for pull request : ' . $url);
-		$raw_response = $this->ua->get($url);
-
-		//TODO standardize format
-
-		return json_decode($raw_response);
-	}
-
 	/*
 		Simply returns the user, useful for auth purposes on the website
 	*/
@@ -87,7 +83,9 @@ class Github implements GitProviderInterface {
 		$raw_response = $this->ua->get($this->api . '/user');
 		Log::debug('User info : ' . $raw_response);
 
-		return json_decode($raw_response);
+		$json = json_decode($raw_response);
+
+		return (object) ['login' => ucfirst(strtolower($json->login))];
 	}
 
 	public function listPullRequestsForRepo($owner, $repository) {
@@ -129,6 +127,7 @@ class Github implements GitProviderInterface {
 	public function createPullRequest($owner, $repository, $head, $base, $title, $description) {
 		$api_url = $this->api . '/repos/' . $owner . '/' . $repository . '/pulls';
 		Log::info('Creating pull-request on ' . $api_url);
+
 		$raw_response = $this->ua->post($api_url, json_encode([
 			'title' => $title,
 			'body'  => $description,
@@ -148,7 +147,7 @@ class Github implements GitProviderInterface {
 		}
 
 		if (isset($pull_request->errors)) {
-			$error_message = 'Error(s) from API : ';
+			$error_message = 'Error(s) from GitHub : ';
 
 			foreach ($pull_request->errors as $key => $error) {
 				$error_message .= '[' . $error->message . ']';
@@ -188,6 +187,10 @@ class Github implements GitProviderInterface {
 	public function setToken($token) {
 		$this->ua->addHeader('Authorization: token ' . $token);
 		$this->token = $token;
+	}
+
+	public function refreshToken($refresh_token) {
+		Log::warning('RefreshToken called for Github, Tokens should not expire');
 	}
 
 }

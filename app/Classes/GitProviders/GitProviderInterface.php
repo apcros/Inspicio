@@ -6,8 +6,6 @@ interface GitProviderInterface {
 
 	public function getAuthorizeUrl($csrf_token, $redirect_uri);
 
-	public function getPullRequest($owner, $repository, $pr_id);
-
 	public function getUserInfo();
 
 	public function listPullRequestsForRepo($owner, $repository);
@@ -19,4 +17,6 @@ interface GitProviderInterface {
 	public function listRepositories();
 
 	public function setToken($token);
+
+	public function refreshToken($refresh_token);
 }

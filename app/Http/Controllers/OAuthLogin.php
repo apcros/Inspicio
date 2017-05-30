@@ -16,36 +16,39 @@ class OAuthLogin extends Controller {
 		return redirect('/');
 	}
 
-	public function stepOne($provider, $type) {
+	public function stepOne($provider) {
 		$client = $this->getClient($provider);
 
 		$token = csrf_token();
 		session(['oauth_csrf' => $token]);
-		$redirect_to = $client->getAuthorizeUrl($token, env('APP_URL') . '/oauth/callback/' . $provider . '/' . $type);
+		$redirect_to = $client->getAuthorizeUrl($token, env('APP_URL') . '/oauth/callback/' . $provider);
 		Log::info('Redirecting user to OAuth on ' . $provider);
 
 		return redirect($redirect_to);
 	}
 
-	//This is behind a route for member only
-	public function stepTwoNewAccount(Request $request, $provider) {
+	private function stepTwoNewAccount(Request $request, $provider) {
 		$code   = $request->input('code');
 		$state  = $request->input('state');
 		$client = $this->getClient($provider);
 
-		$access_token = $client->fetchAccessToken($code);
-		$user_data    = $client->getUserInfo();
-		$login        = $user_data->login;
-		$user_id      = session('user_id');
+		$tokens    = $client->fetchAccessToken($code);
+		$user_data = $client->getUserInfo();
+		$login     = $user_data->login;
+		$user_id   = session('user_id');
 
 		if (!isset($user_data->login)) {
 			return view('home', ['error_message' => 'Failed to add your account']);
 		}
 
-		if ($state != session('oauth_csrf')) {
-			Log::error('CSRF mismatch');
+		if ($client->csrf_enabled) {
 
-			return view('home', ['error_message' => 'CSRF Token mismatch']);
+			if ($state != session('oauth_csrf')) {
+				Log::error('CSRF mismatch');
+
+				return view('home', ['error_message' => 'CSRF Token mismatch']);
+			}
+
 		}
 
 		$account = DB::table('accounts')->where([
@@ -61,14 +64,16 @@ class OAuthLogin extends Controller {
 		$account_id = Uuid::uuid4()->toString();
 		DB::table('accounts')->insert(
 			[
-				'id'         => $account_id,
-				'provider'   => $provider,
-				'login'      => $login,
-				'token'      => $access_token,
-				'user_id'    => $user_id,
-				'is_main'    => false,
-				'created_at' => \Carbon\Carbon::now(),
-				'updated_at' => \Carbon\Carbon::now(),
+				'id'            => $account_id,
+				'provider'      => $provider,
+				'login'         => $login,
+				'token'         => $tokens['token'],
+				'refresh_token' => $tokens['refresh_token'],
+				'expire_epoch'  => $tokens['expire_epoch'],
+				'user_id'       => $user_id,
+				'is_main'       => false,
+				'created_at'    => \Carbon\Carbon::now(),
+				'updated_at'    => \Carbon\Carbon::now(),
 			]
 		);
 		Log::info("Added $provider account $login ($account_id) for $user_id");
@@ -80,10 +85,14 @@ class OAuthLogin extends Controller {
 		$code  = $request->input('code');
 		$state = $request->input('state');
 
+		if (session('user_id')) {
+			return $this->stepTwoNewAccount($request, $provider);
+		}
+
 		$client = $this->getClient($provider);
 
 		Log::debug('Exchanging ' . $provider . ' temporary code (' . $code . ') to access token');
-		$access_token = $client->fetchAccessToken($code);
+		$tokens = $client->fetchAccessToken($code);
 
 		Log::debug('Fetching user data associated with token');
 		$user_data = $client->getUserInfo();
@@ -92,10 +101,14 @@ class OAuthLogin extends Controller {
 			return view('choose-auth-provider', ['error_message' => 'Failed to login']);
 		}
 
-		if ($state != session('oauth_csrf')) {
-			Log::error('CSRF mismatch');
+		if ($client->csrf_enabled) {
 
-			return view('choose-auth-provider', ['error_message' => 'CSRF Token mismatch']);
+			if ($state != session('oauth_csrf')) {
+				Log::error('CSRF mismatch');
+
+				return view('choose-auth-provider', ['error_message' => 'CSRF Token mismatch']);
+
+			}
 
 		}
 
@@ -108,7 +121,14 @@ class OAuthLogin extends Controller {
 			DB::table('accounts')->where([
 				['login', '=', $user_data->login],
 				['user_id', '=', $user->id],
-			])->update(['provider' => $provider, 'token' => $access_token, 'updated_at' => \Carbon\Carbon::now()]);
+				['provider', '=', $provider],
+			])->update([
+				'provider'      => $provider,
+				'token'         => $tokens['token'],
+				'refresh_token' => $tokens['refresh_token'],
+				'expire_epoch'  => $tokens['expire_epoch'],
+				'updated_at'    => \Carbon\Carbon::now(),
+			]);
 
 			session(['user_nickname' => $user->nickname, 'user_email' => $user->email, 'user_id' => $user->id]);
 
@@ -118,7 +138,12 @@ class OAuthLogin extends Controller {
 		} else {
 			session(['user_nickname' => $user_data->login]);
 
-			return view('register', ['auth_token' => $access_token, 'auth_provider' => $provider]);
+			return view('register', [
+				'auth_token'    => $tokens['token'],
+				'refresh_token' => $tokens['refresh_token'],
+				'expire_epoch'  => $tokens['expire_epoch'],
+				'auth_provider' => $provider,
+			]);
 		}
 
 	}

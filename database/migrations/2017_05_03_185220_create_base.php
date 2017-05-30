@@ -51,6 +51,8 @@ class CreateBase extends Migration {
 			$table->string('login');
 			$table->uuid('user_id');
 			$table->string('token');
+            $table->string('refresh_token')->nullable();
+            $table->integer('expire_epoch')->nullable();
 			$table->string('provider');
 			$table->boolean('is_main');
 			$table->unique(array('login', 'provider'));

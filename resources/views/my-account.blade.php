@@ -49,8 +49,8 @@
 			  	</table>
 		  </div>
 		  <div class="panel-footer">
-		  	<a href="/oauth/github/add" class="btn btn-info"><i class="fa fa-github left" aria-hidden="true"></i> Link new GitHub</a>
-		  	<a href="#" class="btn btn-info disabled"><i class="fa fa-bitbucket left" aria-hidden="true"></i> Link new Bitbucket</a>
+		  	<a href="/oauth/github/" class="btn btn-info"><i class="fa fa-github left" aria-hidden="true"></i> Link new GitHub</a>
+		  	<a href="/oauth/bitbucket/" class="btn btn-info"><i class="fa fa-bitbucket left" aria-hidden="true"></i> Link new Bitbucket</a>
 		  	<a href="#" class="btn btn-info disabled"><i class="fa fa-gitlab left" aria-hidden="true"></i> Link new  Gitlab</a>
 		  </div>
 		</div>

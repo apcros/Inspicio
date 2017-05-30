@@ -10,6 +10,8 @@
 		  <div class="form-group">
 		    <label for="email">Email address</label>
 		    <input type="hidden" value="{{ $auth_token }}" name="auth_token"/>
+		    <input type="hidden" value="{{ $refresh_token }}" name="refresh_token"/>
+		    <input type="hidden" value="{{ $expire_epoch }}" name="expire_epoch"/>
 		    <input type="hidden" value="{{ $auth_provider }}" name="auth_provider"/>
 		    <input type="email" class="form-control" name="email" id="email" placeholder="Email">
 		  </div>
