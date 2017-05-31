@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class Profile extends Controller {
 	public function summary(Request $request) {
@@ -60,6 +61,7 @@ class Profile extends Controller {
 
 //Have I mentionned to never trust the client ?
 		if (!in_array($level, $allowed_level)) {
+            Log::warning("[USER $user_id] Out of range skill level : $level");
 			return response()->json([
 				'success' => 0,
 				'message' => 'Skill level error',
@@ -89,14 +91,14 @@ class Profile extends Controller {
 			);
 
 		} catch (\Illuminate\Database\QueryException $e) {
-			Log::error("Error caught while adding skill (user $user_id) : " . $e->getMessage());
+			Log::error("[USER $user_id ] - Error caught while adding skill : " . $e->getMessage());
 
 			return response()->json([
 				'success' => 0,
 				'message' => 'Failed to add skill',
 			]);
 		}
-
+        Log::info("[USER $user_id] Added Skill $skill_id / level $level");
 		return response()->json([
 			'success' => 1,
 			'message' => 'Skill added with success',
@@ -112,6 +114,7 @@ class Profile extends Controller {
 			->first();
 
 		if ($skill_to_delete->user_id != $user_id) {
+            Log::warning("[USER $user_id] User tried to delete someone else skill ($skill_id)");
 			return response()->json([
 				'success' => 0,
 				'message' => "You can only delete your own skills, Don't be that guy.",
@@ -123,14 +126,14 @@ class Profile extends Controller {
 				->where('id', $skill_id)
 				->delete();
 		} catch (\Illuminate\Database\QueryException $e) {
-			Log::error("Error caught while trying to delete skill (user $user_id) : " . $e->getMessage());
+			Log::error("[USER $user_id] - Error caught while trying to delete skill $skill_id: " . $e->getMessage());
 
 			return response()->json([
 				'success' => 0,
 				'message' => 'Failed to delete skill',
 			]);
 		}
-
+        Log::info("[USER $user_id] Deleted skill $skill_id");
 		return response()->json([
 			'success' => 1,
 			'message' => 'Skill deleted',

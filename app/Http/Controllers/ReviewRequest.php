@@ -31,6 +31,8 @@ class ReviewRequest extends Controller {
 		$user_id = session('user_id');
 
 		if ($review->author_id == $user_id) {
+			Log::warning("[USER $user_id] Attempted to approve his own review ($reviewid)");
+
 			return response()->json([
 				'success' => 0,
 				'message' => 'You can\'t approve your own review requests',
@@ -45,13 +47,15 @@ class ReviewRequest extends Controller {
 			$this->addPoint();
 
 		} catch (\Illuminate\Database\QueryException $e) {
-			Log::error('Error when USER ' . session('user_id') . ' attempted to approve code review ' . $reviewid . ' : ' . $e->getMessage());
+			Log::error('[USER ' . session('user_id') . '] SQL error for review ' . $reviewid . ' : ' . $e->getMessage());
 
 			return response()->json([
 				'success' => 0,
 				'message' => 'Error while trying to approve the review request',
 			]);
 		}
+
+		Log::info("[USER $user_id] Review $reviewid approved");
 
 		return response()->json([
 			'success' => 1,
@@ -67,6 +71,8 @@ class ReviewRequest extends Controller {
 		$description        = $request->input('description');
 
 		if ($this->getPoints() == 0) {
+			Log::warning('[ USER ' . session('user_id') . '] Attempted to create a review with no points');
+
 			return view('home', ['error_message' => "You don't have any points left. Please review someone else code to get points"]);
 		}
 
@@ -75,6 +81,8 @@ class ReviewRequest extends Controller {
 		$account = $this->getAccount($account_id, session('user_id'));
 
 		if (!$account) {
+			Log::error('[ USER ' . session('user_id') . '] No account available');
+
 			return view('home', ['error_message' => 'Unexpected error']);
 		}
 
@@ -91,9 +99,12 @@ class ReviewRequest extends Controller {
 			$pr_result = $client->createPullRequest($owner, $repo, $head_branch, $base_branch, $title, $description);
 
 			if ($pr_result['success'] == 0 || !isset($pr_result['url'])) {
+				Log::error('[USER ' . session('user_id') . '] Failed to create PR on ' . $account->provider);
+
 				return view('home', ['error_message' => 'Error while creating your code review request : ' . $pr_result['error']]);
 			}
 
+			Log::info('[USER ' . session('user_id') . '] Created PR ' . $pr_result['url'] . ' on ' . $account->provider);
 			$pull_request_url = $pr_result['url'];
 		}
 
@@ -115,10 +126,12 @@ class ReviewRequest extends Controller {
 			]);
 			$this->removePoint();
 		} catch (\Illuminate\Database\QueryException $e) {
-			Log::error("Error caught while adding Pull request : " . $e->getMessage());
+			Log::error('[USER ' . session('user_id') . '] SQL Error caught while adding Pull request : ' . $e->getMessage());
 
 			return view('home', ['error_message' => 'An error ocurred while trying to add your review request']);
 		}
+
+		Log::info('[USER ' . session('user_id') . '] Review request created');
 
 		return redirect('/reviews/' . $review_request_id . '/view');
 	}
@@ -207,6 +220,8 @@ class ReviewRequest extends Controller {
 
 //There's already a front-end check, but never trust client
 		if ($review->author_id == session('user_id')) {
+			Log::warning("[USER " . session('user_id') . "] Attempted to follow his own review ($reviewid)");
+
 			return response()->json([
 				'success' => 0,
 				'message' => 'You can\'t follow your own review requests',
@@ -221,7 +236,7 @@ class ReviewRequest extends Controller {
 				'status'     => 'unapproved',
 			]);
 		} catch (\Illuminate\Database\QueryException $e) {
-			Log::error('Error when USER ' . session('user_id') . ' attempted to track code review ' . $reviewid . ' : ' . $e->getMessage());
+			Log::error('[USER ' . session('user_id') . '] SQL Error caught when following  ' . $reviewid . ' : ' . $e->getMessage());
 
 			return response()->json([
 				'success' => 0,
@@ -229,6 +244,8 @@ class ReviewRequest extends Controller {
 			]);
 
 		}
+
+		Log::info('[USER ' . session('user_id') . "] Followed $reviewid");
 
 		return response()->json([
 			'success' => 1,
@@ -247,6 +264,8 @@ class ReviewRequest extends Controller {
 		}
 
 		if ($review->author_id != session('user_id')) {
+			Log::warning("[USER " . session('user_id') . "] Attempted to close someone else review ($reviewid)");
+
 			return response()->json([
 				'success' => 0,
 				'message' => 'You can only close your own review requests',
@@ -256,7 +275,7 @@ class ReviewRequest extends Controller {
 		try {
 			DB::table('requests')->where('id', $review->id)->update(['status' => 'closed', 'updated_at' => \Carbon\Carbon::now()]);
 		} catch (\Illuminate\Database\QueryException $e) {
-			Log::error('Error when USER ' . session('user_id') . ' attempted to close code review ' . $reviewid . ' : ' . $e->getMessage());
+			Log::error('[USER ' . session('user_id') . '] attempted to close code review ' . $reviewid . ' : ' . $e->getMessage());
 
 			return response()->json([
 				'success' => 0,
@@ -345,11 +364,11 @@ class ReviewRequest extends Controller {
 		        add/removePoint are function to allow
 	*/
 	private function addPoint() {
-		DB::table('users')->increment('points');
+		DB::table('users')->where('id', session('user_id'))->increment('points');
 	}
 
 	private function removePoint() {
-		DB::table('users')->decrement('points');
+		DB::table('users')->where('id', session('user_id'))->decrement('points');
 	}
 
 	private function getClient($provider) {

@@ -48,7 +48,7 @@ class Bitbucket implements GitProviderInterface {
 			['grant_type' => "authorization_code", 'code' => $code]
 		);
 
-		Log::debug($raw_response);
+		Log::debug('[fetchAccessToken] - '.$raw_response);
 
 		$json = json_decode($raw_response);
 
@@ -69,7 +69,7 @@ class Bitbucket implements GitProviderInterface {
 	public function getUserInfo() {
 		$raw_response = $this->ua->get($this->api . '/2.0/user');
 
-		Log::debug($raw_response);
+		Log::debug('[getUserInfo] - '.$raw_response);
 		$json = json_decode($raw_response);
 
 		return (object) ['login' => ucfirst(strtolower($json->username))];
@@ -77,7 +77,7 @@ class Bitbucket implements GitProviderInterface {
 
 	public function listPullRequestsForRepo($owner, $repository) {
 		$raw_response = $this->ua->get($this->api . "/2.0/repositories/$owner/$repository/pullrequests?pagelen=50&state=OPEN");
-		Log::debug($raw_response);
+		Log::debug("[listPullRequestsForRepo][$owner/$repository] - ".$raw_response);
 
 		$json    = json_decode($raw_response);
 		$std_prs = array();
@@ -110,7 +110,7 @@ class Bitbucket implements GitProviderInterface {
 		]);
 
 		$raw_response = $this->ua->post($this->api . "/2.0/repositories/$owner/$repository/pullrequests", $request_data);
-		Log::debug($raw_response);
+		Log::debug("[createPullRequest][$owner/$repository] - ".$raw_response);
 
 		$json          = json_decode($raw_response);
 		$error_message = 'Failed to create pull request';
@@ -135,7 +135,7 @@ class Bitbucket implements GitProviderInterface {
 
 	public function listBranchesForRepo($owner, $repository) {
 		$raw_response = $this->ua->get($this->api . "/2.0/repositories/$owner/$repository/refs/branches?pagelen=100");
-		Log::debug($raw_response);
+		Log::debug("[listBranchesForRepo][$owner/$repository] - ".$raw_response);
 
 		$json = json_decode($raw_response);
 
@@ -152,7 +152,7 @@ class Bitbucket implements GitProviderInterface {
 
 	public function listRepositories() {
 		$raw_response = $this->ua->get($this->api . '/1.0/user/repositories?pagelen=100');
-		Log::debug($raw_response);
+		Log::debug('[listRepositories] - '.$raw_response);
 
 		$repos     = json_decode($raw_response);
 		$std_repos = array();
@@ -180,7 +180,7 @@ class Bitbucket implements GitProviderInterface {
 			['grant_type' => 'refresh_token', 'refresh_token' => $refresh_token]
 		);
 
-		Log::debug('Refresh token : ' . $refresh_token);
+		Log::debug('[refreshToken] - ' . $refresh_token);
 
 		$json = json_decode($raw_response);
 

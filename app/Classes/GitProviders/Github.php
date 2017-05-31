@@ -52,6 +52,7 @@ class Github implements GitProviderInterface {
 			'client_secret' => $this->app_secret,
 			'code'          => $code,
 		)));
+		Log::debug('[fetchAccessToken] - ' . $raw_response);
 
 		$json = json_decode($raw_response);
 
@@ -81,7 +82,7 @@ class Github implements GitProviderInterface {
 	*/
 	public function getUserInfo() {
 		$raw_response = $this->ua->get($this->api . '/user');
-		Log::debug('User info : ' . $raw_response);
+		Log::debug('[getUserInfo] - ' . $raw_response);
 
 		$json = json_decode($raw_response);
 
@@ -91,10 +92,11 @@ class Github implements GitProviderInterface {
 	public function listPullRequestsForRepo($owner, $repository) {
 
 		$pulls_url = $this->api . '/repos/' . $owner . '/' . $repository . '/pulls';
-		Log::debug('Loading pull requests using : ' . $pulls_url);
+
 		$raw_response = $this->ua->get($pulls_url);
 
-		Log::debug($raw_response);
+		Log::debug("[listPullRequestsForRepo][$owner/$repository]" . $raw_response);
+
 		$prs     = json_decode($raw_response);
 		$std_prs = array();
 
@@ -112,6 +114,8 @@ class Github implements GitProviderInterface {
 		$branch_url   = $this->api . '/repos/' . $owner . '/' . $repository . '/branches';
 		$raw_response = $this->ua->get($branch_url);
 
+		Log::debug("[listBranchesForRepo][$owner/$repository]" . $raw_response);
+
 		$branches     = json_decode($raw_response);
 		$std_branches = array();
 
@@ -126,7 +130,7 @@ class Github implements GitProviderInterface {
 
 	public function createPullRequest($owner, $repository, $head, $base, $title, $description) {
 		$api_url = $this->api . '/repos/' . $owner . '/' . $repository . '/pulls';
-		Log::info('Creating pull-request on ' . $api_url);
+		Log::debug("[createPullRequest][$owner/$repository]" . $raw_response);
 
 		$raw_response = $this->ua->post($api_url, json_encode([
 			'title' => $title,
@@ -134,7 +138,7 @@ class Github implements GitProviderInterface {
 			'head'  => $head,
 			'base'  => $base,
 		]));
-		Log::debug($raw_response);
+
 		$pull_request = json_decode($raw_response);
 
 		$error_message = 'Failed to create pull request';
@@ -164,6 +168,8 @@ class Github implements GitProviderInterface {
 
 	public function listRepositories() {
 		$raw_response = $this->ua->get($this->api . '/user/repos?per_page=100');
+
+		Log::debug('[listRepositories]' . $raw_response);
 
 		$repos = json_decode($raw_response);
 
