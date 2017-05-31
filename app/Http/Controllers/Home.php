@@ -49,6 +49,7 @@ class Home extends Controller {
 	public function register(Request $request) {
 
 		if (!$request->session()->has('user_nickname')) {
+            Log::error('No user_nickname set, could not create account');
 			return view('home', ['error_message' => "Couldn't register your account, please try again"]);
 		}
 
