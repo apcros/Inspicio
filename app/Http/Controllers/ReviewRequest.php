@@ -148,12 +148,14 @@ class ReviewRequest extends Controller {
 
 		foreach ($accounts as $key => $account) {
 
-            $this->getAccount($account->id, $account->user_id); //To force refresh where needed
-			$client = $this->getClient($account->provider);
-			$client->setToken($account->token);
+			$account_checked = $this->getAccount($account->id, $account->user_id); //To force refresh where needed
+
+			//Provider and id are not going to changen, but token might just have been changed by the above statement
+			$client = $this->getClient($account_checked->provider);
+			$client->setToken($account_checked->token);
 
 			$reposPerAccount[] = array(
-				'account_id' => $account->id,
+				'account_id' => $account_checked->id,
 				'repos'      => $client->listRepositories(),
 			);
 		}
@@ -395,7 +397,8 @@ class ReviewRequest extends Controller {
 			['id', '=', $account_id]])->first();
 
 		if ($account->refresh_token) {
-            Log::info("[USER $user_id] Account ".$account->id.' expire at '.$account->expire_epoch);
+			Log::info("[USER $user_id] Account " . $account->id . ' expire at ' . $account->expire_epoch);
+
 			if ($account->expire_epoch <= time()) {
 				$client = $this->getClient($account->provider);
 				$tokens = $client->refreshToken($account->refresh_token);
