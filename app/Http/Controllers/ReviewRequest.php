@@ -147,6 +147,8 @@ class ReviewRequest extends Controller {
 		}
 
 		foreach ($accounts as $key => $account) {
+
+            $this->getAccount($account->id, $account->user_id); //To force refresh where needed
 			$client = $this->getClient($account->provider);
 			$client->setToken($account->token);
 
@@ -393,12 +395,12 @@ class ReviewRequest extends Controller {
 			['id', '=', $account_id]])->first();
 
 		if ($account->refresh_token) {
-
-			if ($account->expire_epoch >= time()) {
+            Log::info("[USER $user_id] Account ".$account->id.' expire at '.$account->expire_epoch);
+			if ($account->expire_epoch <= time()) {
 				$client = $this->getClient($account->provider);
 				$tokens = $client->refreshToken($account->refresh_token);
 
-				Log::info("Token expired, refreshing for $user_id (Account $account_id)");
+				Log::info("[USER $user_id] Token expired, refreshing for $user_id (Account $account_id)");
 
 				DB::table('accounts')->where('id', $account_id)->update([
 					'token'        => $tokens['token'],
