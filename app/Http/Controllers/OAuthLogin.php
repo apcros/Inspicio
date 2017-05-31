@@ -22,7 +22,9 @@ class OAuthLogin extends Controller {
 		$token = csrf_token();
 		session(['oauth_csrf' => $token]);
 		$redirect_to = $client->getAuthorizeUrl($token, env('APP_URL') . '/oauth/callback/' . $provider);
-		Log::info('Redirecting user to OAuth on ' . $provider);
+
+		Log::info("[$provider] - OAuth Redirect (Step one)");
+        Log::debug("Redirect url : $redirect_to");
 
 		return redirect($redirect_to);
 	}
@@ -38,14 +40,14 @@ class OAuthLogin extends Controller {
 		$user_id   = session('user_id');
 
 		if (!isset($user_data->login)) {
+            Log::warning("[USER $user_id] - No user data login");
 			return view('home', ['error_message' => 'Failed to add your account']);
 		}
 
 		if ($client->csrf_enabled) {
 
 			if ($state != session('oauth_csrf')) {
-				Log::error('CSRF mismatch');
-
+				Log::error("[USER $user_id] CSRF mismatch");
 				return view('home', ['error_message' => 'CSRF Token mismatch']);
 			}
 
@@ -57,6 +59,7 @@ class OAuthLogin extends Controller {
 		])->first();
 
 		if ($account) {
+            Log::warning("[USER $user_id] Duplicate account (id : ".$account->id.')');
 			//TODO : Consider if we want to allow multiple users to share the same git account ?
 			return view('home', ['error_message' => 'This account is already in use']);
 		}
@@ -76,7 +79,7 @@ class OAuthLogin extends Controller {
 				'updated_at'    => \Carbon\Carbon::now(),
 			]
 		);
-		Log::info("Added $provider account $login ($account_id) for $user_id");
+		Log::info("[USER $user_id] - Added $provider account $login");
 
 		return redirect('/account');
 	}
@@ -98,6 +101,7 @@ class OAuthLogin extends Controller {
 		$user_data = $client->getUserInfo();
 
 		if (!isset($user_data->login)) {
+            Log::warning('No user data login');
 			return view('choose-auth-provider', ['error_message' => 'Failed to login']);
 		}
 
@@ -132,7 +136,7 @@ class OAuthLogin extends Controller {
 
 			session(['user_nickname' => $user->nickname, 'user_email' => $user->email, 'user_id' => $user->id]);
 
-			Log::info($user->email . ' Logged in !');
+			Log::info('[USER '.$user->id.'] Logged in. Email : '.$user->email);
 
 			return redirect('/');
 		} else {
