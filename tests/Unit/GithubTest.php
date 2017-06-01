@@ -24,10 +24,10 @@ class GithubTest extends TestCase {
 		$mocked_ua->method('post')->willReturn('{"access_token": "thisisafaketoken"}');
 		$client = new Github("testest", "testest", $mocked_ua);
 
-		$this->assertEquals($client->fetchAccessToken('dummy'), [
+		$this->assertEquals($client->fetchAccessToken('dummy'), new \App\Classes\Models\Git\Tokens([
 			'token'         => 'thisisafaketoken',
 			'refresh_token' => null,
 			'expire_epoch'  => null,
-		]);
+		]));
 	}
 }

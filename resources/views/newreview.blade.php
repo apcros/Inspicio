@@ -10,7 +10,7 @@
 	  <h2>Open a new review request</h2>
 	  	    @foreach ($reposPerAccount as $repos)
 		    	@foreach ($repos['repos'] as $repo)
-		    		<input type='hidden' id="{{$repo['name']}}_metadata" value="{{$repo['language']}}">
+		    		<input type='hidden' id="{{ $repo->name }}_metadata" value="{{ $repo->language }}">
 		    	@endforeach
 		    @endforeach
 	  <div class="container-fluid center-align">
@@ -30,7 +30,7 @@
 		    <option></option>
 		    @foreach ($reposPerAccount as $repos)
 		    	@foreach ($repos['repos'] as $repo)
-		    		<option value="{{$repo['name']}},{{$repos['account_id']}}">{{$repo['name']}}</option>
+		    		<option value="{{ $repo->name }},{{$repos['account_id']}}">{{ $repo->name }}</option>
 		    	@endforeach
 		    @endforeach
 			</select>

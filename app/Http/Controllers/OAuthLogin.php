@@ -70,9 +70,9 @@ class OAuthLogin extends Controller {
 				'id'            => $account_id,
 				'provider'      => $provider,
 				'login'         => $login,
-				'token'         => $tokens['token'],
-				'refresh_token' => $tokens['refresh_token'],
-				'expire_epoch'  => $tokens['expire_epoch'],
+				'token'         => $tokens->token,
+				'refresh_token' => $tokens->refresh_token,
+				'expire_epoch'  => $tokens->expire_epoch,
 				'user_id'       => $user_id,
 				'is_main'       => false,
 				'created_at'    => \Carbon\Carbon::now(),
@@ -128,9 +128,9 @@ class OAuthLogin extends Controller {
 				['provider', '=', $provider],
 			])->update([
 				'provider'      => $provider,
-				'token'         => $tokens['token'],
-				'refresh_token' => $tokens['refresh_token'],
-				'expire_epoch'  => $tokens['expire_epoch'],
+				'token'         => $tokens->token,
+				'refresh_token' => $tokens->refresh_token,
+				'expire_epoch'  => $tokens->expire_epoch,
 				'updated_at'    => \Carbon\Carbon::now(),
 			]);
 
@@ -143,9 +143,9 @@ class OAuthLogin extends Controller {
 			session(['user_nickname' => $user_data->login]);
 
 			return view('register', [
-				'auth_token'    => $tokens['token'],
-				'refresh_token' => $tokens['refresh_token'],
-				'expire_epoch'  => $tokens['expire_epoch'],
+				'auth_token'    => $tokens->token,
+				'refresh_token' => $tokens->refresh_token,
+				'expire_epoch'  => $tokens->expire_epoch,
 				'auth_provider' => $provider,
 			]);
 		}

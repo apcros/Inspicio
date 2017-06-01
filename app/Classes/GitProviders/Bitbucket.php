@@ -1,6 +1,10 @@
 <?php
 namespace App\Classes\GitProviders;
-
+use App\Classes\Models\Git\Branch;
+use App\Classes\Models\Git\PullRequest;
+use App\Classes\Models\Git\Repository;
+use App\Classes\Models\Git\Tokens;
+use App\Classes\Models\Git\UserInfo;
 use App\Classes\UserAgent;
 use Illuminate\Support\Facades\Log;
 
@@ -48,7 +52,7 @@ class Bitbucket implements GitProviderInterface {
 			['grant_type' => "authorization_code", 'code' => $code]
 		);
 
-		Log::debug('[fetchAccessToken] - '.$raw_response);
+		Log::debug('[fetchAccessToken] - ' . $raw_response);
 
 		$json = json_decode($raw_response);
 
@@ -58,35 +62,35 @@ class Bitbucket implements GitProviderInterface {
 
 		$epoch = time();
 
-		return [
+		return new Tokens([
 			'token'         => $this->token,
 			'refresh_token' => $json->refresh_token,
 			'expire_epoch'  => $epoch + ($json->expires_in - 10), //10 seconds buffer, just in case
-		];
+		]);
 
 	}
 
 	public function getUserInfo() {
 		$raw_response = $this->ua->get($this->api . '/2.0/user');
 
-		Log::debug('[getUserInfo] - '.$raw_response);
+		Log::debug('[getUserInfo] - ' . $raw_response);
 		$json = json_decode($raw_response);
 
-		return (object) ['login' => ucfirst(strtolower($json->username))];
+		return new UserInfo(['login' => $json->username]);
 	}
 
 	public function listPullRequestsForRepo($owner, $repository) {
 		$raw_response = $this->ua->get($this->api . "/2.0/repositories/$owner/$repository/pullrequests?pagelen=50&state=OPEN");
-		Log::debug("[listPullRequestsForRepo][$owner/$repository] - ".$raw_response);
+		Log::debug("[listPullRequestsForRepo][$owner/$repository] - " . $raw_response);
 
 		$json    = json_decode($raw_response);
 		$std_prs = array();
 
 		foreach ($json->values as $key => $pr) {
-			$std_prs[] = array(
+			$std_prs[] = new PullRequest([
 				'name' => $pr->title,
 				'url'  => $pr->links->html->href,
-			);
+			]);
 		}
 
 		return $std_prs;
@@ -110,7 +114,7 @@ class Bitbucket implements GitProviderInterface {
 		]);
 
 		$raw_response = $this->ua->post($this->api . "/2.0/repositories/$owner/$repository/pullrequests", $request_data);
-		Log::debug("[createPullRequest][$owner/$repository] - ".$raw_response);
+		Log::debug("[createPullRequest][$owner/$repository] - " . $raw_response);
 
 		$json          = json_decode($raw_response);
 		$error_message = 'Failed to create pull request';
@@ -123,7 +127,7 @@ class Bitbucket implements GitProviderInterface {
 		}
 
 		if (isset($json->error->message)) {
-			$error_message = 'Error from Bitbucket : '.$json->error->message;
+			$error_message = 'Error from Bitbucket : ' . $json->error->message;
 		}
 
 		return [
@@ -135,16 +139,16 @@ class Bitbucket implements GitProviderInterface {
 
 	public function listBranchesForRepo($owner, $repository) {
 		$raw_response = $this->ua->get($this->api . "/2.0/repositories/$owner/$repository/refs/branches?pagelen=100");
-		Log::debug("[listBranchesForRepo][$owner/$repository] - ".$raw_response);
+		Log::debug("[listBranchesForRepo][$owner/$repository] - " . $raw_response);
 
 		$json = json_decode($raw_response);
 
 		$std_branches = array();
 
 		foreach ($json->values as $key => $branch) {
-			$std_branches[] = array(
+			$std_branches[] = new Branch([
 				'name' => $branch->name,
-			);
+			]);
 		}
 
 		return $std_branches;
@@ -152,18 +156,18 @@ class Bitbucket implements GitProviderInterface {
 
 	public function listRepositories() {
 		$raw_response = $this->ua->get($this->api . '/1.0/user/repositories?pagelen=100');
-		Log::debug('[listRepositories] - '.$raw_response);
+		Log::debug('[listRepositories] - ' . $raw_response);
 
 		$repos     = json_decode($raw_response);
 		$std_repos = array();
 
 		foreach ($repos as $key => $repo) {
-			$std_repos[] = array(
+			$std_repos[] = new Repository([
 				'name'     => $repo->owner . '/' . $repo->slug,
 				'id'       => $repo->slug,
 				'url'      => $this->bitbucket . '/' . $repo->owner . '/' . $repo->slug,
 				'language' => $repo->language,
-			);
+			]);
 		}
 
 		return $std_repos;
@@ -190,11 +194,11 @@ class Bitbucket implements GitProviderInterface {
 
 		$epoch = time();
 
-		return [
+		return new Tokens([
 			'token'         => $this->token,
 			'refresh_token' => $json->refresh_token,
 			'expire_epoch'  => $epoch + ($json->expires_in - 10), //10 seconds buffer, just in case
-		];
+		]);
 	}
 
 }

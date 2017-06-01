@@ -148,7 +148,8 @@ class ReviewRequest extends Controller {
 
 		foreach ($accounts as $key => $account) {
 
-			$account_checked = $this->getAccount($account->id, $account->user_id); //To force refresh where needed
+			$account_checked = $this->getAccount($account->id, $account->user_id);
+//To force refresh where needed
 
 			//Provider and id are not going to changen, but token might just have been changed by the above statement
 			$client = $this->getClient($account_checked->provider);
@@ -195,9 +196,9 @@ class ReviewRequest extends Controller {
 		$client = $this->getClient($account->provider);
 		$client->setToken($account->token);
 
-		$raw_response = $client->listPullRequestsForRepo($owner, $repo);
+		$pull_request_array = $client->listPullRequestsForRepo($owner, $repo);
 
-		return json_encode($raw_response);
+		return json_encode($pull_request_array);
 	}
 
 	public function getBranches($owner, $repo, $account_id) {
@@ -406,8 +407,8 @@ class ReviewRequest extends Controller {
 				Log::info("[USER $user_id] Token expired, refreshing for $user_id (Account $account_id)");
 
 				DB::table('accounts')->where('id', $account_id)->update([
-					'token'        => $tokens['token'],
-					'expire_epoch' => $tokens['expire_epoch'],
+					'token'        => $tokens->token,
+					'expire_epoch' => $tokens->expire_epoch,
 					'updated_at'   => \Carbon\Carbon::now(),
 				]);
 
