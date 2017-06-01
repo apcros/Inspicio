@@ -1,6 +1,11 @@
 <?php
 namespace App\Classes\GitProviders;
 
+use App\Classes\Models\Git\Branch;
+use App\Classes\Models\Git\PullRequest;
+use App\Classes\Models\Git\Repository;
+use App\Classes\Models\Git\Tokens;
+use App\Classes\Models\Git\UserInfo;
 use App\Classes\UserAgent;
 use Illuminate\Support\Facades\Log;
 
@@ -60,10 +65,11 @@ class Github implements GitProviderInterface {
 			$this->setToken($json->access_token);
 		}
 
-		return [
+		return new Tokens([
 			'token'         => $this->token,
 			'refresh_token' => null,
-			'expire_epoch'  => null];
+			'expire_epoch'  => null,
+		]);
 	}
 
 	/*
@@ -86,7 +92,7 @@ class Github implements GitProviderInterface {
 
 		$json = json_decode($raw_response);
 
-		return (object) ['login' => ucfirst(strtolower($json->login))];
+		return new UserInfo(['login' => $json->login]);
 	}
 
 	public function listPullRequestsForRepo($owner, $repository) {
@@ -101,10 +107,10 @@ class Github implements GitProviderInterface {
 		$std_prs = array();
 
 		foreach ($prs as $key => $pr) {
-			$std_prs[] = array(
+			$std_prs[] = new PullRequest([
 				'name' => $pr->title,
 				'url'  => $pr->html_url,
-			);
+			]);
 		}
 
 		return $std_prs;
@@ -120,9 +126,9 @@ class Github implements GitProviderInterface {
 		$std_branches = array();
 
 		foreach ($branches as $key => $branch) {
-			$std_branches[] = array(
+			$std_branches[] = new Branch([
 				'name' => $branch->name,
-			);
+			]);
 		}
 
 		return $std_branches;
@@ -179,12 +185,12 @@ class Github implements GitProviderInterface {
 		$std_repos = array();
 
 		foreach ($repos as $key => $repo) {
-			$std_repos[] = array(
+			$std_repos[] = new Repository([
 				'name'     => $repo->full_name,
 				'id'       => $repo->id,
 				'url'      => $repo->url,
 				'language' => $repo->language,
-			);
+			]);
 		}
 
 		return $std_repos;
