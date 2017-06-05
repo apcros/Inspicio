@@ -105,8 +105,8 @@ class Github implements GitProviderInterface {
 
 		foreach ($prs as $key => $pr) {
 			$std_prs[] = new PullRequest([
-				'name' => $pr->title,
-				'url'  => $pr->html_url,
+				'name' => $pr['title'],
+				'url'  => $pr['html_url'],
 			]);
 		}
 
@@ -124,7 +124,7 @@ class Github implements GitProviderInterface {
 
 		foreach ($branches as $key => $branch) {
 			$std_branches[] = new Branch([
-				'name' => $branch->name,
+				'name' => $branch['name'],
 			]);
 		}
 
