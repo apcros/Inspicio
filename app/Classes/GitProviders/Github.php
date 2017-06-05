@@ -96,14 +96,11 @@ class Github implements GitProviderInterface {
 	}
 
 	public function listPullRequestsForRepo($owner, $repository) {
-
-		$pulls_url = $this->api . '/repos/' . $owner . '/' . $repository . '/pulls';
-
-		$raw_response = $this->ua->get($pulls_url);
-
-		Log::debug("[listPullRequestsForRepo][$owner/$repository]" . $raw_response);
-
-		$prs     = json_decode($raw_response);
+		$prs = $this->paginate(
+			'/repos/' . $owner . '/' . $repository . '/pulls',
+			"[listPullRequestsForRepo][$owner/$repository]",
+			50
+		);
 		$std_prs = array();
 
 		foreach ($prs as $key => $pr) {
@@ -117,12 +114,12 @@ class Github implements GitProviderInterface {
 	}
 
 	public function listBranchesForRepo($owner, $repository) {
-		$branch_url   = $this->api . '/repos/' . $owner . '/' . $repository . '/branches';
-		$raw_response = $this->ua->get($branch_url);
 
-		Log::debug("[listBranchesForRepo][$owner/$repository]" . $raw_response);
+		$branches = $this->paginate(
+			'/repos/' . $owner . '/' . $repository . '/branches',
+			"[listBranchesForRepo][$owner/$repository]"
+		);
 
-		$branches     = json_decode($raw_response);
 		$std_branches = array();
 
 		foreach ($branches as $key => $branch) {
@@ -173,23 +170,16 @@ class Github implements GitProviderInterface {
 	}
 
 	public function listRepositories() {
-		$raw_response = $this->ua->get($this->api . '/user/repos?per_page=100');
-
-		Log::debug('[listRepositories]' . $raw_response);
-
-		$repos = json_decode($raw_response);
-
-		Log::debug($raw_response);
-
+		$repos = $this->paginate('/user/repos', 'listRepositories', 100);
 		//We need to standarize the format
 		$std_repos = array();
 
 		foreach ($repos as $key => $repo) {
 			$std_repos[] = new Repository([
-				'name'     => $repo->full_name,
-				'id'       => $repo->id,
-				'url'      => $repo->url,
-				'language' => $repo->language,
+				'name'     => $repo['full_name'],
+				'id'       => $repo['id'],
+				'url'      => $repo['url'],
+				'language' => $repo['language'],
 			]);
 		}
 
@@ -203,6 +193,32 @@ class Github implements GitProviderInterface {
 
 	public function refreshToken($refresh_token) {
 		Log::warning('RefreshToken called for Github, Tokens should not expire');
+	}
+
+	private function paginate($endpoint, $method_name, $per_page = null) {
+		$page  = 1;
+		$fetch = true;
+		$data  = [];
+
+		isset($per_page) ? ($per_page_arg = '') : ($per_page_arg = "&per_page=$per_page");
+
+		while ($fetch) {
+
+			$raw_response = $this->ua->get($this->api . $endpoint . "?page=$page" . $per_page_arg);
+			Log::debug("[$method_name] - Page $page \n ===== \n" . $raw_response . "\n ===== \n");
+			$current_data = json_decode($raw_response, true);
+
+			if (isset($current_data[0])) {
+				$page++;
+				$data = array_merge($current_data, $data);
+			} else {
+				$fetch = false;
+			}
+
+		}
+
+		return $data;
+
 	}
 
 }
