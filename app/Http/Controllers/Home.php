@@ -46,10 +46,41 @@ class Home extends Controller {
 		return view('home', ['hot_reviews' => $hot_reviews, 'latest_reviews' => $latest_reviews]);
 	}
 
+	public function search(Request $request) {
+		$search_str = $request->input('filters.query');
+		$languages  = $request->input('filters.languages');
+		$page       = $request->input('page');
+
+		$reviews = DB::table('requests')
+			->join('users', 'requests.author_id', '=', 'users.id')
+			->join('skills', 'requests.skill_id', '=', 'skills.id')
+			->select(
+				'requests.id',
+				'requests.name',
+				'requests.repository',
+				'users.nickname as author',
+				'skills.name as language'
+			)
+			->orderBy('requests.created_at', 'desc')
+			->groupBy('skills.name', 'users.nickname', 'requests.id')
+			->when(count($languages) > 0, function ($query) {
+				return $query->whereIn('skills.language', $languages);
+			})
+			->when($search_str != '', function ($query) {
+				return $query->where('requests.name', 'like', '%' . $search_str . '%')
+					->orWhere('requests.description', 'like', '%' . $search_str . '%'); //TODO : Consider performance impact of that description search
+			})
+			->limit(20)
+			->get();
+
+		return response()->json($reviews);
+	}
+
 	public function register(Request $request) {
 
 		if (!$request->session()->has('user_nickname')) {
-            Log::error('No user_nickname set, could not create account');
+			Log::error('No user_nickname set, could not create account');
+
 			return view('home', ['error_message' => "Couldn't register your account, please try again"]);
 		}
 
