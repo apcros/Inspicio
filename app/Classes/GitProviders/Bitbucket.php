@@ -80,16 +80,18 @@ class Bitbucket implements GitProviderInterface {
 	}
 
 	public function listPullRequestsForRepo($owner, $repository) {
-		$raw_response = $this->ua->get($this->api . "/2.0/repositories/$owner/$repository/pullrequests?pagelen=50&state=OPEN");
-		Log::debug("[listPullRequestsForRepo][$owner/$repository] - " . $raw_response);
 
-		$json    = json_decode($raw_response);
+		$prs = $this->paginate(
+			"/2.0/repositories/$owner/$repository/pullrequests",
+			"[listPullRequestsForRepo][$owner/$repository]",
+			'state=OPEN');
+
 		$std_prs = array();
 
-		foreach ($json->values as $key => $pr) {
+		foreach ($prs as $key => $pr) {
 			$std_prs[] = new PullRequest([
-				'name' => $pr->title,
-				'url'  => $pr->links->html->href,
+				'name' => $pr['title'],
+				'url'  => $pr['links']['html']['href'],
 			]);
 		}
 
@@ -138,16 +140,16 @@ class Bitbucket implements GitProviderInterface {
 	}
 
 	public function listBranchesForRepo($owner, $repository) {
-		$raw_response = $this->ua->get($this->api . "/2.0/repositories/$owner/$repository/refs/branches?pagelen=100");
-		Log::debug("[listBranchesForRepo][$owner/$repository] - " . $raw_response);
 
-		$json = json_decode($raw_response);
+		$branches = $this->paginate(
+			"/2.0/repositories/$owner/$repository/refs/branches",
+			"[listBranchesForRepo][$owner/$repository]");
 
 		$std_branches = array();
 
-		foreach ($json->values as $key => $branch) {
+		foreach ($branches as $key => $branch) {
 			$std_branches[] = new Branch([
-				'name' => $branch->name,
+				'name' => $branch['name'],
 			]);
 		}
 
@@ -155,7 +157,8 @@ class Bitbucket implements GitProviderInterface {
 	}
 
 	public function listRepositories() {
-		$raw_response = $this->ua->get($this->api . '/1.0/user/repositories?pagelen=100');
+		//TODO Fetch the username and use the 2.0 api to be able to use pagination
+		$raw_response = $this->ua->get($this->api . '/1.0/user/repositories');
 		Log::debug('[listRepositories] - ' . $raw_response);
 
 		$repos     = json_decode($raw_response);
@@ -199,6 +202,36 @@ class Bitbucket implements GitProviderInterface {
 			'refresh_token' => $json->refresh_token,
 			'expire_epoch'  => $epoch + ($json->expires_in - 10), //10 seconds buffer, just in case
 		]);
+	}
+
+	private function paginate($endpoint, $method_name, $params = '', $pagelen = 50) {
+		$page  = 1;
+		$fetch = true;
+		$data  = [];
+
+		while ($fetch) {
+			$raw_response = $this->ua->get($this->api . '/' . $endpoint . "?pagelen=$pagelen&page=$page&$params");
+			Log::debug("[$method_name] Page $page - \n ==== \n " . $raw_response . "\n ==== \n");
+			$current_data = json_decode($raw_response, true);
+
+			if (isset($current_data['page'])) {
+
+				if (count($current_data['values']) > 0) {
+					$page++;
+					$data = array_merge($current_data['values'], $data);
+				} else {
+					$fetch = false;
+				}
+
+			} else {
+				Log::error("Error from bitbucket api during pagination for $method_name");
+				$fetch = false;
+			}
+
+		}
+
+		return $data;
+
 	}
 
 }
