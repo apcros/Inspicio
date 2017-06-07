@@ -66,7 +66,7 @@ class Home extends Controller {
 			->when(count($languages) > 0, function ($query) {
 				return $query->whereIn('skills.language', $languages);
 			})
-			->when($search_str != '', function ($query) {
+			->when($search_str != '', function ($query, $search_str) {
 				return $query->where('requests.name', 'like', '%' . $search_str . '%')
 					->orWhere('requests.description', 'like', '%' . $search_str . '%'); //TODO : Consider performance impact of that description search
 			})

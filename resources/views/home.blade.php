@@ -3,11 +3,12 @@
 
 @section('content')
 	@if (isset($hot_reviews))
+	<script type="text/javascript" src="{{ asset('js/search.js') }}"></script>
 <div>
   <ul class="nav nav-tabs" role="tablist">
     <li role="presentation" class="active"><a href="#hot_reviews" aria-controls="hot_reviews" role="tab" data-toggle="tab">Hot reviews</a></li>
     <li role="presentation"><a href="#latest_reviews" aria-controls="latest_reviews" role="tab" data-toggle="tab">Latest reviews</a></li>
-    <li role="presentation"><a href="#search" aria-controls="search" role="tab" data-toggle="tab" disabled>Search</a></li>
+    <li role="presentation"><a href="#search" aria-controls="search" role="tab" data-toggle="tab">Search</a></li>
   </ul>
   <div class="tab-content">
     <div role="tabpanel" class="tab-pane active" id="hot_reviews">
@@ -40,7 +41,9 @@
     	</div>
     @endforeach
     </div>
-
+    <div role="tabpanel" class="tab-pane" id="search">
+    	Search - TODO
+    </div>
   </div>
 </div>
 	@endif
