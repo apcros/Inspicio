@@ -52,4 +52,43 @@ class HomeTest extends TestCase {
 			'login' => 'bob_git_nickname',
 		]);
 	}
+
+	public function testSearch() {
+		$this->seed('DatabaseSeederForTests');
+
+		$review = [
+			'id'         => 'e4dc3896-4a40-49b8-b3f2-0dc45916437a',
+			'name'       => 'Amazing code review request',
+			'repository' => 'testuser/testrepo',
+			'author'     => 'testuser',
+			'language'   => 'A++'];
+
+		$this->json('POST', '/api/reviews/search',
+			['filters' => [
+				'query'     => 'NOT FOUNDS',
+				'languages' => [],
+			],
+			])->assertJson(['success' => 1, 'reviews' => []]);
+
+		$this->json('POST', '/api/reviews/search',
+			['filters' => [
+				'query'     => 'NOT FOUNDS',
+				'languages' => [1, 2],
+			],
+			])->assertJson(['success' => 1, 'reviews' => []]);
+
+		$this->json('POST', '/api/reviews/search',
+			['filters' => [
+				'query'     => '',
+				'languages' => [1, 2],
+			],
+			])->assertJson(['success' => 1, 'reviews' => [$review]]);
+
+		$this->json('POST', '/api/reviews/search',
+			['filters' => [
+				'query'     => 'Amazing',
+				'languages' => [],
+			],
+			])->assertJson(['success' => 1, 'reviews' => [$review]]);
+	}
 }

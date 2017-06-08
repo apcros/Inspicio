@@ -43,13 +43,18 @@ class Home extends Controller {
 			->limit(20)
 			->get();
 
-		return view('home', ['hot_reviews' => $hot_reviews, 'latest_reviews' => $latest_reviews]);
+		$languages = DB::table('skills')->get();
+
+		return view('home', [
+			'hot_reviews'    => $hot_reviews,
+			'latest_reviews' => $latest_reviews,
+			'languages'      => $languages,
+		]);
 	}
 
 	public function search(Request $request) {
 		$search_str = $request->input('filters.query');
 		$languages  = $request->input('filters.languages');
-		$page       = $request->input('page');
 
 		$reviews = DB::table('requests')
 			->join('users', 'requests.author_id', '=', 'users.id')
@@ -63,17 +68,19 @@ class Home extends Controller {
 			)
 			->orderBy('requests.created_at', 'desc')
 			->groupBy('skills.name', 'users.nickname', 'requests.id')
-			->when(count($languages) > 0, function ($query) {
-				return $query->whereIn('skills.language', $languages);
+			->when(count($languages) > 0, function ($query) use ($languages) {
+				return $query->whereIn('skills.id', $languages);
 			})
-			->when($search_str != '', function ($query, $search_str) {
+			->when($search_str != '', function ($query) use ($search_str) {
 				return $query->where('requests.name', 'like', '%' . $search_str . '%')
 					->orWhere('requests.description', 'like', '%' . $search_str . '%'); //TODO : Consider performance impact of that description search
 			})
 			->limit(20)
 			->get();
 
-		return response()->json($reviews);
+		return response()->json([
+			'success' => 1,
+			'reviews' => $reviews]);
 	}
 
 	public function register(Request $request) {
