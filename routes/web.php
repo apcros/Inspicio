@@ -19,3 +19,5 @@ Route::get('/oauth/callback/{provider}', 'OAuthLogin@stepTwo');
 
 Route::get('/reviews/{reviewid}/view', 'ReviewRequest@displayReview');
 Route::get('/members/{userid}/profile', 'Profile@displayPublicProfile');
+
+Route::post('/api/reviews/search','Home@search');

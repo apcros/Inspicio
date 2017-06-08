@@ -43,13 +43,51 @@ class Home extends Controller {
 			->limit(20)
 			->get();
 
-		return view('home', ['hot_reviews' => $hot_reviews, 'latest_reviews' => $latest_reviews]);
+		$languages = DB::table('skills')->get();
+
+		return view('home', [
+			'hot_reviews'    => $hot_reviews,
+			'latest_reviews' => $latest_reviews,
+			'languages'      => $languages,
+		]);
+	}
+
+	public function search(Request $request) {
+		$search_str = $request->input('filters.query');
+		$languages  = $request->input('filters.languages');
+
+		$reviews = DB::table('requests')
+			->join('users', 'requests.author_id', '=', 'users.id')
+			->join('skills', 'requests.skill_id', '=', 'skills.id')
+			->select(
+				'requests.id',
+				'requests.name',
+				'requests.repository',
+				'users.nickname as author',
+				'skills.name as language'
+			)
+			->orderBy('requests.created_at', 'desc')
+			->groupBy('skills.name', 'users.nickname', 'requests.id')
+			->when(count($languages) > 0, function ($query) use ($languages) {
+				return $query->whereIn('skills.id', $languages);
+			})
+			->when($search_str != '', function ($query) use ($search_str) {
+				return $query->where('requests.name', 'like', '%' . $search_str . '%')
+					->orWhere('requests.description', 'like', '%' . $search_str . '%'); //TODO : Consider performance impact of that description search
+			})
+			->limit(20)
+			->get();
+
+		return response()->json([
+			'success' => 1,
+			'reviews' => $reviews]);
 	}
 
 	public function register(Request $request) {
 
 		if (!$request->session()->has('user_nickname')) {
-            Log::error('No user_nickname set, could not create account');
+			Log::error('No user_nickname set, could not create account');
+
 			return view('home', ['error_message' => "Couldn't register your account, please try again"]);
 		}
 
