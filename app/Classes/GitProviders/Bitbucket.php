@@ -88,7 +88,7 @@ class Bitbucket implements GitProviderInterface {
 
 		$std_prs = array();
 
-		foreach ($prs as $key => $pr) {
+		foreach ($prs as $pr) {
 			$std_prs[] = new PullRequest([
 				'name' => $pr['title'],
 				'url'  => $pr['links']['html']['href'],
@@ -147,7 +147,7 @@ class Bitbucket implements GitProviderInterface {
 
 		$std_branches = array();
 
-		foreach ($branches as $key => $branch) {
+		foreach ($branches as $branch) {
 			$std_branches[] = new Branch([
 				'name' => $branch['name'],
 			]);
@@ -164,7 +164,7 @@ class Bitbucket implements GitProviderInterface {
 		$repos     = json_decode($raw_response);
 		$std_repos = array();
 
-		foreach ($repos as $key => $repo) {
+		foreach ($repos as $repo) {
 			$std_repos[] = new Repository([
 				'name'     => $repo->owner . '/' . $repo->slug,
 				'id'       => $repo->slug,
