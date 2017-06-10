@@ -103,7 +103,7 @@ class Github implements GitProviderInterface {
 		);
 		$std_prs = array();
 
-		foreach ($prs as $key => $pr) {
+		foreach ($prs as $pr) {
 			$std_prs[] = new PullRequest([
 				'name' => $pr['title'],
 				'url'  => $pr['html_url'],
@@ -122,7 +122,7 @@ class Github implements GitProviderInterface {
 
 		$std_branches = array();
 
-		foreach ($branches as $key => $branch) {
+		foreach ($branches as $branch) {
 			$std_branches[] = new Branch([
 				'name' => $branch['name'],
 			]);
@@ -156,7 +156,7 @@ class Github implements GitProviderInterface {
 		if (isset($pull_request->errors)) {
 			$error_message = 'Error(s) from GitHub : ';
 
-			foreach ($pull_request->errors as $key => $error) {
+			foreach ($pull_request->errors as $error) {
 				$error_message .= '[' . $error->message . ']';
 			}
 
@@ -174,7 +174,7 @@ class Github implements GitProviderInterface {
 		//We need to standarize the format
 		$std_repos = array();
 
-		foreach ($repos as $key => $repo) {
+		foreach ($repos as $repo) {
 			$std_repos[] = new Repository([
 				'name'     => $repo['full_name'],
 				'id'       => $repo['id'],

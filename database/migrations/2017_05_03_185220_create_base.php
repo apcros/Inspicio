@@ -109,7 +109,7 @@ class CreateBase extends Migration {
 
 		$resultSet;
 
-		foreach ($languages as $key => $language) {
+		foreach ($languages as $language) {
 			$resultSet[] = array('name' => $language);
 		}
 

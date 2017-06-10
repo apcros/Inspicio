@@ -24,6 +24,7 @@ class Home extends Controller {
 				'users.nickname as author',
 				'skills.name as language'
 			)
+			->where('status', 'open')
 			->orderBy('followers', 'desc')
 			->groupBy('skills.name', 'users.nickname', 'requests.id')
 			->limit(20)
@@ -38,6 +39,7 @@ class Home extends Controller {
 				'users.nickname as author',
 				'skills.name as language'
 			)
+			->where('status', 'open')
 			->orderBy('requests.created_at', 'desc')
 			->groupBy('skills.name', 'users.nickname', 'requests.id')
 			->limit(20)
@@ -55,6 +57,7 @@ class Home extends Controller {
 	public function search(Request $request) {
 		$search_str = $request->input('filters.query');
 		$languages  = $request->input('filters.languages');
+		//TODO add a filter to allow to search on closed prs
 
 		$reviews = DB::table('requests')
 			->join('users', 'requests.author_id', '=', 'users.id')
@@ -66,6 +69,7 @@ class Home extends Controller {
 				'users.nickname as author',
 				'skills.name as language'
 			)
+			->where('status', 'open')
 			->orderBy('requests.created_at', 'desc')
 			->groupBy('skills.name', 'users.nickname', 'requests.id')
 			->when(count($languages) > 0, function ($query) use ($languages) {

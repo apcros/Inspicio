@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class Profile extends Controller {
-	public function summary(Request $request) {
+	public function summary() {
 		$user_id  = session('user_id');
 		$user     = DB::table('users')->where('id', $user_id)->first();
 		$accounts = DB::table('accounts')->where('user_id', $user_id)->get();
@@ -106,7 +106,7 @@ class Profile extends Controller {
 
 	}
 
-	public function deleteSkill(Request $request, $skill_id) {
+	public function deleteSkill($skill_id) {
 		$user_id = session('user_id');
 
 		$skill_to_delete = DB::table('user_skills')

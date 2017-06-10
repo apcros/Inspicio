@@ -17,7 +17,7 @@ use \Ramsey\Uuid\Uuid;
 // - Return val
 class ReviewRequest extends Controller {
 
-	public function approve(Request $request, $reviewid) {
+	public function approve($reviewid) {
 		//TODO : Maybe move getReview to a middleware ?
 		$review = $this->getReview($reviewid);
 
@@ -136,7 +136,7 @@ class ReviewRequest extends Controller {
 		return redirect('/reviews/' . $review_request_id . '/view');
 	}
 
-	public function createForm(Request $request) {
+	public function createForm() {
 
 		$accounts        = $this->availableAccounts();
 		$reposPerAccount = array();
@@ -146,9 +146,10 @@ class ReviewRequest extends Controller {
 			return view('home', ['error_message' => "You don't have any points left. Please review someone else code to get points"]);
 		}
 
-		foreach ($accounts as $key => $account) {
+		foreach ($accounts as $account) {
 
 			$account_checked = $this->getAccount($account->id, $account->user_id);
+
 //To force refresh where needed
 
 			//Provider and id are not going to changen, but token might just have been changed by the above statement
@@ -212,7 +213,7 @@ class ReviewRequest extends Controller {
 		return json_encode($raw_response);
 	}
 
-	public function track(Request $request, $reviewid) {
+	public function track($reviewid) {
 
 		$review = $this->getReview($reviewid);
 
@@ -258,7 +259,7 @@ class ReviewRequest extends Controller {
 		]);
 	}
 
-	public function close(Request $request, $reviewid) {
+	public function close($reviewid) {
 		$review = $this->getReview($reviewid);
 
 		if (!$review) {
@@ -296,7 +297,7 @@ class ReviewRequest extends Controller {
 
 	}
 
-	public function viewAllMine(Request $request) {
+	public function viewAllMine() {
 		$user_id = session('user_id');
 		$reviews = DB::table('requests')
 			->where('author_id', $user_id)
@@ -307,7 +308,7 @@ class ReviewRequest extends Controller {
 			->get();
 
 		$followers_per_review = array();
-		foreach ($reviews as $key => $review) {
+		foreach ($reviews as $review) {
 			$followers = DB::table('request_tracking')
 				->join('users', 'request_tracking.user_id', '=', 'users.id')
 				->select('request_tracking.status', 'users.nickname', 'users.id')
@@ -335,6 +336,7 @@ class ReviewRequest extends Controller {
 			->where([
 				['request_tracking.user_id', '=', $user_id],
 				['request_tracking.status', '=', 'unapproved'],
+				['requests.status', '=', 'open'],
 			])
 			->get();
 
