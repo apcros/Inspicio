@@ -3,9 +3,8 @@
 namespace App;
 
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Foundation\Auth\User as Authenticatable;
 
-class User extends Authenticatable
+class User
 {
     use Notifiable;
 
@@ -15,15 +14,17 @@ class User extends Authenticatable
      * @var array
      */
     protected $fillable = [
-        'name', 'email', 'password',
+        'name', 'email',
     ];
 
-    /**
-     * The attributes that should be hidden for arrays.
-     *
-     * @var array
-     */
-    protected $hidden = [
-        'password', 'remember_token',
-    ];
+    
+    public function routeNotificationForMail()
+    {
+        return $this->email;
+    }
+
+    public function getKey()
+    {
+        return $this->email;
+    }
 }
