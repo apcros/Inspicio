@@ -11,6 +11,9 @@
 				<span class="label label-primary">{{$review->language}}</span>&nbsp;
 				<span class="label label-primary">{{$review->repository}}</span>
 			</p>
+			@if ($review->status == 'closed')
+				<div class="alert alert-warning"><b>This review is closed</b></div>
+			@endif
 			<p>
 				<div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
 				  <div class="panel panel-default">

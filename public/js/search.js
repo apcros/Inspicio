@@ -1,12 +1,14 @@
 function search() {
 	var query_val = $("#review-keywords").val();
 	var languages_selected = $("#review-language").val();
+	var search_in_closed = $("#review-can-be-closed").prop('checked');
 
 	$.post(window.location.origin+"/api/reviews/search",
 		{
 			filters: {
 				query: query_val,
-				languages: languages_selected
+				languages: languages_selected,
+				include_closed: search_in_closed
 			},
 		}
 		,function(data) {

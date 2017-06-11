@@ -7,6 +7,9 @@
 		    <h3 class="panel-title">{{ $review->name }} <span class="badge">{{$review->language}}</span></h3>
 		  </div>
 		  <div class="panel-body">
+		  	@if ($review->status == 'closed')
+				<div class="alert alert-warning"><b>This review is closed</b></div>
+			@endif
 		  	<i>Created at : {{$review->created_at}}, Last updated : {{$review->updated_at}}</i>
 		  	<hr>
 		    <b>Description :</b>
@@ -16,7 +19,7 @@
 		    <span class="badge">{{$followers}} Reviewers</span>
 		  </div>
 		  <div class="panel-footer">
-		  	@if(session('user_id'))
+		  	@if(session('user_id') && $review->status == 'open')
 		  		@if (session('user_id') != $review->author_id)
 
 			  		@if (isset($tracked))
@@ -30,7 +33,9 @@
 				  			<button onclick="followReview('{{$review->id}}')" id="review-action" class="btn btn-info">Follow this review</button>
 			  		@endif
 			  	@else
-			  		<a onclick="closeReview('{{$review->id}}')" id="review-close" class="btn btn-warning">Close</a>
+			  		@if ($review->status == 'open')
+			  			<a onclick="closeReview('{{$review->id}}')" id="review-close" class="btn btn-warning">Close</a>
+			  		@endif
 			  	@endif
 			@endif
 			  		<a href="{{$review->url}}" target="_blank" class="btn btn-info">View</a>

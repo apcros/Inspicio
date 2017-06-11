@@ -1,26 +1,3 @@
-$(document).ready(function(){
-	$('#repository').select2({placeholder: "Select a repository"});
-	$('#pull_request').select2({placeholder: "Select an open pull request"});
-	$('#language').select2({placeholder: "Select a language"});
-	$('#base_branch').select2();
-	$('#head_branch').select2();
-});
-$('#new_pull_request').change(function() {
-	var check = $(this).prop('checked');
-	$("#pull_request").attr('disabled',check);
-	$("#new_pull_request_branches_select").attr('hidden',!check);
-});
-
-$("#repository").on("select2:select", function (e) { 
-	var select_values = e.params.data.id.split(',');
-	var account_id = select_values[1];
-	var keys = select_values[0].split('/');
-
-	loadOpenPullRequests(keys[0], keys[1], account_id);
-	loadBranches(keys[0], keys[1], account_id);
-	loadRepoMetaData(select_values[0]);
-});
-
 function loadOpenPullRequests(owner, repo, account_id) {
 	$("#repository").attr('disabled', true);
 
@@ -57,3 +34,26 @@ function loadRepoMetaData(repo) {
 	var metadata = document.getElementById(repo+'_metadata').value.split(',');
 	$('#language').val(metadata[0]);
 }
+
+$(document).ready(function(){
+	$('#repository').select2({placeholder: "Select a repository"});
+	$('#pull_request').select2({placeholder: "Select an open pull request"});
+	$('#language').select2({placeholder: "Select a language"});
+	$('#base_branch').select2();
+	$('#head_branch').select2();
+});
+$('#new_pull_request').change(function() {
+	var check = $(this).prop('checked');
+	$("#pull_request").attr('disabled',check);
+	$("#new_pull_request_branches_select").attr('hidden',!check);
+});
+
+$("#repository").on("select2:select", function (e) { 
+	var select_values = e.params.data.id.split(',');
+	var account_id = select_values[1];
+	var keys = select_values[0].split('/');
+
+	loadOpenPullRequests(keys[0], keys[1], account_id);
+	loadBranches(keys[0], keys[1], account_id);
+	loadRepoMetaData(select_values[0]);
+});

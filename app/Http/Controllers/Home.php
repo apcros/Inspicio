@@ -14,7 +14,7 @@ class Home extends Controller {
 		return view('choose-auth-provider');
 	}
 
-	public function displayDiscover(Request $request) {
+	public function displayDiscover() {
 		$hot_reviews = DB::table('requests')
 			->join('users', 'requests.author_id', '=', 'users.id')
 			->join('skills', 'requests.skill_id', '=', 'skills.id')
@@ -55,9 +55,9 @@ class Home extends Controller {
 	}
 
 	public function search(Request $request) {
-		$search_str = $request->input('filters.query');
-		$languages  = $request->input('filters.languages');
-		//TODO add a filter to allow to search on closed prs
+		$search_str     = $request->input('filters.query');
+		$languages      = $request->input('filters.languages');
+		$include_closed = $request->input('filters.include_closed');
 
 		$reviews = DB::table('requests')
 			->join('users', 'requests.author_id', '=', 'users.id')
@@ -69,11 +69,13 @@ class Home extends Controller {
 				'users.nickname as author',
 				'skills.name as language'
 			)
-			->where('status', 'open')
 			->orderBy('requests.created_at', 'desc')
 			->groupBy('skills.name', 'users.nickname', 'requests.id')
 			->when(count($languages) > 0, function ($query) use ($languages) {
 				return $query->whereIn('skills.id', $languages);
+			})
+			->when($include_closed == 'false', function ($query) {
+				return $query->where('status', 'open');
 			})
 			->when($search_str != '', function ($query) use ($search_str) {
 				return $query->where('requests.name', 'like', '%' . $search_str . '%')
