@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Classes\GitProviderFactory;
 use App\Http\Controllers\Controller;
-use App\Notifications\FollowedYourReview;
+use App\Notifications\ActionOnYourReview;
 use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -47,6 +47,8 @@ class ReviewRequest extends Controller {
 				['request_id', '=', $reviewid],
 			])->update(['status' => 'approved']);
 			$this->addPoint();
+
+			$this->notifyUserEmail($user_id, $reviewid, 'approved');
 
 		} catch (\Illuminate\Database\QueryException $e) {
 			Log::error('[USER ' . session('user_id') . '] SQL error for review ' . $reviewid . ' : ' . $e->getMessage());
@@ -244,7 +246,7 @@ class ReviewRequest extends Controller {
 				'status'     => 'unapproved',
 			]);
 
-			$this->notifyUserEmail(session('user_id'), $reviewid);
+			$this->notifyUserEmail(session('user_id'), $reviewid, 'followed');
 
 		} catch (\Illuminate\Database\QueryException $e) {
 			Log::error('[USER ' . session('user_id') . '] SQL Error caught when following  ' . $reviewid . ' : ' . $e->getMessage());
@@ -429,16 +431,16 @@ class ReviewRequest extends Controller {
 		return $account;
 	}
 
-	private function notifyUserEmail($userid, $reviewid) {
+	private function notifyUserEmail($userid, $reviewid, $action) {
 		$review = $this->getReview($reviewid);
 		$owner  = DB::table('users')->where('id', $review->author_id)->first();
 		$user   = DB::table('users')->where('id', $userid)->first();
 
-        //TODO make eloquent models instead of re-using the default one in a horrible way
+		//TODO make eloquent models instead of re-using the default one in a horrible way
 		$user_model        = new User();
 		$user_model->email = $owner->email;
-        //TODO factory for notification based on what is sent to notify user
-		$user_model->notify(new FollowedYourReview($user, $review));
+
+		$user_model->notify(new ActionOnYourReview($user, $review, $action));
 	}
 
 }

@@ -3,14 +3,13 @@
 namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Notifications\Notification;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
+use Illuminate\Notifications\Notification;
 
-class FollowedYourReview extends Notification
-{
-    //use Queueable;
-    //TODO : Set a worker and let it be queued
+class ActionOnYourReview extends Notification implements ShouldQueue {
+    use Queueable;
+
     /**
      * Create a new notification instance.
      *
@@ -18,11 +17,12 @@ class FollowedYourReview extends Notification
      */
     private $user;
     private $review;
+    private $action;
 
-    public function __construct($user, $review)
-    {
-        $this->user = $user;
+    public function __construct($user, $review, $action) {
+        $this->user   = $user;
         $this->review = $review;
+        $this->action = $action;
     }
 
     /**
@@ -31,8 +31,7 @@ class FollowedYourReview extends Notification
      * @param  mixed  $notifiable
      * @return array
      */
-    public function via($notifiable)
-    {
+    public function via($notifiable) {
         return ['mail'];
     }
 
@@ -42,14 +41,13 @@ class FollowedYourReview extends Notification
      * @param  mixed  $notifiable
      * @return \Illuminate\Notifications\Messages\MailMessage
      */
-    public function toMail($notifiable)
-    {
+    public function toMail($notifiable) {
         //TODO : Update the email template
         return (new MailMessage)
-                    ->greeting('Someone just followed your review !')
-                    ->line('Hey, '.$this->user->nickname.' just followed your review "'.$this->review->name.'"')
-                    ->action('See review', url(env('APP_URL').'/reviews/'.$this->review->id.'/view'))
-                    ->line('Thanks for using Inspicio for your reviews !');
+            ->greeting('Someone just ' . $this->action . ' your review !')
+            ->line('Hey, ' . $this->user->nickname . ' just ' . $this->action . ' your review "' . $this->review->name . '"')
+            ->action('See review', url(env('APP_URL') . '/reviews/' . $this->review->id . '/view'))
+            ->line('Thanks for using Inspicio for your reviews !');
     }
 
     /**
@@ -58,8 +56,7 @@ class FollowedYourReview extends Notification
      * @param  mixed  $notifiable
      * @return array
      */
-    public function toArray($notifiable)
-    {
+    public function toArray($notifiable) {
         return [
             //
         ];
