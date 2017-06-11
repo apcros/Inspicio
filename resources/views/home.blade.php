@@ -50,17 +50,24 @@
     <div role="tabpanel" class="tab-pane" id="search">
     	<div class="panel panel-default">
     		<div class="panel-body">
-    		<div class="input-group">
-			    <div class="input-group-addon">Search</div>
-			      <input type="text" class="form-control" id="review-keywords" placeholder="Search">
+    			<div class="input-group">
+			    	<div class="input-group-addon">Keyword(s)</div>
+			      	<input type="text" class="form-control" id="review-keywords" placeholder="Search">
 			    </div>
 			    <p>
-				    <select multiple="multiple" id="review-language" style="width: 100%">
-			    		@foreach ($languages as $language)
-			    			<option value="{{$language->id}}">{{$language->name}}</option>
-			    		@endforeach
-			    	</select>
-			    	</p>
+				    <div class="form-group">
+					    <select multiple="multiple" id="review-language" style="width: 100%">
+				    		@foreach ($languages as $language)
+				    			<option value="{{$language->id}}">{{$language->name}}</option>
+				    		@endforeach
+				    	</select>
+				    </div>
+			    </p>
+			    <div class="checkbox">
+				    <label>
+				      <input type="checkbox" id="review-can-be-closed"> Include closed reviews ?
+				    </label>
+				</div>
 	    		<button onclick="search()" class="btn btn-info">Search</button>
 	    	</div>
     	</div>
