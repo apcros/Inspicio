@@ -3,6 +3,7 @@
 namespace Tests\Unit;
 
 use Illuminate\Foundation\Testing\DatabaseMigrations;
+use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
 class HomeTest extends TestCase {
@@ -28,7 +29,7 @@ class HomeTest extends TestCase {
 	}
 
 	public function testRegister() {
-
+		Notification::fake();
 		$user_data = [
 			'email'         => 'amazingtest@testest.co.uk',
 			'name'          => 'bob',

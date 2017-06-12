@@ -3,6 +3,8 @@
 namespace Tests\Unit;
 
 use Illuminate\Foundation\Testing\DatabaseMigrations;
+use Illuminate\Support\Facades\Notification;
+use App\Notifications\RegisteredAccount;
 use Tests\TestCase;
 
 class ReviewTest extends TestCase {
@@ -72,6 +74,7 @@ class ReviewTest extends TestCase {
 
 	public function testTrackAndApproval() {
 		$this->seed('DatabaseSeederForTests');
+		Notification::fake();
 
 		$response = $this->withSession($this->user_data_bis)
 			->json('POST', '/ajax/reviews/' . $this->user_review_id . '/track')
