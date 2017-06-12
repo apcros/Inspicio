@@ -16,6 +16,10 @@ class Home extends Controller {
 		return view('choose-auth-provider');
 	}
 
+	public function about() {
+		return view('about');
+	}
+
 	public function displayDiscover() {
 		$hot_reviews = DB::table('requests')
 			->join('users', 'requests.author_id', '=', 'users.id')

@@ -45,7 +45,13 @@
 		        @else
 		        	<li><a href="/choose-auth">Login</a></li>
 		        @endif
-
+		        	<li class="dropdown">
+			          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">More info <span class="caret"></span></a>
+			          <ul class="dropdown-menu">
+			            <li><a href="/about">About</a></li>
+			            <li><a href="https://github.com/apcros/Inspicio/issues">Bugs / Suggestions</a></li>
+			          </ul>
+			        </li>
 		      </ul>
 		    </div>
 		  </div>
