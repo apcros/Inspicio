@@ -4,6 +4,7 @@ namespace Tests\Unit;
 
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Support\Facades\Notification;
+use App\Notifications\RegisteredAccount;
 use Tests\TestCase;
 
 class ReviewTest extends TestCase {

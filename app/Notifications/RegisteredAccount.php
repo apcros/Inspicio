@@ -7,7 +7,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class ActionOnYourReview extends Notification implements ShouldQueue {
+class RegisteredAccount extends Notification implements ShouldQueue {
 	use Queueable;
 
 	/**
@@ -16,13 +16,8 @@ class ActionOnYourReview extends Notification implements ShouldQueue {
 	 * @return void
 	 */
 	private $user;
-	private $review;
-	private $action;
-
-	public function __construct($user, $review, $action) {
-		$this->user   = $user;
-		$this->review = $review;
-		$this->action = $action;
+	public function __construct($user) {
+		$this->user = $user;
 	}
 
 	/**
@@ -42,12 +37,11 @@ class ActionOnYourReview extends Notification implements ShouldQueue {
 	 * @return \Illuminate\Notifications\Messages\MailMessage
 	 */
 	public function toMail($notifiable) {
-
 		return (new MailMessage)
-			->subject($this->user->nickname.' '.$this->action. ' your review')
-			->greeting('Someone just ' . $this->action . ' your review !')
-			->line('Hey, ' . $this->user->nickname . ' just ' . $this->action . ' your review "' . $this->review->name . '"')
-			->action('See review', url(env('APP_URL') . '/reviews/' . $this->review->id . '/view'))
+			->subject('Welcome to Inspicio !')
+			->greeting('Hello ' . $this->user->name . ' ! You just created an Inspicio account.')
+			->line('You can now start creating reviews request and reviewing other people code.')
+			->action('Take me to Inspicio', url(env('APP_URL')))
 			->line('Thanks for using Inspicio for your reviews !');
 	}
 

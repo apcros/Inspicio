@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Notifications\RegisteredAccount;
+use App\User;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -137,6 +139,11 @@ class Home extends Controller {
 		}
 
 		Session(['user_email' => $email, 'user_id' => $user_id]);
+
+		$user              = DB::table('users')->where('id', $user_id)->first();
+		$user_model        = new User();
+		$user_model->email = $user->email;
+		$user_model->notify(new RegisteredAccount($user));
 
 		return redirect('/');
 	}
