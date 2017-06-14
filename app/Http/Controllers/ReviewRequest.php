@@ -74,6 +74,8 @@ class ReviewRequest extends Controller {
 		$pull_request_url   = $request->input('pull_request');
 		$description        = $request->input('description');
 
+        //TODO : Use strip_tags here to get only what's supported by tinymce
+        die();
 		if ($this->getPoints() == 0) {
 			Log::warning('[ USER ' . session('user_id') . '] Attempted to create a review with no points');
 

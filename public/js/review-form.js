@@ -41,6 +41,7 @@ $(document).ready(function(){
 	$('#language').select2({placeholder: "Select a language"});
 	$('#base_branch').select2();
 	$('#head_branch').select2();
+	tinymce.init({ selector:'textarea' });
 });
 $('#new_pull_request').change(function() {
 	var check = $(this).prop('checked');
