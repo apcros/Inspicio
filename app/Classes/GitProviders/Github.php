@@ -80,7 +80,7 @@ class Github implements GitProviderInterface {
 		return $this->github . '/login/oauth/authorize?client_id='
 		. urlencode($this->client_id) . '&state='
 		. urlencode($csrf_token) . '&redirect_uri='
-		. urlencode($redirect_uri) . '&scope=user,repo';
+		. urlencode($redirect_uri) . '&scope=public_repo';
 	}
 
 	/*
@@ -133,7 +133,6 @@ class Github implements GitProviderInterface {
 
 	public function createPullRequest($owner, $repository, $head, $base, $title, $description) {
 		$api_url = $this->api . '/repos/' . $owner . '/' . $repository . '/pulls';
-		Log::debug("[createPullRequest][$owner/$repository]" . $raw_response);
 
 		$raw_response = $this->ua->post($api_url, json_encode([
 			'title' => $title,
@@ -141,7 +140,7 @@ class Github implements GitProviderInterface {
 			'head'  => $head,
 			'base'  => $base,
 		]));
-
+		Log::debug("[createPullRequest][$owner/$repository]" . $raw_response);
 		$pull_request = json_decode($raw_response);
 
 		$error_message = 'Failed to create pull request';
