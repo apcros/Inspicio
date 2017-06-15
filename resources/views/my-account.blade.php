@@ -131,5 +131,5 @@
 			$('#skill').select2({placeholder: "Select a skill/language", autocomplete: "on"});
 		});
 	</script>
-	<script type="text/javascript" src="{{ asset('js/async-action-skills.js') }}"></script>
+	<script type="text/javascript" src="{{ secure_asset('js/async-action-skills.js') }}"></script>
 @endsection

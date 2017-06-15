@@ -8,12 +8,12 @@
 		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
 		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
 		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
-		<link rel="stylesheet" href="{{ asset('css/snackbar.min.css') }}">
-		<link rel="stylesheet" href="{{ asset('css/snackbar-material.css') }}">
-		<link rel="stylesheet" href="{{ asset('css/inspicio.css') }}">
+		<link rel="stylesheet" href="{{ secure_asset('css/snackbar.min.css') }}">
+		<link rel="stylesheet" href="{{ secure_asset('css/snackbar-material.css') }}">
+		<link rel="stylesheet" href="{{ secure_asset('css/inspicio.css') }}">
 		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
-		<script type="text/javascript" src="{{ asset('js/snackbar.min.js') }}"></script>
-		<script type="text/javascript" src="{{ asset('js/popout.js') }}"></script>
+		<script type="text/javascript" src="{{ secure_asset('js/snackbar.min.js') }}"></script>
+		<script type="text/javascript" src="{{ secure_asset('js/popout.js') }}"></script>
 		@yield('additional_head')
 		<nav class="navbar navbar-default">
 		  <div class="container-fluid">

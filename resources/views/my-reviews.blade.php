@@ -50,5 +50,5 @@
 		</li>
 	@endforeach
 </ul>
-<script type="text/javascript" src="{{ asset('js/async-action-reviews.js') }}"></script>
+<script type="text/javascript" src="{{ secure_asset('js/async-action-reviews.js') }}"></script>
 @endsection

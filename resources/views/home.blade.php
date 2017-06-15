@@ -9,7 +9,7 @@
 
 @section('content')
 	@if (isset($hot_reviews))
-	<script type="text/javascript" src="{{ asset('js/search.js') }}"></script>
+	<script type="text/javascript" src="{{ secure_asset('js/search.js') }}"></script>
 <div>
   <ul class="nav nav-tabs" role="tablist">
     <li role="presentation" class="active"><a href="#hot_reviews" aria-controls="hot_reviews" role="tab" data-toggle="tab">Hot reviews</a></li>

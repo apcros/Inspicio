@@ -4,7 +4,7 @@
 @section('additional_head')
 	<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/css/select2.min.css" rel="stylesheet" />
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/js/select2.min.js"></script>
-	<script type="text/javascript" src="{{ asset('js/tinymce.min.js') }}"></script>
+	<script type="text/javascript" src="{{ secure_asset('js/tinymce.min.js') }}"></script>
 @endsection
 
 @section('content')
@@ -71,5 +71,5 @@
 		  <button type="submit" class="btn btn-default">Post</button>
 		</form>
 	  </div>
-	  <script type="text/javascript" src="{{ asset('js/review-form.js') }}"></script>
+	  <script type="text/javascript" src="{{ secure_asset('js/review-form.js') }}"></script>
 @endsection

@@ -41,5 +41,5 @@
 			  		<a href="{{$review->url}}" target="_blank" class="btn btn-info">View</a>
 			  </div>
 		</div>
-		<script type="text/javascript" src="{{ asset('js/async-action-reviews.js') }}"></script>
+		<script type="text/javascript" src="{{ secure_asset('js/async-action-reviews.js') }}"></script>
 @endsection
