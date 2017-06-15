@@ -13,7 +13,7 @@
 		  	<i>Created at : {{$review->created_at}}, Last updated : {{$review->updated_at}}</i>
 		  	<hr>
 		    <b>Description :</b>
-		    <p>{{$review->description}}</p>
+		    <div class="well">{!! $review->description !!}</div>
 		    <hr>
 		    Created by <a href="/members/{{$review->author_id}}/profile">{{$review->nickname}}</a>
 		    <span class="badge">{{$followers}} Reviewers</span>
