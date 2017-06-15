@@ -49,7 +49,7 @@ class ReviewTest extends TestCase {
 			'title'        => 'Another greate code review',
 			'repository'   => 'supertest/amazing,' . $this->user_account_id,
 			'pull_request' => 'http://dummyurl.com',
-			'description'  => 'Wow great',
+			'description'  => '<p>Hello I am a review</p><h2>And I am a title</h2><script>alert("And I am a nasty script that should be ditched"</script><div>My div will be ditched</div>',
 			'language'     => 1,
 		]);
 
@@ -60,7 +60,7 @@ class ReviewTest extends TestCase {
 		$this->assertDatabaseHas('requests', [
 			'name'        => 'Another greate code review',
 			'repository'  => 'supertest/amazing',
-			'description' => 'Wow great',
+			'description' => '<p>Hello I am a review</p><h2>And I am a title</h2>My div will be ditched',
 			'skill_id'    => 1,
 			'author_id'   => $this->user_data['user_id'],
 			'account_id'  => $this->user_account_id,

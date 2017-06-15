@@ -9,6 +9,7 @@ use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use \Mews\Purifier\Facades\Purifier;
 use \Ramsey\Uuid\Uuid;
 
 //TODO : Remvoe code duplication caused by the :
@@ -74,8 +75,8 @@ class ReviewRequest extends Controller {
 		$pull_request_url   = $request->input('pull_request');
 		$description        = $request->input('description');
 
-        //TODO : Use strip_tags here to get only what's supported by tinymce
-        die();
+		$html_description = Purifier::clean($description, ['HTML.Allowed' => 'b,strong,i,em,u,a[href|title],ul,ol,li,p,br,pre,h2,h3,h4']);
+
 		if ($this->getPoints() == 0) {
 			Log::warning('[ USER ' . session('user_id') . '] Attempted to create a review with no points');
 
@@ -102,7 +103,7 @@ class ReviewRequest extends Controller {
 
 			list($owner, $repo) = explode('/', $owner_repo);
 
-			$pr_result = $client->createPullRequest($owner, $repo, $head_branch, $base_branch, $title, $description);
+			$pr_result = $client->createPullRequest($owner, $repo, $head_branch, $base_branch, $title, $html_description);
 
 			if ($pr_result['success'] == 0 || !isset($pr_result['url'])) {
 				Log::error('[USER ' . session('user_id') . '] Failed to create PR on ' . $account->provider);
@@ -120,7 +121,7 @@ class ReviewRequest extends Controller {
 			DB::table('requests')->insert([
 				'id'          => $review_request_id,
 				'name'        => $title,
-				'description' => $description,
+				'description' => $html_description,
 				'url'         => $pull_request_url,
 				'status'      => 'open',
 				'skill_id'    => $language,

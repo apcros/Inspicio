@@ -112,7 +112,7 @@ class Bitbucket implements GitProviderInterface {
 					'name' => $base,
 				],
 			],
-			'description' => $description,
+			'description' => strip_tags($description),
 		]);
 
 		$raw_response = $this->ua->post($this->api . "/2.0/repositories/$owner/$repository/pullrequests", $request_data);

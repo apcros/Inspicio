@@ -32,7 +32,7 @@ function loadBranches(owner, repo, account_id) {
 }
 function loadRepoMetaData(repo) {
 	var metadata = document.getElementById(repo+'_metadata').value.split(',');
-	$('#language').val(metadata[0]);
+	//TODO : Fix
 }
 
 $(document).ready(function(){
