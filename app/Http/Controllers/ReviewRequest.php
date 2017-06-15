@@ -334,7 +334,7 @@ class ReviewRequest extends Controller {
 		return view('my-reviews', ['reviews' => $reviews, 'followers' => $followers_per_review]);
 	}
 
-	public function viewAllTracked(Request $request) {
+	public function viewAllTracked() {
 		$user_id = session('user_id');
 
 		//TODO get rid of this awful code duplication, Single query ?
