@@ -43,6 +43,27 @@ class ReviewRequest extends Controller {
 		}
 
 		try {
+			$current_tracking = DB::table('request_tracking')->where([
+				['user_id', '=', $user_id],
+				['request_id', '=', $reviewid],
+			])->first();
+
+			if ($current_tracking->status == 'approved') {
+				return response()->json([
+					'success' => 0,
+					'message' => 'You already approved this review request',
+				]);
+			}
+
+			$time_since_creation = time() - strtotime($current_tracking->created_at);
+
+			if ($time_since_creation < 120) {
+				return response()->json([
+					'success' => 0,
+					'message' => "You can't approve a review request you followed less than 2 minutes ago",
+				]);
+			}
+
 			DB::table('request_tracking')->where([
 				['user_id', '=', $user_id],
 				['request_id', '=', $reviewid],
@@ -247,6 +268,8 @@ class ReviewRequest extends Controller {
 				'user_id'    => session('user_id'),
 				'request_id' => $reviewid,
 				'status'     => 'unapproved',
+				'created_at' => \Carbon\Carbon::now(),
+				'updated_at' => \Carbon\Carbon::now(),
 			]);
 
 			$this->notifyUserEmail(session('user_id'), $reviewid, 'followed');

@@ -25,6 +25,7 @@ function approveReview(id) {
 			displayPopup('snackbar-success', data.message, 4000);
 			$("#review-action").html('Approved');
 		} else {
+			$("#review-action").attr("disabled", false);
 			displayPopup('snackbar-error', 'Error '+data.message, 4000);
 		}
 
