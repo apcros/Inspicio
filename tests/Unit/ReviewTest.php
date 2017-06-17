@@ -3,8 +3,8 @@
 namespace Tests\Unit;
 
 use Illuminate\Foundation\Testing\DatabaseMigrations;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
-use App\Notifications\RegisteredAccount;
 use Tests\TestCase;
 
 class ReviewTest extends TestCase {
@@ -92,8 +92,28 @@ class ReviewTest extends TestCase {
 		$response = $this->withSession($this->user_data_bis)
 			->json('POST', '/ajax/reviews/' . $this->user_review_id . '/approve')
 			->assertJson([
+				'success' => 0,
+				'message' => "You can't approve a review request you followed less than 2 minutes ago",
+			]);
+
+		//Editing the DB directly is not great, but it works. More elegant solutions welcome
+		DB::table('request_tracking')->where([
+			['user_id', '=', $this->user_data_bis['user_id']],
+			['request_id', '=', $this->user_review_id],
+		])->update(['created_at' => \Carbon\Carbon::yesterday()]);
+
+		$response = $this->withSession($this->user_data_bis)
+			->json('POST', '/ajax/reviews/' . $this->user_review_id . '/approve')
+			->assertJson([
 				'success' => 1,
 				'message' => "Successfully approved (+1 point)",
+			]);
+
+		$response = $this->withSession($this->user_data_bis)
+			->json('POST', '/ajax/reviews/' . $this->user_review_id . '/approve')
+			->assertJson([
+				'success' => 0,
+				'message' => "You already approved this review request",
 			]);
 
 		$this->assertDatabaseHas('request_tracking', [
