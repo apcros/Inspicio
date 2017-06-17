@@ -241,6 +241,10 @@ class ReviewRequest extends Controller {
 		return json_encode($raw_response);
 	}
 
+    public function untrack($reviewid) {
+
+    }
+
 	public function track($reviewid) {
 
 		$review = $this->getReview($reviewid);
@@ -264,15 +268,24 @@ class ReviewRequest extends Controller {
 		}
 
 		try {
-			DB::table('request_tracking')->insert([
-				'user_id'    => session('user_id'),
-				'request_id' => $reviewid,
-				'status'     => 'unapproved',
-				'created_at' => \Carbon\Carbon::now(),
-				'updated_at' => \Carbon\Carbon::now(),
-			]);
+			$potential_tracking = DB::table('request_tracking')->where([
+				['user_id', '=', session('user_id')],
+				['request_id', '=', $reviewid],
+			])->first();
 
-			$this->notifyUserEmail(session('user_id'), $reviewid, 'followed');
+			if ($potential_tracking) {
+				DB::table('request_tracking')->where('id', $potential_tracking->id)->update(['status' => 'unapproved']);
+			} else {
+				DB::table('request_tracking')->insert([
+					'user_id'    => session('user_id'),
+					'request_id' => $reviewid,
+					'status'     => 'unapproved',
+					'created_at' => \Carbon\Carbon::now(),
+					'updated_at' => \Carbon\Carbon::now(),
+				]);
+
+				$this->notifyUserEmail(session('user_id'), $reviewid, 'followed');
+			}
 
 		} catch (\Illuminate\Database\QueryException $e) {
 			Log::error('[USER ' . session('user_id') . '] SQL Error caught when following  ' . $reviewid . ' : ' . $e->getMessage());
@@ -330,6 +343,10 @@ class ReviewRequest extends Controller {
 
 	}
 
+    public function reopen($reviewid) {
+        
+    }
+
 	public function viewAllMine() {
 		$user_id = session('user_id');
 		$reviews = DB::table('requests')
@@ -345,6 +362,7 @@ class ReviewRequest extends Controller {
 			$followers = DB::table('request_tracking')
 				->join('users', 'request_tracking.user_id', '=', 'users.id')
 				->select('request_tracking.status', 'users.nickname', 'users.id')
+				->whereIn('status', ['approved', 'unapproved'])
 				->where('request_id', $review->id)
 				->get();
 

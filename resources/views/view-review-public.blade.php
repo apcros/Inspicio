@@ -25,7 +25,8 @@
 			  		@if (isset($tracked))
 			  			@if ($tracked->status == 'approved')
 			  				<button class="btn btn-primary" disabled>Approved</button>
-			  			@else
+			  			@endif
+			  			@if ($tracked->status == 'unapproved')
 				  			<button onclick="approveReview('{{$review->id}}')" id="review-action" class="btn btn-primary">Approve</button>
 			  			@endif
 
