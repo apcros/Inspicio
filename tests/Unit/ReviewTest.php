@@ -122,15 +122,35 @@ class ReviewTest extends TestCase {
 			'status'     => 'approved',
 		]);
 
+		$response = $this->withSession($this->user_data_bis)->get('/reviews/tracked');
+		$response->assertStatus(200);
+		$content = $response->getContent();
+		$this->assertRegExp('/' . $this->user_review_id . '/', $content, 'Review request is displayed correctly on the tracked page');
+
+		$response = $this->withSession($this->user_data_bis)
+			->json('POST', '/ajax/reviews/' . $this->user_review_id . '/untrack')
+			->assertJson([
+				'success' => 1,
+				'message' => "Review request unfollowed",
+			]);
+
+		$this->assertDatabaseHas('request_tracking', [
+			'user_id'    => $this->user_data_bis['user_id'],
+			'request_id' => $this->user_review_id,
+			'status'     => 'unfollowed',
+		]);
+
+		$response = $this->withSession($this->user_data_bis)
+			->json('POST', '/ajax/reviews/' . $this->user_review_id . '/untrack')
+			->assertJson([
+				'success' => 0,
+				'message' => "You were not following this review request",
+			]);
 		$this->assertDatabaseHas('users', [
 			'id'     => $this->user_data_bis['user_id'],
 			'points' => 6,
 		]);
 
-		$response = $this->withSession($this->user_data_bis)->get('/reviews/tracked');
-		$response->assertStatus(200);
-		$content = $response->getContent();
-		$this->assertRegExp('/' . $this->user_review_id . '/', $content, 'Review request is displayed correctly on the tracked page');
 	}
 
 	public function testTrackAndApprovalFail() {

@@ -29,7 +29,9 @@
 			  			@if ($tracked->status == 'unapproved')
 				  			<button onclick="approveReview('{{$review->id}}')" id="review-action" class="btn btn-primary">Approve</button>
 			  			@endif
-
+			  			@if ($tracked->status != 'unfollowed')
+			  				<button onclick="unfollowReview('{{$review->id}}')" id="review-unfollow" class="btn btn-danger">Unfollow this review</button>
+			  			@endif
 			  		@else
 				  			<button onclick="followReview('{{$review->id}}')" id="review-action" class="btn btn-info">Follow this review</button>
 			  		@endif

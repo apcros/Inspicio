@@ -241,9 +241,54 @@ class ReviewRequest extends Controller {
 		return json_encode($raw_response);
 	}
 
-    public function untrack($reviewid) {
+	public function untrack($reviewid) {
+		$review = $this->getReview($reviewid);
 
-    }
+		if (!$review) {
+			return response()->json([
+				'success' => 0,
+				'message' => 'Review Request not found !',
+			]);
+		}
+
+//TODO keep the old status. To avoid giving points to someone that unfollow, follow and re-approve
+		try {
+			$tracking = DB::table('request_tracking')
+				->whereIn('status', ['approved', 'unapproved'])
+				->where([
+					['user_id', '=', session('user_id')],
+					['request_id', '=', $reviewid],
+				])->first();
+
+			if ($tracking) {
+				DB::table('request_tracking')->where([
+					['user_id', '=', session('user_id')],
+					['request_id', '=', $reviewid],
+				])->update(['status' => 'unfollowed']);
+			} else {
+				return response()->json([
+					'success' => 0,
+					'message' => 'You were not following this review request',
+				]);
+			}
+
+		} catch (\Illuminate\Database\QueryException $e) {
+			Log::error('[USER ' . session('user_id') . '] SQL Error caught when unfollowing  ' . $reviewid . ' : ' . $e->getMessage());
+
+			return response()->json([
+				'success' => 0,
+				'message' => 'An error ocurred !',
+			]);
+
+		}
+
+		Log::info('[USER ' . session('user_id') . "] unfollowed $reviewid");
+
+		return response()->json([
+			'success' => 1,
+			'message' => 'Review request unfollowed',
+		]);
+	}
 
 	public function track($reviewid) {
 
@@ -274,7 +319,10 @@ class ReviewRequest extends Controller {
 			])->first();
 
 			if ($potential_tracking) {
-				DB::table('request_tracking')->where('id', $potential_tracking->id)->update(['status' => 'unapproved']);
+				DB::table('request_tracking')->where([
+					['user_id', '=', session('user_id')],
+					['request_id', '=', $reviewid],
+				])->update(['status' => 'unapproved']);
 			} else {
 				DB::table('request_tracking')->insert([
 					'user_id'    => session('user_id'),
@@ -343,9 +391,9 @@ class ReviewRequest extends Controller {
 
 	}
 
-    public function reopen($reviewid) {
-        
-    }
+	public function reopen($reviewid) {
+
+	}
 
 	public function viewAllMine() {
 		$user_id = session('user_id');

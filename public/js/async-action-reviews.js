@@ -25,6 +25,7 @@ function followReview(id) {
 		$("#review-action").attr("onclick", "approveReview('"+id+"');");
 		$("#review-action").html("Approve");
 		$("#review-action").attr("disabled",false);
+		$("#review-unfollow").attr("disabled",false);
 	});
 }
 
@@ -32,7 +33,7 @@ function unfollowReview(id) {
 	reviewAction(id,"/ajax/reviews/"+id+"/untrack",function() {
 		$("#review-action").attr("onclick", "followReview('"+id+"');");
 		$("#review-action").html("Follow this review");
-		$("#review-unfollow").remove();
+		$("#review-unfollow").attr("disabled",true);
 		$("#review-action").attr("disabled",false);
 	});
 }
