@@ -84,9 +84,10 @@ class ReviewTest extends TestCase {
 			]);
 
 		$this->assertDatabaseHas('request_tracking', [
-			'user_id'    => $this->user_data_bis['user_id'],
-			'request_id' => $this->user_review_id,
-			'status'     => 'unapproved',
+			'user_id'     => $this->user_data_bis['user_id'],
+			'request_id'  => $this->user_review_id,
+			'is_approved' => false,
+			'is_active'   => 1,
 		]);
 
 		$response = $this->withSession($this->user_data_bis)
@@ -117,9 +118,9 @@ class ReviewTest extends TestCase {
 			]);
 
 		$this->assertDatabaseHas('request_tracking', [
-			'user_id'    => $this->user_data_bis['user_id'],
-			'request_id' => $this->user_review_id,
-			'status'     => 'approved',
+			'user_id'     => $this->user_data_bis['user_id'],
+			'request_id'  => $this->user_review_id,
+			'is_approved' => true,
 		]);
 
 		$response = $this->withSession($this->user_data_bis)->get('/reviews/tracked');
@@ -135,9 +136,10 @@ class ReviewTest extends TestCase {
 			]);
 
 		$this->assertDatabaseHas('request_tracking', [
-			'user_id'    => $this->user_data_bis['user_id'],
-			'request_id' => $this->user_review_id,
-			'status'     => 'unfollowed',
+			'user_id'     => $this->user_data_bis['user_id'],
+			'request_id'  => $this->user_review_id,
+			'is_approved' => true,
+			'is_active'   => false,
 		]);
 
 		$response = $this->withSession($this->user_data_bis)

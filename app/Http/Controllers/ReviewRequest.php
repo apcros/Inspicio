@@ -48,7 +48,7 @@ class ReviewRequest extends Controller {
 				['request_id', '=', $reviewid],
 			])->first();
 
-			if ($current_tracking->status == 'approved') {
+			if ($current_tracking->is_approved) {
 				return response()->json([
 					'success' => 0,
 					'message' => 'You already approved this review request',
@@ -67,7 +67,7 @@ class ReviewRequest extends Controller {
 			DB::table('request_tracking')->where([
 				['user_id', '=', $user_id],
 				['request_id', '=', $reviewid],
-			])->update(['status' => 'approved']);
+			])->update(['is_approved' => true]);
 			$this->addPoint();
 
 			$this->notifyUserEmail($user_id, $reviewid, 'approved');
@@ -251,20 +251,19 @@ class ReviewRequest extends Controller {
 			]);
 		}
 
-//TODO keep the old status. To avoid giving points to someone that unfollow, follow and re-approve
 		try {
 			$tracking = DB::table('request_tracking')
-				->whereIn('status', ['approved', 'unapproved'])
 				->where([
 					['user_id', '=', session('user_id')],
 					['request_id', '=', $reviewid],
+					['is_active', '=', true],
 				])->first();
 
 			if ($tracking) {
 				DB::table('request_tracking')->where([
 					['user_id', '=', session('user_id')],
 					['request_id', '=', $reviewid],
-				])->update(['status' => 'unfollowed']);
+				])->update(['is_active' => false]);
 			} else {
 				return response()->json([
 					'success' => 0,
@@ -319,17 +318,19 @@ class ReviewRequest extends Controller {
 			])->first();
 
 			if ($potential_tracking) {
+				//There if the PR was unfollwed
 				DB::table('request_tracking')->where([
 					['user_id', '=', session('user_id')],
 					['request_id', '=', $reviewid],
-				])->update(['status' => 'unapproved']);
+				])->update(['is_active' => true]);
 			} else {
 				DB::table('request_tracking')->insert([
-					'user_id'    => session('user_id'),
-					'request_id' => $reviewid,
-					'status'     => 'unapproved',
-					'created_at' => \Carbon\Carbon::now(),
-					'updated_at' => \Carbon\Carbon::now(),
+					'user_id'     => session('user_id'),
+					'request_id'  => $reviewid,
+					'is_active'   => true,
+					'is_approved' => false,
+					'created_at'  => \Carbon\Carbon::now(),
+					'updated_at'  => \Carbon\Carbon::now(),
 				]);
 
 				$this->notifyUserEmail(session('user_id'), $reviewid, 'followed');
@@ -406,12 +407,15 @@ class ReviewRequest extends Controller {
 			->get();
 
 		$followers_per_review = array();
+
 		foreach ($reviews as $review) {
 			$followers = DB::table('request_tracking')
 				->join('users', 'request_tracking.user_id', '=', 'users.id')
-				->select('request_tracking.status', 'users.nickname', 'users.id')
-				->whereIn('status', ['approved', 'unapproved'])
-				->where('request_id', $review->id)
+				->select('request_tracking.is_active', 'request_tracking.is_approved', 'users.nickname', 'users.id')
+				->where([
+					['request_id', '=', $review->id],
+					['is_active', '=', true],
+				])
 				->get();
 
 			if ($followers) {
@@ -434,7 +438,7 @@ class ReviewRequest extends Controller {
 			->orderBy('requests.updated_at', 'desc')
 			->where([
 				['request_tracking.user_id', '=', $user_id],
-				['request_tracking.status', '=', 'unapproved'],
+				['request_tracking.is_approved', '=', false],
 				['requests.status', '=', 'open'],
 			])
 			->get();
@@ -446,7 +450,7 @@ class ReviewRequest extends Controller {
 			->orderBy('requests.updated_at', 'desc')
 			->where([
 				['request_tracking.user_id', '=', $user_id],
-				['request_tracking.status', '=', 'approved'],
+				['request_tracking.is_approved', '=', true],
 			])
 			->get();
 

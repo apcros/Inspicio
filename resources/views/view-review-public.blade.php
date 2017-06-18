@@ -23,14 +23,16 @@
 		  		@if (session('user_id') != $review->author_id)
 
 			  		@if (isset($tracked))
-			  			@if ($tracked->status == 'approved')
+			  			@if ($tracked->is_approved )
 			  				<button class="btn btn-primary" disabled>Approved</button>
-			  			@endif
-			  			@if ($tracked->status == 'unapproved')
+			  			@else
 				  			<button onclick="approveReview('{{$review->id}}')" id="review-action" class="btn btn-primary">Approve</button>
 			  			@endif
-			  			@if ($tracked->status != 'unfollowed')
+
+			  			@if ($tracked->is_active)
 			  				<button onclick="unfollowReview('{{$review->id}}')" id="review-unfollow" class="btn btn-danger">Unfollow this review</button>
+			  			@else
+			  				<button onclick="followReview('{{$review->id}}')" id="review-action" class="btn btn-info">Follow this review</button>
 			  			@endif
 			  		@else
 				  			<button onclick="followReview('{{$review->id}}')" id="review-action" class="btn btn-info">Follow this review</button>
