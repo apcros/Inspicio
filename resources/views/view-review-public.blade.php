@@ -39,7 +39,9 @@
 			  		@endif
 			  	@else
 			  		@if ($review->status == 'open')
-			  			<a onclick="closeReview('{{$review->id}}')" id="review-close" class="btn btn-warning">Close</a>
+			  			<a onclick="closeReview('{{$review->id}}')" id="review-close-{{$review->id}}" class="btn btn-warning">Close</a>
+			  		@else
+			  			<a onclick="reopenReview('{{$review->id}}')" id="review-close-{{$review->id}}" class="btn btn-warning">Re-Open</a>
 			  		@endif
 			  	@endif
 			@endif

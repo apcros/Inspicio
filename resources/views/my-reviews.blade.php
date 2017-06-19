@@ -30,7 +30,7 @@
 					      	@foreach ($followers[$review->id] as $follower)
 					      		<a href="/members/{{$follower->id}}/profile" target="_blank" class="list-group-item">
 					      			<b>{{$follower->nickname}}</b>
-					      			@if ($follower->status == 'approved')
+					      			@if ($follower->is_approved)
 					      				<span class="label label-success pull-right">Approved !</span>
 					      			@else
 					      				<span class="label label-default pull-right">Pending approval</span>
@@ -46,6 +46,8 @@
 			<a class="btn btn-info" href="/reviews/{{$review->id}}/view" target="_blank">View</a>
 			@if ($review->status == 'open')
 				<a onclick="closeReview('{{$review->id}}')" id="review-close-{{$review->id}}" class="btn btn-warning">Close</a>
+			@else 
+				<a onclick="reopenReview('{{$review->id}}')" id="review-close-{{$review->id}}" class="btn btn-warning">Re-Open</a>
 			@endif
 		</li>
 	@endforeach

@@ -172,19 +172,37 @@ class ReviewTest extends TestCase {
 			]);
 	}
 
-	public function testClose() {
+	public function testChangeStatus() {
 		$this->seed('DatabaseSeederForTests');
 		$this->withSession($this->user_data_bis)
 			->json('POST', '/ajax/reviews/' . $this->user_review_id . '/close')
 			->assertJson([
 				'success' => 0,
-				'message' => 'You can only close your own review requests',
+				'message' => 'You can only update the status of your own review requests',
 			]);
+
 		$this->withSession($this->user_data)
 			->json('POST', '/ajax/reviews/' . $this->user_review_id . '/close')
 			->assertJson([
 				'success' => 1,
-				'message' => 'Code review closed',
+				'message' => 'Code review status changed to closed',
 			]);
+
+		$this->assertDatabaseHas('requests', [
+			'status' => 'closed',
+			'id'     => $this->user_review_id,
+		]);
+
+		$this->withSession($this->user_data)
+			->json('POST', '/ajax/reviews/' . $this->user_review_id . '/reopen')
+			->assertJson([
+				'success' => 1,
+				'message' => 'Code review status changed to open',
+			]);
+
+		$this->assertDatabaseHas('requests', [
+			'status' => 'open',
+			'id'     => $this->user_review_id,
+		]);
 	}
 }

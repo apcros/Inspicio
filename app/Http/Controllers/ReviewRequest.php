@@ -200,7 +200,7 @@ class ReviewRequest extends Controller {
 		$review = $this->getReview($reviewid);
 
 		if (!$review) {
-			return view('view-review-public', ['error_message' => 'Review Request not found !']);
+			return view('home', ['error_message' => 'Review Request not found !']);
 		}
 
 		$user_id = session('user_id');
@@ -209,7 +209,10 @@ class ReviewRequest extends Controller {
 			['request_id', '=', $review->id],
 			['user_id', '=', $user_id]])->first();
 
-		$followers = DB::table('request_tracking')->where('request_id', $review->id)->count();
+		$followers = DB::table('request_tracking')->where([
+			['request_id', '=', $review->id],
+			['is_active', '=', true],
+		])->count();
 
 		return view('view-review-public', [
 			'review'    => $review,
@@ -355,6 +358,14 @@ class ReviewRequest extends Controller {
 	}
 
 	public function close($reviewid) {
+		return $this->changeReviewStatus($reviewid, 'closed');
+	}
+
+	public function reopen($reviewid) {
+		return $this->changeReviewStatus($reviewid, 'open');
+	}
+
+	private function changeReviewStatus($reviewid, $newstatus) {
 		$review = $this->getReview($reviewid);
 
 		if (!$review) {
@@ -365,18 +376,18 @@ class ReviewRequest extends Controller {
 		}
 
 		if ($review->author_id != session('user_id')) {
-			Log::warning("[USER " . session('user_id') . "] Attempted to close someone else review ($reviewid)");
+			Log::warning("[USER " . session('user_id') . "] Attempted to change someone else review ($reviewid) to $newstatus");
 
 			return response()->json([
 				'success' => 0,
-				'message' => 'You can only close your own review requests',
+				'message' => 'You can only update the status of your own review requests',
 			]);
 		}
 
 		try {
-			DB::table('requests')->where('id', $review->id)->update(['status' => 'closed', 'updated_at' => \Carbon\Carbon::now()]);
+			DB::table('requests')->where('id', $review->id)->update(['status' => $newstatus, 'updated_at' => \Carbon\Carbon::now()]);
 		} catch (\Illuminate\Database\QueryException $e) {
-			Log::error('[USER ' . session('user_id') . '] attempted to close code review ' . $reviewid . ' : ' . $e->getMessage());
+			Log::error('[USER ' . session('user_id') . '] attempted to change code review ' . $reviewid . " status to $newstatus : " . $e->getMessage());
 
 			return response()->json([
 				'success' => 0,
@@ -387,12 +398,8 @@ class ReviewRequest extends Controller {
 
 		return response()->json([
 			'success' => 1,
-			'message' => 'Code review closed',
+			'message' => "Code review status changed to $newstatus",
 		]);
-
-	}
-
-	public function reopen($reviewid) {
 
 	}
 
