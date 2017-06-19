@@ -31,6 +31,10 @@ class ReviewTest extends TestCase {
 
 		$content = $response->getContent();
 		$this->assertNotRegExp('/Follow/', $content, 'No follow button on your own code review request');
+
+		$response = $this->withSession($this->user_data_bis)->get('/reviews/blah/view');
+		$content  = $response->getContent();
+		$this->assertNotRegExp('/Not Found/', $content, 'PR not found');
 	}
 
 	public function testListMyReviews() {
@@ -75,6 +79,13 @@ class ReviewTest extends TestCase {
 	public function testTrackAndApproval() {
 		$this->seed('DatabaseSeederForTests');
 		Notification::fake();
+
+		$response = $this->withSession($this->user_data_bis)
+			->json('POST', '/ajax/reviews/' . $this->user_review_id . '/approve')
+			->assertJson([
+				'success' => 0,
+				'message' => "You can't approve a review request you don't follow",
+			]);
 
 		$response = $this->withSession($this->user_data_bis)
 			->json('POST', '/ajax/reviews/' . $this->user_review_id . '/track')

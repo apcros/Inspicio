@@ -26,7 +26,12 @@ class Profile extends Controller {
 
 	public function displayPublicProfile($userid) {
 
-		$user = DB::table('users')->where('id', $userid)->first();
+		try {
+			$user = DB::table('users')->where('id', $userid)->first();
+		} catch (\Illuminate\Database\QueryException $e) {
+			//Wrong uuid representation. Todo verify userid instead
+			$user = false;
+		}
 
 		if (!$user) {
 			return view('home', ['error_message' => 'User not found']);
@@ -61,7 +66,8 @@ class Profile extends Controller {
 
 //Have I mentionned to never trust the client ?
 		if (!in_array($level, $allowed_level)) {
-            Log::warning("[USER $user_id] Out of range skill level : $level");
+			Log::warning("[USER $user_id] Out of range skill level : $level");
+
 			return response()->json([
 				'success' => 0,
 				'message' => 'Skill level error',
@@ -98,7 +104,9 @@ class Profile extends Controller {
 				'message' => 'Failed to add skill',
 			]);
 		}
-        Log::info("[USER $user_id] Added Skill $skill_id / level $level");
+
+		Log::info("[USER $user_id] Added Skill $skill_id / level $level");
+
 		return response()->json([
 			'success' => 1,
 			'message' => 'Skill added with success',
@@ -114,7 +122,8 @@ class Profile extends Controller {
 			->first();
 
 		if ($skill_to_delete->user_id != $user_id) {
-            Log::warning("[USER $user_id] User tried to delete someone else skill ($skill_id)");
+			Log::warning("[USER $user_id] User tried to delete someone else skill ($skill_id)");
+
 			return response()->json([
 				'success' => 0,
 				'message' => "You can only delete your own skills, Don't be that guy.",
@@ -133,7 +142,9 @@ class Profile extends Controller {
 				'message' => 'Failed to delete skill',
 			]);
 		}
-        Log::info("[USER $user_id] Deleted skill $skill_id");
+
+		Log::info("[USER $user_id] Deleted skill $skill_id");
+
 		return response()->json([
 			'success' => 1,
 			'message' => 'Skill deleted',

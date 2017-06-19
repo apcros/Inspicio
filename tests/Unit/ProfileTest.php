@@ -36,6 +36,10 @@ class ProfileTest extends TestCase {
 		$response = $this->get('/members/00000000-0000-0000-0000-000000000000/profile');
 		$content  = $response->getContent();
 		$this->assertRegExp('/User not found/', $content, 'Error message returned sucessfully');
+
+		$response = $this->get('/members/blah/profile');
+		$content  = $response->getContent();
+		$this->assertRegExp('/User not found/', $content, 'Error message returned sucessfully when uuid representation is invalid');
 	}
 
 	public function testSkill() {

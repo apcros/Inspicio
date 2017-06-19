@@ -23,27 +23,30 @@
 		  		@if (session('user_id') != $review->author_id)
 
 			  		@if (isset($tracked))
-			  			@if ($tracked->is_approved )
+			  			@if ($tracked->is_approved)
 			  				<button class="btn btn-primary" disabled>Approved</button>
 			  			@else
-				  			<button onclick="approveReview('{{$review->id}}')" id="review-action" class="btn btn-primary">Approve</button>
+				  			<button onclick="approveReview('{{$review->id}}')" id="review-approve" class="btn btn-primary">Approve</button>
 			  			@endif
 
 			  			@if ($tracked->is_active)
-			  				<button onclick="unfollowReview('{{$review->id}}')" id="review-unfollow" class="btn btn-danger">Unfollow this review</button>
+			  				<button onclick="unfollowReview('{{$review->id}}')" id="review-follow" class="btn btn-danger">Unfollow this review</button>
 			  			@else
-			  				<button onclick="followReview('{{$review->id}}')" id="review-action" class="btn btn-info">Follow this review</button>
+			  				<button onclick="followReview('{{$review->id}}')" id="review-follow" class="btn btn-info">Follow this review</button>
 			  			@endif
 			  		@else
-				  			<button onclick="followReview('{{$review->id}}')" id="review-action" class="btn btn-info">Follow this review</button>
+			  				<button onclick="approveReview('{{$review->id}}')" id="review-approve" class="btn btn-primary" disabled>Approve</button>
+				  			<button onclick="followReview('{{$review->id}}')" id="review-follow" class="btn btn-info">Follow this review</button>
 			  		@endif
-			  	@else
-			  		@if ($review->status == 'open')
+			  	@endif
+			@endif
+
+			@if(session('user_id') == $review->author_id)
+					@if ($review->status == 'open')
 			  			<a onclick="closeReview('{{$review->id}}')" id="review-close-{{$review->id}}" class="btn btn-warning">Close</a>
 			  		@else
 			  			<a onclick="reopenReview('{{$review->id}}')" id="review-close-{{$review->id}}" class="btn btn-warning">Re-Open</a>
 			  		@endif
-			  	@endif
 			@endif
 			  		<a href="{{$review->url}}" target="_blank" class="btn btn-info">View</a>
 			  </div>

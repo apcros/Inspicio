@@ -46,7 +46,15 @@ class ReviewRequest extends Controller {
 			$current_tracking = DB::table('request_tracking')->where([
 				['user_id', '=', $user_id],
 				['request_id', '=', $reviewid],
+				['is_active', '=', true],
 			])->first();
+
+			if (!$current_tracking) {
+				return response()->json([
+					'success' => 0,
+					'message' => "You can't approve a review request you don't follow",
+				]);
+			}
 
 			if ($current_tracking->is_approved) {
 				return response()->json([
@@ -495,13 +503,22 @@ class ReviewRequest extends Controller {
 	}
 
 	private function getReview($reviewid) {
-		return DB::table('requests')
-			->join('users', 'requests.author_id', '=', 'users.id')
-			->join('skills', 'requests.skill_id', '=', 'skills.id')
-			->select('requests.*', 'users.nickname', 'skills.name as language')
-			->orderBy('requests.updated_at', 'desc')
-			->where('requests.id', $reviewid)
-			->first();
+		//TODO validate uuid to avoid ignoring sql errors
+		try {
+			return DB::table('requests')
+				->join('users', 'requests.author_id', '=', 'users.id')
+				->join('skills', 'requests.skill_id', '=', 'skills.id')
+				->select('requests.*', 'users.nickname', 'skills.name as language')
+				->orderBy('requests.updated_at', 'desc')
+				->where('requests.id', $reviewid)
+				->first();
+		} catch (\Illuminate\Database\QueryException $e) {
+			//Only debug and not error as it's likely to be due to invalid uuid representation
+			Log::debug("Exception when getting $reviewid : " . $e->getMessage());
+
+			return false;
+		}
+
 	}
 
 	private function getAccount($account_id, $user_id) {

@@ -16,25 +16,31 @@ function reviewAction(id, endpoint, success_callback) {
 }
 function approveReview(id) {
 	reviewAction(id, "/ajax/reviews/"+id+"/approve",function() {
-		$("#review-action").html('Approved');
+		$("#review-approve").html('Approved');
+		$("#review-approve").attr("disabled",true);
 	});
 }
 
 function followReview(id) {
 	reviewAction(id,"/ajax/reviews/"+id+"/track",function() {
-		$("#review-action").attr("onclick", "approveReview('"+id+"');");
-		$("#review-action").html("Approve");
-		$("#review-action").attr("disabled",false);
-		$("#review-unfollow").attr("disabled",false);
+		$("#review-approve").attr("disabled",false);
+
+		$("#review-follow").attr("disabled",false);
+		$("#review-follow").attr("onclick", "unfollowReview('"+id+"');");
+		$("#review-follow").removeClass("btn-info");
+		$("#review-follow").addClass("btn-danger");
+		$("#review-follow").html("Unfollow this review");
 	});
 }
 
 function unfollowReview(id) {
 	reviewAction(id,"/ajax/reviews/"+id+"/untrack",function() {
-		$("#review-action").attr("onclick", "followReview('"+id+"');");
-		$("#review-action").html("Follow this review");
-		$("#review-unfollow").attr("disabled",true);
-		$("#review-action").attr("disabled",false);
+		$("#review-follow").attr("onclick", "followReview('"+id+"');");
+		$("#review-follow").html("Follow this review");
+		$("#review-follow").attr("disabled",false);
+		$("#review-follow").removeClass("btn-danger");
+		$("#review-follow").addClass("btn-info");
+		$("#review-approve").attr("disabled",false);
 	});
 }
 
