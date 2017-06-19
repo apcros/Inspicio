@@ -26,7 +26,7 @@ class Home extends Controller {
 			->join('skills', 'requests.skill_id', '=', 'skills.id')
 			->select(
 				'requests.*',
-				DB::raw('(SELECT count(request_tracking.request_id ) FROM request_tracking WHERE request_tracking.request_id = requests.id) as followers'),
+				DB::raw('(SELECT count(request_tracking.request_id ) FROM request_tracking WHERE request_tracking.request_id = requests.id AND request_tracking.is_active = TRUE) as followers'),
 				'users.nickname as author',
 				'skills.name as language'
 			)
@@ -41,7 +41,7 @@ class Home extends Controller {
 			->join('skills', 'requests.skill_id', '=', 'skills.id')
 			->select(
 				'requests.*',
-				DB::raw('(SELECT count(request_tracking.request_id ) FROM request_tracking WHERE request_tracking.request_id = requests.id) as followers'),
+				DB::raw('(SELECT count(request_tracking.request_id ) FROM request_tracking WHERE request_tracking.request_id = requests.id AND request_tracking.is_active = TRUE) as followers'),
 				'users.nickname as author',
 				'skills.name as language'
 			)
