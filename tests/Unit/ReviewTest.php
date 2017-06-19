@@ -31,6 +31,10 @@ class ReviewTest extends TestCase {
 
 		$content = $response->getContent();
 		$this->assertNotRegExp('/Follow/', $content, 'No follow button on your own code review request');
+
+		$response = $this->withSession($this->user_data_bis)->get('/reviews/blah/view');
+		$content  = $response->getContent();
+		$this->assertNotRegExp('/Not Found/', $content, 'PR not found');
 	}
 
 	public function testListMyReviews() {
@@ -77,6 +81,13 @@ class ReviewTest extends TestCase {
 		Notification::fake();
 
 		$response = $this->withSession($this->user_data_bis)
+			->json('POST', '/ajax/reviews/' . $this->user_review_id . '/approve')
+			->assertJson([
+				'success' => 0,
+				'message' => "You can't approve a review request you don't follow",
+			]);
+
+		$response = $this->withSession($this->user_data_bis)
 			->json('POST', '/ajax/reviews/' . $this->user_review_id . '/track')
 			->assertJson([
 				'success' => 1,
@@ -84,9 +95,10 @@ class ReviewTest extends TestCase {
 			]);
 
 		$this->assertDatabaseHas('request_tracking', [
-			'user_id'    => $this->user_data_bis['user_id'],
-			'request_id' => $this->user_review_id,
-			'status'     => 'unapproved',
+			'user_id'     => $this->user_data_bis['user_id'],
+			'request_id'  => $this->user_review_id,
+			'is_approved' => false,
+			'is_active'   => 1,
 		]);
 
 		$response = $this->withSession($this->user_data_bis)
@@ -117,20 +129,41 @@ class ReviewTest extends TestCase {
 			]);
 
 		$this->assertDatabaseHas('request_tracking', [
-			'user_id'    => $this->user_data_bis['user_id'],
-			'request_id' => $this->user_review_id,
-			'status'     => 'approved',
-		]);
-
-		$this->assertDatabaseHas('users', [
-			'id'     => $this->user_data_bis['user_id'],
-			'points' => 6,
+			'user_id'     => $this->user_data_bis['user_id'],
+			'request_id'  => $this->user_review_id,
+			'is_approved' => true,
 		]);
 
 		$response = $this->withSession($this->user_data_bis)->get('/reviews/tracked');
 		$response->assertStatus(200);
 		$content = $response->getContent();
 		$this->assertRegExp('/' . $this->user_review_id . '/', $content, 'Review request is displayed correctly on the tracked page');
+
+		$response = $this->withSession($this->user_data_bis)
+			->json('POST', '/ajax/reviews/' . $this->user_review_id . '/untrack')
+			->assertJson([
+				'success' => 1,
+				'message' => "Review request unfollowed",
+			]);
+
+		$this->assertDatabaseHas('request_tracking', [
+			'user_id'     => $this->user_data_bis['user_id'],
+			'request_id'  => $this->user_review_id,
+			'is_approved' => true,
+			'is_active'   => false,
+		]);
+
+		$response = $this->withSession($this->user_data_bis)
+			->json('POST', '/ajax/reviews/' . $this->user_review_id . '/untrack')
+			->assertJson([
+				'success' => 0,
+				'message' => "You were not following this review request",
+			]);
+		$this->assertDatabaseHas('users', [
+			'id'     => $this->user_data_bis['user_id'],
+			'points' => 6,
+		]);
+
 	}
 
 	public function testTrackAndApprovalFail() {
@@ -150,19 +183,37 @@ class ReviewTest extends TestCase {
 			]);
 	}
 
-	public function testClose() {
+	public function testChangeStatus() {
 		$this->seed('DatabaseSeederForTests');
 		$this->withSession($this->user_data_bis)
 			->json('POST', '/ajax/reviews/' . $this->user_review_id . '/close')
 			->assertJson([
 				'success' => 0,
-				'message' => 'You can only close your own review requests',
+				'message' => 'You can only update the status of your own review requests',
 			]);
+
 		$this->withSession($this->user_data)
 			->json('POST', '/ajax/reviews/' . $this->user_review_id . '/close')
 			->assertJson([
 				'success' => 1,
-				'message' => 'Code review closed',
+				'message' => 'Code review status changed to closed',
 			]);
+
+		$this->assertDatabaseHas('requests', [
+			'status' => 'closed',
+			'id'     => $this->user_review_id,
+		]);
+
+		$this->withSession($this->user_data)
+			->json('POST', '/ajax/reviews/' . $this->user_review_id . '/reopen')
+			->assertJson([
+				'success' => 1,
+				'message' => 'Code review status changed to open',
+			]);
+
+		$this->assertDatabaseHas('requests', [
+			'status' => 'open',
+			'id'     => $this->user_review_id,
+		]);
 	}
 }

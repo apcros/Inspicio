@@ -2,8 +2,8 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class CreateBase extends Migration {
 	/**
@@ -51,8 +51,8 @@ class CreateBase extends Migration {
 			$table->string('login');
 			$table->uuid('user_id');
 			$table->string('token');
-            $table->string('refresh_token')->nullable();
-            $table->integer('expire_epoch')->nullable();
+			$table->string('refresh_token')->nullable();
+			$table->integer('expire_epoch')->nullable();
 			$table->string('provider');
 			$table->boolean('is_main');
 			$table->unique(array('login', 'provider'));
@@ -87,14 +87,15 @@ class CreateBase extends Migration {
 
 			$table->foreign('author_id')->references('id')->on('users');
 			$table->foreign('account_id')->references('id')->on('accounts');
-            $table->foreign('skill_id')->references('id')->on('skills');
+			$table->foreign('skill_id')->references('id')->on('skills');
 			$table->primary('id');
 		});
 
 		Schema::create('request_tracking', function (Blueprint $table) {
 			$table->uuid('user_id');
 			$table->uuid('request_id');
-			$table->string('status');
+			$table->boolean('is_approved');
+			$table->boolean('is_active');
 			$table->timestamps();
 
 			$table->foreign('user_id')->references('id')->on('users');

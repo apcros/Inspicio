@@ -46,9 +46,17 @@ class ReviewRequest extends Controller {
 			$current_tracking = DB::table('request_tracking')->where([
 				['user_id', '=', $user_id],
 				['request_id', '=', $reviewid],
+				['is_active', '=', true],
 			])->first();
 
-			if ($current_tracking->status == 'approved') {
+			if (!$current_tracking) {
+				return response()->json([
+					'success' => 0,
+					'message' => "You can't approve a review request you don't follow",
+				]);
+			}
+
+			if ($current_tracking->is_approved) {
 				return response()->json([
 					'success' => 0,
 					'message' => 'You already approved this review request',
@@ -67,7 +75,7 @@ class ReviewRequest extends Controller {
 			DB::table('request_tracking')->where([
 				['user_id', '=', $user_id],
 				['request_id', '=', $reviewid],
-			])->update(['status' => 'approved']);
+			])->update(['is_approved' => true]);
 			$this->addPoint();
 
 			$this->notifyUserEmail($user_id, $reviewid, 'approved');
@@ -200,7 +208,7 @@ class ReviewRequest extends Controller {
 		$review = $this->getReview($reviewid);
 
 		if (!$review) {
-			return view('view-review-public', ['error_message' => 'Review Request not found !']);
+			return view('home', ['error_message' => 'Review Request not found !']);
 		}
 
 		$user_id = session('user_id');
@@ -209,7 +217,10 @@ class ReviewRequest extends Controller {
 			['request_id', '=', $review->id],
 			['user_id', '=', $user_id]])->first();
 
-		$followers = DB::table('request_tracking')->where('request_id', $review->id)->count();
+		$followers = DB::table('request_tracking')->where([
+			['request_id', '=', $review->id],
+			['is_active', '=', true],
+		])->count();
 
 		return view('view-review-public', [
 			'review'    => $review,
@@ -241,6 +252,54 @@ class ReviewRequest extends Controller {
 		return json_encode($raw_response);
 	}
 
+	public function untrack($reviewid) {
+		$review = $this->getReview($reviewid);
+
+		if (!$review) {
+			return response()->json([
+				'success' => 0,
+				'message' => 'Review Request not found !',
+			]);
+		}
+
+		try {
+			$tracking = DB::table('request_tracking')
+				->where([
+					['user_id', '=', session('user_id')],
+					['request_id', '=', $reviewid],
+					['is_active', '=', true],
+				])->first();
+
+			if ($tracking) {
+				DB::table('request_tracking')->where([
+					['user_id', '=', session('user_id')],
+					['request_id', '=', $reviewid],
+				])->update(['is_active' => false]);
+			} else {
+				return response()->json([
+					'success' => 0,
+					'message' => 'You were not following this review request',
+				]);
+			}
+
+		} catch (\Illuminate\Database\QueryException $e) {
+			Log::error('[USER ' . session('user_id') . '] SQL Error caught when unfollowing  ' . $reviewid . ' : ' . $e->getMessage());
+
+			return response()->json([
+				'success' => 0,
+				'message' => 'An error ocurred !',
+			]);
+
+		}
+
+		Log::info('[USER ' . session('user_id') . "] unfollowed $reviewid");
+
+		return response()->json([
+			'success' => 1,
+			'message' => 'Review request unfollowed',
+		]);
+	}
+
 	public function track($reviewid) {
 
 		$review = $this->getReview($reviewid);
@@ -264,15 +323,29 @@ class ReviewRequest extends Controller {
 		}
 
 		try {
-			DB::table('request_tracking')->insert([
-				'user_id'    => session('user_id'),
-				'request_id' => $reviewid,
-				'status'     => 'unapproved',
-				'created_at' => \Carbon\Carbon::now(),
-				'updated_at' => \Carbon\Carbon::now(),
-			]);
+			$potential_tracking = DB::table('request_tracking')->where([
+				['user_id', '=', session('user_id')],
+				['request_id', '=', $reviewid],
+			])->first();
 
-			$this->notifyUserEmail(session('user_id'), $reviewid, 'followed');
+			if ($potential_tracking) {
+				//There if the PR was unfollwed
+				DB::table('request_tracking')->where([
+					['user_id', '=', session('user_id')],
+					['request_id', '=', $reviewid],
+				])->update(['is_active' => true]);
+			} else {
+				DB::table('request_tracking')->insert([
+					'user_id'     => session('user_id'),
+					'request_id'  => $reviewid,
+					'is_active'   => true,
+					'is_approved' => false,
+					'created_at'  => \Carbon\Carbon::now(),
+					'updated_at'  => \Carbon\Carbon::now(),
+				]);
+
+				$this->notifyUserEmail(session('user_id'), $reviewid, 'followed');
+			}
 
 		} catch (\Illuminate\Database\QueryException $e) {
 			Log::error('[USER ' . session('user_id') . '] SQL Error caught when following  ' . $reviewid . ' : ' . $e->getMessage());
@@ -293,6 +366,14 @@ class ReviewRequest extends Controller {
 	}
 
 	public function close($reviewid) {
+		return $this->changeReviewStatus($reviewid, 'closed');
+	}
+
+	public function reopen($reviewid) {
+		return $this->changeReviewStatus($reviewid, 'open');
+	}
+
+	private function changeReviewStatus($reviewid, $newstatus) {
 		$review = $this->getReview($reviewid);
 
 		if (!$review) {
@@ -303,18 +384,18 @@ class ReviewRequest extends Controller {
 		}
 
 		if ($review->author_id != session('user_id')) {
-			Log::warning("[USER " . session('user_id') . "] Attempted to close someone else review ($reviewid)");
+			Log::warning("[USER " . session('user_id') . "] Attempted to change someone else review ($reviewid) to $newstatus");
 
 			return response()->json([
 				'success' => 0,
-				'message' => 'You can only close your own review requests',
+				'message' => 'You can only update the status of your own review requests',
 			]);
 		}
 
 		try {
-			DB::table('requests')->where('id', $review->id)->update(['status' => 'closed', 'updated_at' => \Carbon\Carbon::now()]);
+			DB::table('requests')->where('id', $review->id)->update(['status' => $newstatus, 'updated_at' => \Carbon\Carbon::now()]);
 		} catch (\Illuminate\Database\QueryException $e) {
-			Log::error('[USER ' . session('user_id') . '] attempted to close code review ' . $reviewid . ' : ' . $e->getMessage());
+			Log::error('[USER ' . session('user_id') . '] attempted to change code review ' . $reviewid . " status to $newstatus : " . $e->getMessage());
 
 			return response()->json([
 				'success' => 0,
@@ -325,7 +406,7 @@ class ReviewRequest extends Controller {
 
 		return response()->json([
 			'success' => 1,
-			'message' => 'Code review closed',
+			'message' => "Code review status changed to $newstatus",
 		]);
 
 	}
@@ -341,11 +422,15 @@ class ReviewRequest extends Controller {
 			->get();
 
 		$followers_per_review = array();
+
 		foreach ($reviews as $review) {
 			$followers = DB::table('request_tracking')
 				->join('users', 'request_tracking.user_id', '=', 'users.id')
-				->select('request_tracking.status', 'users.nickname', 'users.id')
-				->where('request_id', $review->id)
+				->select('request_tracking.is_active', 'request_tracking.is_approved', 'users.nickname', 'users.id')
+				->where([
+					['request_id', '=', $review->id],
+					['is_active', '=', true],
+				])
 				->get();
 
 			if ($followers) {
@@ -368,7 +453,7 @@ class ReviewRequest extends Controller {
 			->orderBy('requests.updated_at', 'desc')
 			->where([
 				['request_tracking.user_id', '=', $user_id],
-				['request_tracking.status', '=', 'unapproved'],
+				['request_tracking.is_approved', '=', false],
 				['requests.status', '=', 'open'],
 			])
 			->get();
@@ -380,7 +465,7 @@ class ReviewRequest extends Controller {
 			->orderBy('requests.updated_at', 'desc')
 			->where([
 				['request_tracking.user_id', '=', $user_id],
-				['request_tracking.status', '=', 'approved'],
+				['request_tracking.is_approved', '=', true],
 			])
 			->get();
 
@@ -418,13 +503,22 @@ class ReviewRequest extends Controller {
 	}
 
 	private function getReview($reviewid) {
-		return DB::table('requests')
-			->join('users', 'requests.author_id', '=', 'users.id')
-			->join('skills', 'requests.skill_id', '=', 'skills.id')
-			->select('requests.*', 'users.nickname', 'skills.name as language')
-			->orderBy('requests.updated_at', 'desc')
-			->where('requests.id', $reviewid)
-			->first();
+		//TODO validate uuid to avoid ignoring sql errors
+		try {
+			return DB::table('requests')
+				->join('users', 'requests.author_id', '=', 'users.id')
+				->join('skills', 'requests.skill_id', '=', 'skills.id')
+				->select('requests.*', 'users.nickname', 'skills.name as language')
+				->orderBy('requests.updated_at', 'desc')
+				->where('requests.id', $reviewid)
+				->first();
+		} catch (\Illuminate\Database\QueryException $e) {
+			//Only debug and not error as it's likely to be due to invalid uuid representation
+			Log::debug("Exception when getting $reviewid : " . $e->getMessage());
+
+			return false;
+		}
+
 	}
 
 	private function getAccount($account_id, $user_id) {

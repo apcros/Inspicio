@@ -33,10 +33,10 @@ class DatabaseSeeder extends Seeder {
 	}
 
 	private function addMainAccount() {
-		$login = $this->command->ask('What is the nickname of the account you will use to login ?');
+		$login    = $this->command->ask('What is the nickname of the account you will use to login ?');
 		$provider = $this->command->ask('What is the git provider of that account ? ', 'github');
 
-		$user_id = Uuid::uuid4()->toString();
+		$user_id    = Uuid::uuid4()->toString();
 		$account_id = Uuid::uuid4()->toString();
 
 		DB::table('users')->insert([
@@ -62,10 +62,10 @@ class DatabaseSeeder extends Seeder {
 	}
 
 	private function addRandomRequest() {
-		$id = Uuid::uuid4()->toString();
-		$user = DB::table('users')->inRandomOrder()->first();
+		$id           = Uuid::uuid4()->toString();
+		$user         = DB::table('users')->inRandomOrder()->first();
 		$random_skill = DB::table('skills')->inRandomOrder()->first();
-		$account = DB::table('accounts')->where('user_id', $user->id)->first();
+		$account      = DB::table('accounts')->where('user_id', $user->id)->first();
 		DB::table('requests')->insert([
 			'id'          => $id,
 			'name'        => str_random(25),
@@ -82,31 +82,33 @@ class DatabaseSeeder extends Seeder {
 	}
 
 	private function addRandomTracking() {
-		$user = DB::table('users')->inRandomOrder()->first();
+		$user    = DB::table('users')->inRandomOrder()->first();
 		$request = DB::table('requests')
 			->leftjoin('request_tracking', 'requests.id', '=', 'request_tracking.request_id')
 			->select('requests.*', 'request_tracking.user_id as rtuserid')
 			->whereNotIn('requests.author_id', [$user->id])
 			->whereNull('request_tracking.user_id')
 			->inRandomOrder()->first();
-		$status = array_rand(['unapproved', 'approved']);
+
+		$approved = array_rand([true, false]);
 
 		DB::table('request_tracking')->insert([
-			'user_id'    => $user->id,
-			'request_id' => $request->id,
-			'status'     => $status,
-			'created_at' => \Carbon\Carbon::now(),
-			'updated_at' => \Carbon\Carbon::now(),
+			'user_id'     => $user->id,
+			'request_id'  => $request->id,
+			'is_approved' => $approved,
+			'is_active'   => true,
+			'created_at'  => \Carbon\Carbon::now(),
+			'updated_at'  => \Carbon\Carbon::now(),
 		]);
 	}
 
 	/*
-	TODO : Random timestamps
-	 */
+		TODO : Random timestamps
+	*/
 	private function addRandomUser() {
-		$user_id = Uuid::uuid4()->toString();
+		$user_id    = Uuid::uuid4()->toString();
 		$account_id = Uuid::uuid4()->toString();
-		$nickname = str_random(15);
+		$nickname   = str_random(15);
 
 		DB::table('users')->insert([
 			'id'         => $user_id,
