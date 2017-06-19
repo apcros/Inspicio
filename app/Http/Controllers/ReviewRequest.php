@@ -12,90 +12,7 @@ use Illuminate\Support\Facades\Log;
 use \Mews\Purifier\Facades\Purifier;
 use \Ramsey\Uuid\Uuid;
 
-//TODO : Remvoe code duplication caused by the :
-
-// - Check if exist or return
-
-// - Run query or return
-// - Return val
 class ReviewRequest extends Controller {
-
-	public function approve($reviewid) {
-		//TODO : Maybe move getReview to a middleware ?
-		$review = $this->getReview($reviewid);
-
-		if (!$review) {
-			return response()->json([
-				'success' => 0,
-				'message' => 'Review Request not found !',
-			]);
-		}
-
-		$user_id = session('user_id');
-
-		if ($review->author_id == $user_id) {
-			Log::warning("[USER $user_id] Attempted to approve his own review ($reviewid)");
-
-			return response()->json([
-				'success' => 0,
-				'message' => 'You can\'t approve your own review requests',
-			]);
-		}
-
-		try {
-			$current_tracking = DB::table('request_tracking')->where([
-				['user_id', '=', $user_id],
-				['request_id', '=', $reviewid],
-				['is_active', '=', true],
-			])->first();
-
-			if (!$current_tracking) {
-				return response()->json([
-					'success' => 0,
-					'message' => "You can't approve a review request you don't follow",
-				]);
-			}
-
-			if ($current_tracking->is_approved) {
-				return response()->json([
-					'success' => 0,
-					'message' => 'You already approved this review request',
-				]);
-			}
-
-			$time_since_creation = time() - strtotime($current_tracking->created_at);
-
-			if ($time_since_creation < 120) {
-				return response()->json([
-					'success' => 0,
-					'message' => "You can't approve a review request you followed less than 2 minutes ago",
-				]);
-			}
-
-			DB::table('request_tracking')->where([
-				['user_id', '=', $user_id],
-				['request_id', '=', $reviewid],
-			])->update(['is_approved' => true]);
-			$this->addPoint();
-
-			$this->notifyUserEmail($user_id, $reviewid, 'approved');
-
-		} catch (\Illuminate\Database\QueryException $e) {
-			Log::error('[USER ' . session('user_id') . '] SQL error for review ' . $reviewid . ' : ' . $e->getMessage());
-
-			return response()->json([
-				'success' => 0,
-				'message' => 'Error while trying to approve the review request',
-			]);
-		}
-
-		Log::info("[USER $user_id] Review $reviewid approved");
-
-		return response()->json([
-			'success' => 1,
-			'message' => 'Successfully approved (+1 point)',
-		]);
-	}
 
 	public function create(Request $request) {
 		$title              = $request->input('title');
@@ -311,7 +228,6 @@ class ReviewRequest extends Controller {
 			]);
 		}
 
-//There's already a front-end check, but never trust client
 		if ($review->author_id == session('user_id')) {
 			Log::warning("[USER " . session('user_id') . "] Attempted to follow his own review ($reviewid)");
 
@@ -445,31 +361,24 @@ class ReviewRequest extends Controller {
 	public function viewAllTracked() {
 		$user_id = session('user_id');
 
-		//TODO get rid of this awful code duplication, Single query ?
-		$unapproved = DB::table('request_tracking')
+		$unapproved = $this->getTrackingsFor($user_id, false);
+		$approved   = $this->getTrackingsFor($user_id, true);
+
+		return view('my-tracked-reviews', ['reviews_unapproved' => $unapproved, 'reviews_approved' => $approved]);
+	}
+
+	private function getTrackingsFor($user_id, $approved) {
+		return DB::table('request_tracking')
 			->join('requests', 'request_tracking.request_id', '=', 'requests.id')
 			->join('skills', 'requests.skill_id', '=', 'skills.id')
 			->select('requests.id', 'requests.name', 'requests.updated_at', 'skills.name as language')
 			->orderBy('requests.updated_at', 'desc')
 			->where([
 				['request_tracking.user_id', '=', $user_id],
-				['request_tracking.is_approved', '=', false],
+				['request_tracking.is_approved', '=', $approved],
 				['requests.status', '=', 'open'],
 			])
 			->get();
-
-		$approved = DB::table('request_tracking')
-			->join('requests', 'request_tracking.request_id', '=', 'requests.id')
-			->join('skills', 'requests.skill_id', '=', 'skills.id')
-			->select('requests.id', 'requests.name', 'requests.updated_at', 'skills.name as language')
-			->orderBy('requests.updated_at', 'desc')
-			->where([
-				['request_tracking.user_id', '=', $user_id],
-				['request_tracking.is_approved', '=', true],
-			])
-			->get();
-
-		return view('my-tracked-reviews', ['reviews_unapproved' => $unapproved, 'reviews_approved' => $approved]);
 	}
 
 	private function availableAccounts() {
@@ -483,13 +392,6 @@ class ReviewRequest extends Controller {
 			->first();
 
 		return $user->points;
-	}
-
-	/*
-		        add/removePoint are function to allow
-	*/
-	private function addPoint() {
-		DB::table('users')->where('id', session('user_id'))->increment('points');
 	}
 
 	private function removePoint() {

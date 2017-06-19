@@ -19,7 +19,7 @@ Route::get('/ajax/reviews/pulls/{owner}/{repository}/{account_id}', 'ReviewReque
 Route::get('/ajax/reviews/branches/{owner}/{repository}/{account_id}', 'ReviewRequest@getBranches');
 Route::post('/ajax/reviews/{reviewid}/track', 'ReviewRequest@track');
 Route::post('/ajax/reviews/{reviewid}/untrack', 'ReviewRequest@untrack');
-Route::post('/ajax/reviews/{reviewid}/approve', 'ReviewRequest@approve');
+Route::post('/ajax/reviews/{reviewid}/approve', 'ReviewRequestApi@approve');
 Route::post('/ajax/reviews/{reviewid}/reopen', 'ReviewRequest@reopen');
 Route::post('/ajax/reviews/{reviewid}/close', 'ReviewRequest@close');
 
