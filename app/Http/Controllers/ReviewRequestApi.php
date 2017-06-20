@@ -124,7 +124,7 @@ class ReviewRequestApi extends Controller {
 
 		try {
 			$tracking = DB::table('request_tracking')->where([
-				['user_id', '=', session('user_id')],
+				['user_id', '=', $user_id],
 				['request_id', '=', $id],
 			])->first();
 
@@ -144,18 +144,13 @@ class ReviewRequestApi extends Controller {
 					'created_at'  => \Carbon\Carbon::now(),
 					'updated_at'  => \Carbon\Carbon::now(),
 				]);
-
 				$this->notifyUserEmail(session('user_id'), $id, 'followed');
 			}
 
 		} catch (\Illuminate\Database\QueryException $e) {
-			Log::error('[USER ' . session('user_id') . '] SQL Error caught when following  ' . $reviewid . ' : ' . $e->getMessage());
+			Log::error("[USER $user_id ] SQL Error caught when following  $id : " . $e->getMessage());
 
-			return response()->json([
-				'success' => 0,
-				'message' => 'An error ocurred !',
-			]);
-
+			return $this->apiResponse('An error ocurred !');
 		}
 
 		Log::info("[USER $user_id ] followed $id");
