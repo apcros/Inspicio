@@ -42,6 +42,21 @@ class ProfileTest extends TestCase {
 		$this->assertRegExp('/User not found/', $content, 'Error message returned sucessfully when uuid representation is invalid');
 	}
 
+	public function testUpdateProfile() {
+		$this->seed('DatabaseSeederForTests');
+
+		$response = $this->withSession($this->user_data)->post('/account', [
+			'email' => 'wowanewemail@fakefakefake.com',
+			'name'  => 'MOUNDIIIIIR',
+		]);
+		$response->assertStatus(302);
+
+		$this->assertDatabaseHas('users', [
+			'name'  => 'MOUNDIIIIIR',
+			'email' => 'wowanewemail@fakefakefake.com',
+			'id'    => $this->user_data['user_id'],
+		]);
+	}
 	public function testSkill() {
 		$this->seed('DatabaseSeederForTests');
 
