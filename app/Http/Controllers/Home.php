@@ -21,35 +21,9 @@ class Home extends Controller {
 	}
 
 	public function displayDiscover() {
-		$hot_reviews = DB::table('requests')
-			->join('users', 'requests.author_id', '=', 'users.id')
-			->join('skills', 'requests.skill_id', '=', 'skills.id')
-			->select(
-				'requests.*',
-				DB::raw('(SELECT count(request_tracking.request_id ) FROM request_tracking WHERE request_tracking.request_id = requests.id) as followers'),
-				'users.nickname as author',
-				'skills.name as language'
-			)
-			->where('status', 'open')
-			->orderBy('followers', 'desc')
-			->groupBy('skills.name', 'users.nickname', 'requests.id')
-			->limit(20)
-			->get();
 
-		$latest_reviews = DB::table('requests')
-			->join('users', 'requests.author_id', '=', 'users.id')
-			->join('skills', 'requests.skill_id', '=', 'skills.id')
-			->select(
-				'requests.*',
-				DB::raw('(SELECT count(request_tracking.request_id ) FROM request_tracking WHERE request_tracking.request_id = requests.id) as followers'),
-				'users.nickname as author',
-				'skills.name as language'
-			)
-			->where('status', 'open')
-			->orderBy('requests.created_at', 'desc')
-			->groupBy('skills.name', 'users.nickname', 'requests.id')
-			->limit(20)
-			->get();
+		$hot_reviews    = $this->fetchReviewsOrderBy('followers');
+		$latest_reviews = $this->fetchReviewsOrderBy('requests.created_at');
 
 		$languages = DB::table('skills')->get();
 
@@ -58,6 +32,23 @@ class Home extends Controller {
 			'latest_reviews' => $latest_reviews,
 			'languages'      => $languages,
 		]);
+	}
+
+	private function fetchReviewsOrderBy($column) {
+		return DB::table('requests')
+			->join('users', 'requests.author_id', '=', 'users.id')
+			->join('skills', 'requests.skill_id', '=', 'skills.id')
+			->select(
+				'requests.*',
+				DB::raw('(SELECT count(request_tracking.request_id ) FROM request_tracking WHERE request_tracking.request_id = requests.id AND request_tracking.is_active = TRUE) as followers'),
+				'users.nickname as author',
+				'skills.name as language'
+			)
+			->where('status', 'open')
+			->orderBy($column, 'desc')
+			->groupBy('skills.name', 'users.nickname', 'requests.id')
+			->limit(20)
+			->get();
 	}
 
 	public function search(Request $request) {
