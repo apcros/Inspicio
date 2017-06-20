@@ -77,7 +77,9 @@ class ReviewRequest extends Controller {
 				'created_at'  => \Carbon\Carbon::now(),
 				'updated_at'  => \Carbon\Carbon::now(),
 			]);
-			$this->removePoint();
+
+			DB::table('users')->where('id', session('user_id'))->decrement('points');
+
 		} catch (\Illuminate\Database\QueryException $e) {
 			Log::error('[USER ' . session('user_id') . '] SQL Error caught while adding Pull request : ' . $e->getMessage());
 
@@ -169,164 +171,6 @@ class ReviewRequest extends Controller {
 		return json_encode($raw_response);
 	}
 
-	public function untrack($reviewid) {
-		$review = $this->getReview($reviewid);
-
-		if (!$review) {
-			return response()->json([
-				'success' => 0,
-				'message' => 'Review Request not found !',
-			]);
-		}
-
-		try {
-			$tracking = DB::table('request_tracking')
-				->where([
-					['user_id', '=', session('user_id')],
-					['request_id', '=', $reviewid],
-					['is_active', '=', true],
-				])->first();
-
-			if ($tracking) {
-				DB::table('request_tracking')->where([
-					['user_id', '=', session('user_id')],
-					['request_id', '=', $reviewid],
-				])->update(['is_active' => false]);
-			} else {
-				return response()->json([
-					'success' => 0,
-					'message' => 'You were not following this review request',
-				]);
-			}
-
-		} catch (\Illuminate\Database\QueryException $e) {
-			Log::error('[USER ' . session('user_id') . '] SQL Error caught when unfollowing  ' . $reviewid . ' : ' . $e->getMessage());
-
-			return response()->json([
-				'success' => 0,
-				'message' => 'An error ocurred !',
-			]);
-
-		}
-
-		Log::info('[USER ' . session('user_id') . "] unfollowed $reviewid");
-
-		return response()->json([
-			'success' => 1,
-			'message' => 'Review request unfollowed',
-		]);
-	}
-
-	public function track($reviewid) {
-
-		$review = $this->getReview($reviewid);
-
-		if (!$review) {
-			return response()->json([
-				'success' => 0,
-				'message' => 'Review Request not found !',
-			]);
-		}
-
-		if ($review->author_id == session('user_id')) {
-			Log::warning("[USER " . session('user_id') . "] Attempted to follow his own review ($reviewid)");
-
-			return response()->json([
-				'success' => 0,
-				'message' => 'You can\'t follow your own review requests',
-			]);
-
-		}
-
-		try {
-			$potential_tracking = DB::table('request_tracking')->where([
-				['user_id', '=', session('user_id')],
-				['request_id', '=', $reviewid],
-			])->first();
-
-			if ($potential_tracking) {
-				//There if the PR was unfollwed
-				DB::table('request_tracking')->where([
-					['user_id', '=', session('user_id')],
-					['request_id', '=', $reviewid],
-				])->update(['is_active' => true]);
-			} else {
-				DB::table('request_tracking')->insert([
-					'user_id'     => session('user_id'),
-					'request_id'  => $reviewid,
-					'is_active'   => true,
-					'is_approved' => false,
-					'created_at'  => \Carbon\Carbon::now(),
-					'updated_at'  => \Carbon\Carbon::now(),
-				]);
-
-				$this->notifyUserEmail(session('user_id'), $reviewid, 'followed');
-			}
-
-		} catch (\Illuminate\Database\QueryException $e) {
-			Log::error('[USER ' . session('user_id') . '] SQL Error caught when following  ' . $reviewid . ' : ' . $e->getMessage());
-
-			return response()->json([
-				'success' => 0,
-				'message' => 'An error ocurred !',
-			]);
-
-		}
-
-		Log::info('[USER ' . session('user_id') . "] Followed $reviewid");
-
-		return response()->json([
-			'success' => 1,
-			'message' => 'You are now following this review request',
-		]);
-	}
-
-	public function close($reviewid) {
-		return $this->changeReviewStatus($reviewid, 'closed');
-	}
-
-	public function reopen($reviewid) {
-		return $this->changeReviewStatus($reviewid, 'open');
-	}
-
-	private function changeReviewStatus($reviewid, $newstatus) {
-		$review = $this->getReview($reviewid);
-
-		if (!$review) {
-			return response()->json([
-				'success' => 0,
-				'message' => 'Review Request not found !',
-			]);
-		}
-
-		if ($review->author_id != session('user_id')) {
-			Log::warning("[USER " . session('user_id') . "] Attempted to change someone else review ($reviewid) to $newstatus");
-
-			return response()->json([
-				'success' => 0,
-				'message' => 'You can only update the status of your own review requests',
-			]);
-		}
-
-		try {
-			DB::table('requests')->where('id', $review->id)->update(['status' => $newstatus, 'updated_at' => \Carbon\Carbon::now()]);
-		} catch (\Illuminate\Database\QueryException $e) {
-			Log::error('[USER ' . session('user_id') . '] attempted to change code review ' . $reviewid . " status to $newstatus : " . $e->getMessage());
-
-			return response()->json([
-				'success' => 0,
-				'message' => 'An error ocurred !',
-			]);
-
-		}
-
-		return response()->json([
-			'success' => 1,
-			'message' => "Code review status changed to $newstatus",
-		]);
-
-	}
-
 	public function viewAllMine() {
 		$user_id = session('user_id');
 		$reviews = DB::table('requests')
@@ -392,10 +236,6 @@ class ReviewRequest extends Controller {
 			->first();
 
 		return $user->points;
-	}
-
-	private function removePoint() {
-		DB::table('users')->where('id', session('user_id'))->decrement('points');
 	}
 
 	private function getClient($provider) {

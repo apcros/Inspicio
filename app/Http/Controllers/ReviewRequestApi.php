@@ -68,6 +68,141 @@ class ReviewRequestApi extends Controller {
 		return $this->apiResponse("Successfully approved (+1 point)", 1);
 	}
 
+	public function untrack($id) {
+		list($review, $error) = $this->fetchReview($id);
+
+		if (!$review) {
+			return $this->apiResponse($error);
+		}
+
+		$user_id = session('user_id');
+
+		try {
+			$tracking = DB::table('request_tracking')
+				->where([
+					['user_id', '=', $user_id],
+					['request_id', '=', $id],
+					['is_active', '=', true],
+				])->first();
+
+			if (!$tracking) {
+				return $this->apiResponse('You were not following this review request');
+			}
+
+			DB::table('request_tracking')->where([
+				['user_id', '=', session('user_id')],
+				['request_id', '=', $id],
+			])->update(['is_active' => false]);
+
+		} catch (\Illuminate\Database\QueryException $e) {
+			Log::error("[USER $user_id ] SQL Error caught when unfollowing  $id : " . $e->getMessage());
+
+			return $this->apiResponse('An error ocurred !');
+		}
+
+		Log::info("[USER $user_id ] unfollowed $id");
+
+		return $this->apiResponse('Review request unfollowed', 1);
+
+	}
+
+	public function track($id) {
+
+		list($review, $error) = $this->fetchReview($id);
+
+		if (!$review) {
+			return $this->apiResponse($error);
+		}
+
+		$user_id = session('user_id');
+
+		if ($review->author_id == $user_id) {
+			Log::warning("[USER $user_id ] Attempted to follow his own review ($id)");
+
+			return $this->apiResponse("You can't follow your own review requests");
+		}
+
+		try {
+			$tracking = DB::table('request_tracking')->where([
+				['user_id', '=', session('user_id')],
+				['request_id', '=', $id],
+			])->first();
+
+			if ($tracking) {
+				//$tracking will be set if the review was followed and then unfollowed
+				DB::table('request_tracking')->where([
+					['user_id', '=', $user_id],
+					['request_id', '=', $id],
+				])->update(['is_active' => true]);
+			} else {
+
+				DB::table('request_tracking')->insert([
+					'user_id'     => $user_id,
+					'request_id'  => $id,
+					'is_active'   => true,
+					'is_approved' => false,
+					'created_at'  => \Carbon\Carbon::now(),
+					'updated_at'  => \Carbon\Carbon::now(),
+				]);
+
+				$this->notifyUserEmail(session('user_id'), $id, 'followed');
+			}
+
+		} catch (\Illuminate\Database\QueryException $e) {
+			Log::error('[USER ' . session('user_id') . '] SQL Error caught when following  ' . $reviewid . ' : ' . $e->getMessage());
+
+			return response()->json([
+				'success' => 0,
+				'message' => 'An error ocurred !',
+			]);
+
+		}
+
+		Log::info("[USER $user_id ] followed $id");
+
+		return $this->apiResponse('You are now following this review request', 1);
+
+	}
+
+	public function reopen($id) {
+		return $this->changeReviewStatus($id, 'open');
+	}
+
+	public function close($id) {
+		return $this->changeReviewStatus($id, 'closed');
+	}
+
+	private function changeReviewStatus($id, $status) {
+		list($review, $error) = $this->fetchReview($id);
+
+		if (!$review) {
+			return $this->apiResponse($error);
+		}
+
+		$user_id = session('user_id');
+
+		if ($review->author_id != $user_id) {
+			Log::warning("[USER " . session('user_id') . "] Attempted to change someone else review ($id) to $status");
+
+			return $this->apiResponse('You can only update the status of your own review requests');
+		}
+
+		try {
+			DB::table('requests')->where('id', $review->id)
+				->update([
+					'status'     => $status,
+					'updated_at' => \Carbon\Carbon::now(),
+				]);
+		} catch (\Illuminate\Database\QueryException $e) {
+			Log::error("[USER $user_id ] SQL Error when changing status for code review $id (new status : $status ) : " . $e->getMessage());
+
+			return $this->apiResponse('An error ocurred !');
+		}
+
+		return $this->apiResponse("Code review status changed to $status", 1);
+
+	}
+
 	private function fetchReview($id) {
 		$valid_uuid = preg_match("/^(\{)?[a-f\d]{8}(-[a-f\d]{4}){4}[a-f\d]{8}(?(1)\})$/i", $id);
 
