@@ -62,7 +62,7 @@ class HomeTest extends TestCase {
 			'name'       => 'Amazing code review request',
 			'repository' => 'testuser/testrepo',
 			'author'     => 'testuser',
-			'language'   => 'A++'];
+			'language'   => '1C Enterprise'];
 
 		$this->json('POST', '/api/reviews/search',
 			['filters' => [

@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\DB;
 
 class RefreshLanguageList extends Command {
 	/**
@@ -17,7 +18,7 @@ class RefreshLanguageList extends Command {
 	 *
 	 * @var string
 	 */
-	protected $description = 'This will refresh the language list';
+	protected $description = 'This will refresh the language list in db';
 
 	/**
 	 * Create a new command instance.
@@ -34,49 +35,35 @@ class RefreshLanguageList extends Command {
 	 * @return mixed
 	 */
 	public function handle() {
-		$this->info("Starting the language fetch..");
-		$endpoint = "https://en.wikipedia.org/w/api.php?action=query&titles=List_of_programming_languages&prop=links&format=json&continue=||";
 
-		$languages        = array();
-		$availableResults = true;
-		$continue         = '';
+        $languages = $this->loadLatestLanguageList();
 
-		while ($availableResults) {
-			$this->info('Fetching.');
-			$raw_page     = file_get_contents($endpoint . $continue);
-			$current_page = json_decode($raw_page);
+        $skills_count = DB::table('skills')->count();
 
-			foreach ($current_page->query->pages->{'144146'}
-				->links as $key => $link) {
-                
-				$languages[] = str_replace('(programming language)', '', $link->title);
-			}
+        if($skills_count == count($languages)) {
+            $this->info("Same number of skills/languages in DB and in the fixtures. Ignoring refresh");
+            return 1;
+        }
 
-			if (isset($current_page->continue)) {
-				$continue = "&plcontinue=" . $current_page->continue->plcontinue;
-				$this->info("Current continue value : $continue");
-			} else {
-				$availableResults = false;
-			}
+        foreach ($languages as $language) {
+            $is_already_present = DB::table('skills')->where('name',$language)->first();
 
-		}
+            if(!$is_already_present) {
+                $this->info("New language detected : inserting $language in DB");
+                $id_inserted = DB::table('skills')->insertGetId(['name' => $language]);
+                $this->info("Inserted with success. ID is $id_inserted");
+            }
+        }
 
-		$file_path = database_path() . '/migrations/fixtures/languages.json';
+		$this->info("Finished language refresh");
 
-//This is really horrible, but it's late I'm pissed at array_slice
-
-//And it's just a artisan command.
-
-//Dear Futur me : I'm sorry
-
-//(Also need theses element to be removed as it's garbage links from the Wikipedia api)
-		for ($i = 0; $i < 4; $i++) {
-			array_pop($languages);
-		}
-
-		file_put_contents($file_path, json_encode($languages));
-		$this->info('File saved to ' . $file_path);
 
 	}
+
+    private function loadLatestLanguageList() {
+        $json_file = file_get_contents(database_path() . '/migrations/fixtures/languages.json');
+        $languages = json_decode($json_file);
+        return $languages;
+    }
 
 }
