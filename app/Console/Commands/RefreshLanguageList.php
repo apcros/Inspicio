@@ -42,7 +42,7 @@ class RefreshLanguageList extends Command {
 
         if($skills_count == count($languages)) {
             $this->info("Same number of skills/languages in DB and in the fixtures. Ignoring refresh");
-            return 1;
+            return 0;
         }
 
         foreach ($languages as $language) {
