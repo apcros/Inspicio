@@ -58,6 +58,10 @@ class RouteServiceProvider extends ServiceProvider
         Route::middleware('members')
              ->namespace($this->namespace)
              ->group(base_path('routes/members.php'));
+
+        Route::middleware('approvedmembers')
+             ->namespace($this->namespace)
+             ->group(base_path('routes/approvedmembers.php'));
     }
 
     /**
