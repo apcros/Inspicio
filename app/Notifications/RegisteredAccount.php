@@ -40,8 +40,9 @@ class RegisteredAccount extends Notification implements ShouldQueue {
 		return (new MailMessage)
 			->subject('Welcome to Inspicio !')
 			->greeting('Hello ' . $this->user->name . ' ! You just created an Inspicio account.')
-			->line('You can now start creating reviews request and reviewing other people code.')
-			->action('Take me to Inspicio', url(env('APP_URL')))
+			->line('Before you can now start creating reviews request and reviewing other people code')
+			->line('You will need to confirm your email. Just click the button below !')
+			->action('Take me to Inspicio', url(env('APP_URL') . '/confirm/' . $this->user->id . '/' . $this->user->confirm_token))
 			->line('Thanks for using Inspicio for your reviews !');
 	}
 

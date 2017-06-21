@@ -28,7 +28,7 @@ class Profile extends Controller {
 		$new_email = $request->input('email');
 		$new_name  = $request->input('name');
 		$user_id   = session('user_id');
-        //TODO not updating both if one is empty
+		//TODO not updating both if one is empty
 		try {
 			$user = DB::table('users')->where('id', $user_id)->update([
 				'updated_at' => \Carbon\Carbon::now(),
