@@ -20,6 +20,26 @@ class Home extends Controller {
 		return view('about');
 	}
 
+	public function confirm($user_id, $confirm_token) {
+		$user = DB::table('users')->where('id', $user_id)->first();
+
+		if (!$user) {
+			return view('home', ['error_message' => 'User not found']);
+		}
+
+		if ($user->is_confirmed) {
+			return view('home', ['error_message' => 'User is already confirmed, you can just login !']);
+		}
+
+		if ($user->confirm_token != $confirm_token) {
+			return view('home', ['error_message' => 'Confirmation token mismatch']);
+		}
+
+		DB::table('users')->where('id', $user_id)->update(['is_confirmed' => true]);
+
+		return view('home', ['info_message' => 'User confirmed with success, you can now login']);
+	}
+
 	public function displayDiscover() {
 
 		$hot_reviews    = $this->fetchReviewsOrderBy('followers');
@@ -100,18 +120,21 @@ class Home extends Controller {
 		$auth_provider = $request->input('auth_provider');
 		$user_id       = Uuid::uuid4()->toString();
 		$account_id    = Uuid::uuid4()->toString();
+		$confirm_token = str_random(30);
 		try {
 			Log::info("Creating a new user : $email / $name / $user_id");
 			DB::table('users')->insert(
 				[
-					'id'         => $user_id,
-					'email'      => $email,
-					'name'       => $name,
-					'nickname'   => $request->session()->get('user_nickname'),
-					'rank'       => 1,
-					'points'     => 5,
-					'created_at' => \Carbon\Carbon::now(),
-					'updated_at' => \Carbon\Carbon::now(),
+					'id'            => $user_id,
+					'email'         => $email,
+					'name'          => $name,
+					'nickname'      => $request->session()->get('user_nickname'),
+					'rank'          => 1,
+					'is_confirmed'  => false,
+					'confirm_token' => $confirm_token,
+					'points'        => 5,
+					'created_at'    => \Carbon\Carbon::now(),
+					'updated_at'    => \Carbon\Carbon::now(),
 				]
 			);
 			DB::table('accounts')->insert(
@@ -133,14 +156,14 @@ class Home extends Controller {
 			return view('home', ['error_message' => 'Failed to register']);
 		}
 
-		Session(['user_email' => $email, 'user_id' => $user_id]);
+		Log::info("Created user  $user_id , needs confirmation first. (Confirm url : " . env('APP_URL') . "/confirm/$user_id/$confirm_token )");
 
 		$user              = DB::table('users')->where('id', $user_id)->first();
 		$user_model        = new User();
 		$user_model->email = $user->email;
 		$user_model->notify(new RegisteredAccount($user));
 
-		return redirect('/');
+		return view('home', ['info_message' => 'Account created with success. You need to confirm your email before being able to login. Check your inbox']);
 	}
 
 }

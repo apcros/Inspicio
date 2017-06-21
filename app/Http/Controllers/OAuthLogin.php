@@ -122,6 +122,10 @@ class OAuthLogin extends Controller {
 
 		if ($user) {
 
+            if(!$user->is_confirmed) {
+                return view('home',['error_message' => 'Email not confirmed. Please check your inbox']);
+            }
+
 			DB::table('accounts')->where([
 				['login', '=', $user_data->login],
 				['user_id', '=', $user->id],

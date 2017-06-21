@@ -8,6 +8,27 @@
 
 
 @section('content')
+<div id="modal-account-update" class="modal fade" role="dialog">
+	  <div class="modal-dialog modal-sm" role="document">
+	    <div class="modal-content">
+	    <div class="modal-body">
+	      <h3>Update your account</h3>
+	      <form method="POST" action="/account">
+	      		{{ csrf_field() }}
+		       	<b>Email</b>
+		        <p><input type="email" disabled class="form-control" name="email" value="{{$user->email}}"></p>
+			   	<b>Name</b>
+			    <p><input type="name" class="form-control" name="name" value="{{$user->name}}"></p>
+
+	      </div>
+		<div class="modal-footer">
+			<button type="submit" class="btn btn-primary">Confirm</button>
+	      </form>
+	      <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+	    </div>
+	    </div>
+	  </div>
+	</div>
 	<h3>My account</h3>
 		 <div class="panel panel-default">
 		  <div class="panel-heading">
@@ -19,6 +40,9 @@
 		  		<li><b>Name :</b> {{$user->name}}</li>
 		  		<li><b>Points :</b> {{$user->points}}</li>
 		  	</ul>
+		  </div>
+		  <div class="panel-footer">
+		  	<button class="btn btn-info" onclick='$("#modal-account-update").modal("show");'>Edit</button>
 		  </div>
 		</div>
 	  	<div class="panel panel-default">

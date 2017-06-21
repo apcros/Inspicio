@@ -32,13 +32,14 @@ class CreateBase extends Migration {
 			$table->increments('id');
 			$table->string('name');
 		});
-
 		DB::table('skills')->insert($this->getLanguages());
 
 		Schema::create('users', function (Blueprint $table) {
 			$table->uuid('id');
 			$table->string('name');
 			$table->string('email')->unique();
+            $table->boolean('is_confirmed');
+            $table->string('confirm_token');
 			$table->string('nickname');
 			$table->integer('rank');
 			$table->integer('points');

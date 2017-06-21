@@ -24,6 +24,32 @@ class Profile extends Controller {
 		]);
 	}
 
+	public function updateProfile(Request $request) {
+		$new_email = $request->input('email');
+        //TODO email update needs to force a reconfirmation
+
+		$new_name  = $request->input('name');
+		$user_id   = session('user_id');
+
+		//TODO not updating both if one is empty
+		try {
+			$user = DB::table('users')->where('id', $user_id)->update([
+				'updated_at' => \Carbon\Carbon::now(),
+				//'email'      => $new_email,
+				'name'       => $new_name,
+			]);
+			Log::info("[USER $user_id ] Updated profile. $new_email ($new_name)");
+
+		} catch (\Illuminate\Database\QueryException $e) {
+			Log::error("[USER $user_id ] SQL Error while updating profile with $new_email ($new_name) : " . $e->getMessage());
+
+			return view('home', ['error_message' => 'Failed to update your profile']);
+		}
+
+		return redirect('/account');
+
+	}
+
 	public function displayPublicProfile($userid) {
 
 		try {

@@ -3,6 +3,7 @@
 namespace Tests\Unit;
 
 use Illuminate\Foundation\Testing\DatabaseMigrations;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
@@ -44,14 +45,28 @@ class HomeTest extends TestCase {
 
 		$response = $this->withSession(['user_nickname' => 'bob_git_nickname'])->post('/register', $user_data);
 		$content  = $response->getContent();
-		$this->assertRegExp('/Redirecting to/', $content, 'Registered finished without errors');
+		$this->assertRegExp('/Account created with success. You need to confirm your email before being able to login. Check your inbox/', $content, 'Registered finished without errors');
 
 		$this->assertDatabaseHas('users', [
-			'email' => 'amazingtest@testest.co.uk',
+			'email'        => 'amazingtest@testest.co.uk',
+			'is_confirmed' => false,
 		]);
+
 		$this->assertDatabaseHas('accounts', [
 			'login' => 'bob_git_nickname',
 		]);
+
+		//Monkey patching the user so that we don't have to know what the notification was
+		DB::table('users')->where('email', 'amazingtest@testest.co.uk')->update(['confirm_token' => 'blah']);
+		$user = DB::table('users')->where('email', 'amazingtest@testest.co.uk')->first();
+
+		$response = $this->get('/confirm/' . $user->id . '/blah');
+
+		$this->assertDatabaseHas('users', [
+			'email'        => 'amazingtest@testest.co.uk',
+			'is_confirmed' => true,
+		]);
+
 	}
 
 	public function testSearch() {
