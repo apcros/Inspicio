@@ -26,13 +26,16 @@ class Profile extends Controller {
 
 	public function updateProfile(Request $request) {
 		$new_email = $request->input('email');
+        //TODO email update needs to force a reconfirmation
+
 		$new_name  = $request->input('name');
 		$user_id   = session('user_id');
+
 		//TODO not updating both if one is empty
 		try {
 			$user = DB::table('users')->where('id', $user_id)->update([
 				'updated_at' => \Carbon\Carbon::now(),
-				'email'      => $new_email,
+				//'email'      => $new_email,
 				'name'       => $new_name,
 			]);
 			Log::info("[USER $user_id ] Updated profile. $new_email ($new_name)");
