@@ -9,6 +9,7 @@ use Tests\TestCase;
 
 class HomeTest extends TestCase {
 	use DatabaseMigrations;
+	private $user_review_id = 'e4dc3896-4a40-49b8-b3f2-0dc45916437a';
 
 	public function testDiscoverLogged() {
 		$response = $this->withSession(['user_nickname' => 'testuser', 'user_id' => '7636b30e-6db2-41b6-91b3-33560b9638c2', 'user_email' => 'testuser@thisisatest.co.uk'])
@@ -45,7 +46,7 @@ class HomeTest extends TestCase {
 
 		$response = $this->withSession(['user_nickname' => 'bob_git_nickname'])->post('/register', $user_data);
 		$content  = $response->getContent();
-		$this->assertRegExp('/Account created with success. You need to confirm your email before being able to login. Check your inbox/', $content, 'Registered finished without errors');
+		$this->assertRegExp('/Account created with success. You need to confirm your email. Check your inbox/', $content, 'Registered finished without errors');
 
 		$this->assertDatabaseHas('users', [
 			'email'        => 'amazingtest@testest.co.uk',
@@ -57,9 +58,16 @@ class HomeTest extends TestCase {
 		]);
 
 		//Monkey patching the user so that we don't have to know what the notification was
+		//And to attempt a follow before the account is approved
 		DB::table('users')->where('email', 'amazingtest@testest.co.uk')->update(['confirm_token' => 'blah']);
 		$user = DB::table('users')->where('email', 'amazingtest@testest.co.uk')->first();
 
+		$response = $this->withSession(['user_nickname' => $user->nickname, 'user_id' => $user->id, 'user_email' => $user->email])
+			->json('POST', '/ajax/reviews/' . $this->user_review_id . '/track')
+			->assertJson([
+				'success' => 0,
+				'message' => "Your account needs to be confirmed to do this (Check your inbox !)",
+			]);
 		$response = $this->get('/confirm/' . $user->id . '/blah');
 
 		$this->assertDatabaseHas('users', [

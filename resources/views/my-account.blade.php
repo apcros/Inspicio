@@ -16,7 +16,7 @@
 	      <form method="POST" action="/account">
 	      		{{ csrf_field() }}
 		       	<b>Email</b>
-		        <p><input type="email" disabled class="form-control" name="email" value="{{$user->email}}"></p>
+		        <p><input type="email" class="form-control" name="email" value="{{$user->email}}"></p>
 			   	<b>Name</b>
 			    <p><input type="name" class="form-control" name="name" value="{{$user->name}}"></p>
 
@@ -35,6 +35,11 @@
 		    <h3 class="panel-title">General info</h3>
 		  </div>
 		  <div class="panel-body">
+			  @if (! $user->is_confirmed)
+			  	<div class="alert alert-warning">
+			  		<b>Your email is not confirmed. Check your inbox</b>
+			  	</div>
+			  @endif
 		  	<ul>
 		  		<li><b>Email :</b> {{$user->email}}</li>
 		  		<li><b>Name :</b> {{$user->name}}</li>
