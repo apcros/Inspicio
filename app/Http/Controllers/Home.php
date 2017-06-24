@@ -20,6 +20,10 @@ class Home extends Controller {
 		return view('about');
 	}
 
+	public function termsAndConditions() {
+		return view('tos');
+	}
+
 	public function confirm($user_id, $confirm_token) {
 		$user = DB::table('users')->where('id', $user_id)->first();
 
@@ -118,6 +122,12 @@ class Home extends Controller {
 		$name          = $request->input('name');
 		$auth_token    = $request->input('auth_token');
 		$auth_provider = $request->input('auth_provider');
+		$accept_tos    = $request->input('accept_tos');
+
+		if (!$accept_tos) {
+			return view('choose-auth-provider', ['error_message' => 'You need to accept the terms and conditions !']);
+		}
+
 		$user_id       = Uuid::uuid4()->toString();
 		$account_id    = Uuid::uuid4()->toString();
 		$confirm_token = str_random(30);

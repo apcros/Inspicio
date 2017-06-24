@@ -46,6 +46,12 @@ class HomeTest extends TestCase {
 
 		$response = $this->withSession(['user_nickname' => 'bob_git_nickname'])->post('/register', $user_data);
 		$content  = $response->getContent();
+		$this->assertRegExp('/You need to accept the terms and conditions/', $content, 'ToS not accepted');
+
+		$user_data['accept_tos'] = 'on';
+
+		$response = $this->withSession(['user_nickname' => 'bob_git_nickname'])->post('/register', $user_data);
+		$content  = $response->getContent();
 		$this->assertRegExp('/Account created with success. You need to confirm your email. Check your inbox/', $content, 'Registered finished without errors');
 
 		$this->assertDatabaseHas('users', [

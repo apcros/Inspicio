@@ -10,7 +10,7 @@
  */
 
 Route::get('/', 'Home@displayDiscover');
-
+Route::get('/tos','Home@termsAndConditions');
 Route::get('/choose-auth', 'Home@chooseAuthProvider');
 Route::get('/about', 'Home@about');
 

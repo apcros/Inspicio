@@ -19,6 +19,10 @@
 		    <label for="name">Name</label>
 		    <input type="text" class="form-control" name="name" id="name" placeholder="Your name">
 		  </div>
+		  <div class="form-group">
+		  	<label for="accept_tos">I have read and I accept <a href="/tos">the ToS</a></label>
+		  	<input type="checkbox" name="accept_tos" id="accept_tos">
+		  </div>
 		  <button type="submit" class="btn btn-default">Register</button>
 		</form>
 	  </div>

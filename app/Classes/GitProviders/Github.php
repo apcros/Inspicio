@@ -92,7 +92,11 @@ class Github implements GitProviderInterface {
 
 		$json = json_decode($raw_response);
 
-		return new UserInfo(['login' => $json->login]);
+		if (isset($json->login)) {
+			return new UserInfo(['login' => $json->login]);
+		}
+
+		return false;
 	}
 
 	public function listPullRequestsForRepo($owner, $repository) {
