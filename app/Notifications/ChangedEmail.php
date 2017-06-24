@@ -26,7 +26,7 @@ class ChangedEmail extends Notification implements ShouldQueue {
 	 * @param  mixed  $notifiable
 	 * @return array
 	 */
-	public function via($notifiable) {
+	public function via() {
 		return ['mail'];
 	}
 
@@ -36,7 +36,7 @@ class ChangedEmail extends Notification implements ShouldQueue {
 	 * @param  mixed  $notifiable
 	 * @return \Illuminate\Notifications\Messages\MailMessage
 	 */
-	public function toMail($notifiable) {
+	public function toMail() {
 		return (new MailMessage)
 			->subject('Inspicio : Email updated !')
 			->greeting('Hello ' . $this->user->name . ' ! You just updated your email')
@@ -52,7 +52,7 @@ class ChangedEmail extends Notification implements ShouldQueue {
 	 * @param  mixed  $notifiable
 	 * @return array
 	 */
-	public function toArray($notifiable) {
+	public function toArray() {
 		return [
 			//
 		];
