@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Notifications\ChangedEmail;
+use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -26,18 +28,24 @@ class Profile extends Controller {
 
 	public function updateProfile(Request $request) {
 		$new_email = $request->input('email');
-        //TODO email update needs to force a reconfirmation
-
 		$new_name  = $request->input('name');
 		$user_id   = session('user_id');
 
 		//TODO not updating both if one is empty
 		try {
+			$previous_user_data = DB::table('users')->where('id', $user_id)->first();
+
 			$user = DB::table('users')->where('id', $user_id)->update([
 				'updated_at' => \Carbon\Carbon::now(),
-				//'email'      => $new_email,
+				'email'      => $new_email,
 				'name'       => $new_name,
 			]);
+
+			if ($previous_user_data->email != $new_email) {
+                session(['user_email' => $new_email]);
+				$this->triggerReconfirm($user_id);
+			}
+
 			Log::info("[USER $user_id ] Updated profile. $new_email ($new_name)");
 
 		} catch (\Illuminate\Database\QueryException $e) {
@@ -176,6 +184,17 @@ class Profile extends Controller {
 			'message' => 'Skill deleted',
 		]);
 
+	}
+
+	public function triggerReconfirm($user_id) {
+
+		$new_token = str_random(30);
+		DB::table('users')->where('id', $user_id)->update(['is_confirmed' => false, 'confirm_token' => $new_token]);
+		$user = DB::table('users')->where('id', $user_id)->first();
+
+		$user_model        = new User();
+		$user_model->email = $user->email;
+		$user_model->notify(new ChangedEmail($user));
 	}
 
 }

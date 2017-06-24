@@ -28,7 +28,7 @@ class Home extends Controller {
 		}
 
 		if ($user->is_confirmed) {
-			return view('home', ['error_message' => 'User is already confirmed, you can just login !']);
+			return view('home', ['error_message' => 'User is already confirmed']);
 		}
 
 		if ($user->confirm_token != $confirm_token) {
@@ -37,7 +37,7 @@ class Home extends Controller {
 
 		DB::table('users')->where('id', $user_id)->update(['is_confirmed' => true]);
 
-		return view('home', ['info_message' => 'User confirmed with success, you can now login']);
+		return view('home', ['info_message' => 'User confirmed with success']);
 	}
 
 	public function displayDiscover() {
@@ -163,7 +163,7 @@ class Home extends Controller {
 		$user_model->email = $user->email;
 		$user_model->notify(new RegisteredAccount($user));
 
-		return view('home', ['info_message' => 'Account created with success. You need to confirm your email before being able to login. Check your inbox']);
+		return view('home', ['info_message' => 'Account created with success. You need to confirm your email. Check your inbox']);
 	}
 
 }

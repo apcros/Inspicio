@@ -3,6 +3,7 @@
 namespace Tests\Unit;
 
 use Illuminate\Foundation\Testing\DatabaseMigrations;
+use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
 class ProfileTest extends TestCase {
@@ -44,6 +45,7 @@ class ProfileTest extends TestCase {
 
 	public function testUpdateProfile() {
 		$this->seed('DatabaseSeederForTests');
+		Notification::fake();
 
 		$response = $this->withSession($this->user_data)->post('/account', [
 			'email' => 'wowanewemail@fakefakefake.com',
@@ -52,9 +54,10 @@ class ProfileTest extends TestCase {
 		$response->assertStatus(302);
 
 		$this->assertDatabaseHas('users', [
-			'name'  => 'MOUNDIIIIIR',
-			//'email' => 'wowanewemail@fakefakefake.com',
-			'id'    => $this->user_data['user_id'],
+			'name'         => 'MOUNDIIIIIR',
+			'email'        => 'wowanewemail@fakefakefake.com',
+			'id'           => $this->user_data['user_id'],
+			'is_confirmed' => false,
 		]);
 	}
 	public function testSkill() {
