@@ -1,7 +1,31 @@
-function loadOpenPullRequests(owner, repo, account_id) {
+function extractFromRepositoryVals(repoStr) {
+	var selectValues = repoStr.split(",");
+	var keys = selectValues[0].split("/");
+
+	return {
+		accountId: selectValues[1],
+		owner: keys[0],
+		slug: keys[1]
+	};
+}
+
+function autoPopulatePRTitle() {
+	var prTitle = $("#pull_request").text();
+
+	var repoStr = $("#repository").val();
+	var repoVals = extractFromRepositoryVals(repoStr);
+
+	/* We don't want to replace the user title
+	 with an empty one */
+	if(prTitle !== "") {
+		$("#title").val(repoVals.slug+" - "+prTitle);
+	}
+}
+
+function loadOpenPullRequests(owner, repo, accountId) {
 	$("#repository").attr('disabled', true);
 
-	$.getJSON('/ajax/reviews/pulls/'+owner+'/'+repo+'/'+account_id, function (data) {
+	$.getJSON('/ajax/reviews/pulls/'+owner+'/'+repo+'/'+accountId, function (data) {
 		var html ='';
 
 		$.each(data, function (key, val) {
@@ -15,9 +39,9 @@ function loadOpenPullRequests(owner, repo, account_id) {
 	});
 }
 
-function loadBranches(owner, repo, account_id) {
+function loadBranches(owner, repo, accountId) {
 	$("#repository").attr('disabled', true);
-	$.getJSON('/ajax/reviews/branches/'+owner+'/'+repo+'/'+account_id, function (data) {
+	$.getJSON('/ajax/reviews/branches/'+owner+'/'+repo+'/'+accountId, function (data) {
 		var html ='';
 
 		$.each(data, function (key, val) {
@@ -31,29 +55,6 @@ function loadBranches(owner, repo, account_id) {
 	});
 }
 
-function extractFromRepositoryVals(repo_str) {
-	var select_values = repo_str.split(',');
-	var keys = select_values[0].split('/');
-
-	return {
-		account_id: select_values[1],
-		repo_owner: keys[0],
-		repo_slug: keys[1]
-	}
-}
-
-function autoPopulatePRTitle() {
-	var pr_title = $("#pull_request").text();
-	var current_title = $("#title").val();
-	var repo_str = $("#repository").val();
-	var repo_vals = extractFromRepositoryVals(repo_str);
-
-	/* We don't want to replace the user title
-	 and we don't want to populate if it's empty*/
-	if(pr_title != "" && current_title == "") {
-		$("#title").val(repo_vals.repo_slug+" - "+pr_title);
-	}
-}
 $(document).ready(function(){
 	$('#repository').select2({placeholder: "Select a repository"});
 	$('#pull_request').select2({placeholder: "Select an open pull request"});
@@ -72,10 +73,10 @@ $('#new_pull_request').change(function() {
 $("#repository").on("select2:select", function (e) { 
 	var vals = extractFromRepositoryVals(e.params.data.id);
 
-	loadOpenPullRequests(vals.repo_owner, vals.repo_slug, vals.account_id);
-	loadBranches(vals.repo_owner, vals.repo_slug, vals.account_id);
+	loadOpenPullRequests(vals.owner, vals.slug, vals.accountId);
+	loadBranches(vals.owner, vals.slug, vals.accountId);
 });
 
 $("#pull_request").on("select2:select",function (e) {
 	autoPopulatePRTitle();
-})
+});

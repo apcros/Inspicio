@@ -22,10 +22,6 @@
 		 	<p>You can do someone else code review to win more points.</p>
 		 </div>
 		  <div class="form-group">
-		    <label for="title">Title</label>
-		    <input type="text" class="form-control" name="title" id="title" placeholder="Enter a title for your code review request">
-		  </div>
-		  <div class="form-group">
 		    <label for="repository">Select your repository</label>
 		    <select name="repository" id="repository" class="form-control" placeholder="Select a repository">
 		    <option></option>
@@ -49,6 +45,10 @@
 		    <label for="pull_request">Select an open pull request</label>
 		    <select name="pull_request" id="pull_request" class="form-control" placeholder="Select an open pull request">
 			</select>
+		  </div>
+		  <div class="form-group">
+		    <label for="title">Title</label>
+		    <input type="text" class="form-control" name="title" id="title" placeholder="Enter a title for your code review request">
 		  </div>
 		  <div class="checkbox">
 			  <label>
