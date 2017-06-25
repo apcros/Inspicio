@@ -2,6 +2,7 @@
 @section('title', 'Homepage')
 
 @section('additional_head')
+	<meta name="description" content="A social hub for code reviews. Get your code reviewed !">
 	<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/css/select2.min.css" rel="stylesheet" />
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/js/select2.min.js"></script>
 @endsection
