@@ -178,6 +178,15 @@ class Github implements GitProviderInterface {
 		$std_repos = array();
 
 		foreach ($repos as $repo) {
+			//If the repo is forked, we also want to fetch the original one
+			//In case the user have a PR between his forked version and the original one
+			if($repo['fork']) {
+				$org_repo = $this->fetchOriginalRepo($repo['full_name']);
+				if($org_repo) {
+					$std_repos[] = $org_repo;
+				}
+			}
+
 			$std_repos[] = new Repository([
 				'name'     => $repo['full_name'],
 				'id'       => $repo['id'],
@@ -189,6 +198,9 @@ class Github implements GitProviderInterface {
 		return $std_repos;
 	}
 
+	private function fetchOriginalRepo() {
+		//TODO
+	}
 	public function setToken($token) {
 		$this->ua->addHeader('Authorization: token ' . $token);
 		$this->token = $token;
