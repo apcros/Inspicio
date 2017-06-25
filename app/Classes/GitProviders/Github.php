@@ -219,10 +219,6 @@ class Github implements GitProviderInterface {
 		return $std_repos;
 	}
 
-	private function fetchOriginalRepo() {
-		//TODO
-	}
-
 	public function setToken($token) {
 		$this->ua->addHeader('Authorization: token ' . $token);
 		$this->token = $token;
