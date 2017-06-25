@@ -9,7 +9,7 @@ function loadOpenPullRequests(owner, repo, account_id) {
 			html += "<option value='"+val.url+"'>"+val.name+"</option>";
 		});
 		$("#pull_request").html(html);
-
+		autoPopulatePRTitle();
 	}).always(function() {
 		$("#repository").attr('disabled', false);
 	});
@@ -30,11 +30,30 @@ function loadBranches(owner, repo, account_id) {
 		$("#repository").attr('disabled', false);
 	});
 }
-function loadRepoMetaData(repo) {
-	var metadata = document.getElementById(repo+'_metadata').value.split(',');
-	//TODO : Fix
+
+function extractFromRepositoryVals(repo_str) {
+	var select_values = repo_str.split(',');
+	var keys = select_values[0].split('/');
+
+	return {
+		account_id: select_values[1],
+		repo_owner: keys[0],
+		repo_slug: keys[1]
+	}
 }
 
+function autoPopulatePRTitle() {
+	var pr_title = $("#pull_request").text();
+	var current_title = $("#title").val();
+	var repo_str = $("#repository").val();
+	var repo_vals = extractFromRepositoryVals(repo_str);
+
+	/* We don't want to replace the user title
+	 and we don't want to populate if it's empty*/
+	if(pr_title != "" && current_title == "") {
+		$("#title").val(repo_vals.repo_slug+" - "+pr_title);
+	}
+}
 $(document).ready(function(){
 	$('#repository').select2({placeholder: "Select a repository"});
 	$('#pull_request').select2({placeholder: "Select an open pull request"});
@@ -43,6 +62,7 @@ $(document).ready(function(){
 	$('#head_branch').select2();
 	tinymce.init({ selector:"textarea" });
 });
+
 $('#new_pull_request').change(function() {
 	var check = $(this).prop('checked');
 	$("#pull_request").attr('disabled',check);
@@ -50,11 +70,12 @@ $('#new_pull_request').change(function() {
 });
 
 $("#repository").on("select2:select", function (e) { 
-	var select_values = e.params.data.id.split(',');
-	var account_id = select_values[1];
-	var keys = select_values[0].split('/');
+	var vals = extractFromRepositoryVals(e.params.data.id);
 
-	loadOpenPullRequests(keys[0], keys[1], account_id);
-	loadBranches(keys[0], keys[1], account_id);
-	loadRepoMetaData(select_values[0]);
+	loadOpenPullRequests(vals.repo_owner, vals.repo_slug, vals.account_id);
+	loadBranches(vals.repo_owner, vals.repo_slug, vals.account_id);
 });
+
+$("#pull_request").on("select2:select",function (e) {
+	autoPopulatePRTitle();
+})
