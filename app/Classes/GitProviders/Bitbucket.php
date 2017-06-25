@@ -165,6 +165,17 @@ class Bitbucket implements GitProviderInterface {
 		$std_repos = array();
 
 		foreach ($repos as $repo) {
+
+			if ($repo->fork_of) {
+				$org_repo    = $repo->fork_of;
+				$std_repos[] = new Repository([
+					'name'     => $org_repo->owner . '/' . $org_repo->slug,
+					'id'       => $org_repo->slug,
+					'url'      => $this->bitbucket . '/' . $org_repo->owner . '/' . $org_repo->slug,
+					'language' => $org_repo->language,
+				]);
+			}
+
 			$std_repos[] = new Repository([
 				'name'     => $repo->owner . '/' . $repo->slug,
 				'id'       => $repo->slug,

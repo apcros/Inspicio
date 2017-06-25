@@ -172,12 +172,42 @@ class Github implements GitProviderInterface {
 
 	}
 
+	private function getRepoInfo($name) {
+		$api_url      = $this->api . '/repos/' . $name;
+		$raw_response = $this->ua->get($api_url);
+
+		Log::debug("[getRepoInfo][$name] $raw_response");
+
+		return json_decode($raw_response);
+	}
+
 	public function listRepositories() {
 		$repos = $this->paginate('/user/repos', 'listRepositories', 100);
 		//We need to standarize the format
 		$std_repos = array();
 
 		foreach ($repos as $repo) {
+
+//If the repo is forked, we also want to fetch the original one
+
+//In case the user have a PR between his forked version and the original one
+			if ($repo['fork']) {
+
+				$repo_info = $this->getRepoInfo($repo['full_name']);
+
+				if (isset($repo_info->parent)) {
+
+					$org_repo    = $repo_info->parent;
+					$std_repos[] = new Repository([
+						'name'     => $org_repo->full_name,
+						'id'       => $org_repo->id,
+						'url'      => $org_repo->url,
+						'language' => $org_repo->language,
+					]);
+				}
+
+			}
+
 			$std_repos[] = new Repository([
 				'name'     => $repo['full_name'],
 				'id'       => $repo['id'],
