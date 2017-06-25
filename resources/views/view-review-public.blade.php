@@ -1,6 +1,15 @@
 @extends('layouts.bootstrap-main')
 @section('title', 'View Review Request')
 
+@section('additional_head')
+	<meta property="og:title" content="{{ $review->name }}">
+	<meta property="og:type" content="article">
+	<meta property="og:article:published_time" content="{{$review->created_at}}">
+	<meta property="og:article:author" content="{{ $review->nickname }}">
+	<meta property="og:url" content="{{env('APP_URL').'/reviews/'.$review->id.'/view'}}">
+	<meta property="og:image" content="">
+@endsection
+
 @section('content')
 	  	<div class="panel panel-default">
 		  <div class="panel-heading">

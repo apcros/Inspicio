@@ -40,14 +40,16 @@ class DatabaseSeeder extends Seeder {
 		$account_id = Uuid::uuid4()->toString();
 
 		DB::table('users')->insert([
-			'id'         => $user_id,
-			'name'       => 'John Doe',
-			'email'      => 'fake@fake.com',
-			'nickname'   => $login,
-			'rank'       => 1,
-			'points'     => 5,
-			'created_at' => \Carbon\Carbon::now(),
-			'updated_at' => \Carbon\Carbon::now(),
+			'id'            => $user_id,
+			'name'          => 'John Doe',
+			'email'         => 'fake@fake.com',
+			'nickname'      => $login,
+			'rank'          => 1,
+			'is_confirmed'  => true,
+			'points'        => 5,
+			'confirm_token' => 'blah',
+			'created_at'    => \Carbon\Carbon::now(),
+			'updated_at'    => \Carbon\Carbon::now(),
 		]);
 		DB::table('accounts')->insert([
 			'id'         => $account_id,
@@ -111,14 +113,16 @@ class DatabaseSeeder extends Seeder {
 		$nickname   = str_random(15);
 
 		DB::table('users')->insert([
-			'id'         => $user_id,
-			'name'       => ucfirst(str_random(5)) . ' ' . ucfirst(str_random(4)),
-			'email'      => str_random(10) . '@' . str_random(5) . '.' . str_random(3),
-			'nickname'   => $nickname,
-			'rank'       => 1,
-			'points'     => 5,
-			'created_at' => \Carbon\Carbon::now(),
-			'updated_at' => \Carbon\Carbon::now(),
+			'id'            => $user_id,
+			'name'          => ucfirst(str_random(5)) . ' ' . ucfirst(str_random(4)),
+			'email'         => str_random(10) . '@' . str_random(5) . '.' . str_random(3),
+			'nickname'      => $nickname,
+			'rank'          => 1,
+			'points'        => 5,
+			'confirm_token' => 'blah',
+			'is_confirmed'  => true,
+			'created_at'    => \Carbon\Carbon::now(),
+			'updated_at'    => \Carbon\Carbon::now(),
 		]);
 
 		DB::table('accounts')->insert([
