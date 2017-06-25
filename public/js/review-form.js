@@ -1,7 +1,31 @@
-function loadOpenPullRequests(owner, repo, account_id) {
+function extractFromRepositoryVals(repoStr) {
+	var selectValues = repoStr.split(",");
+	var keys = selectValues[0].split("/");
+
+	return {
+		accountId: selectValues[1],
+		owner: keys[0],
+		slug: keys[1]
+	};
+}
+
+function autoPopulatePRTitle() {
+	var prTitle = $("#pull_request").text();
+
+	var repoStr = $("#repository").val();
+	var repoVals = extractFromRepositoryVals(repoStr);
+
+	/* We don't want to replace the user title
+	 with an empty one */
+	if(prTitle !== "") {
+		$("#title").val(repoVals.slug+" - "+prTitle);
+	}
+}
+
+function loadOpenPullRequests(owner, repo, accountId) {
 	$("#repository").attr('disabled', true);
 
-	$.getJSON('/ajax/reviews/pulls/'+owner+'/'+repo+'/'+account_id, function (data) {
+	$.getJSON('/ajax/reviews/pulls/'+owner+'/'+repo+'/'+accountId, function (data) {
 		var html ='';
 
 		$.each(data, function (key, val) {
@@ -9,15 +33,15 @@ function loadOpenPullRequests(owner, repo, account_id) {
 			html += "<option value='"+val.url+"'>"+val.name+"</option>";
 		});
 		$("#pull_request").html(html);
-
+		autoPopulatePRTitle();
 	}).always(function() {
 		$("#repository").attr('disabled', false);
 	});
 }
 
-function loadBranches(owner, repo, account_id) {
+function loadBranches(owner, repo, accountId) {
 	$("#repository").attr('disabled', true);
-	$.getJSON('/ajax/reviews/branches/'+owner+'/'+repo+'/'+account_id, function (data) {
+	$.getJSON('/ajax/reviews/branches/'+owner+'/'+repo+'/'+accountId, function (data) {
 		var html ='';
 
 		$.each(data, function (key, val) {
@@ -30,10 +54,6 @@ function loadBranches(owner, repo, account_id) {
 		$("#repository").attr('disabled', false);
 	});
 }
-function loadRepoMetaData(repo) {
-	var metadata = document.getElementById(repo+'_metadata').value.split(',');
-	//TODO : Fix
-}
 
 $(document).ready(function(){
 	$('#repository').select2({placeholder: "Select a repository"});
@@ -43,6 +63,7 @@ $(document).ready(function(){
 	$('#head_branch').select2();
 	tinymce.init({ selector:"textarea" });
 });
+
 $('#new_pull_request').change(function() {
 	var check = $(this).prop('checked');
 	$("#pull_request").attr('disabled',check);
@@ -50,11 +71,12 @@ $('#new_pull_request').change(function() {
 });
 
 $("#repository").on("select2:select", function (e) { 
-	var select_values = e.params.data.id.split(',');
-	var account_id = select_values[1];
-	var keys = select_values[0].split('/');
+	var vals = extractFromRepositoryVals(e.params.data.id);
 
-	loadOpenPullRequests(keys[0], keys[1], account_id);
-	loadBranches(keys[0], keys[1], account_id);
-	loadRepoMetaData(select_values[0]);
+	loadOpenPullRequests(vals.owner, vals.slug, vals.accountId);
+	loadBranches(vals.owner, vals.slug, vals.accountId);
+});
+
+$("#pull_request").on("select2:select",function (e) {
+	autoPopulatePRTitle();
 });
