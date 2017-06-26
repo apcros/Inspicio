@@ -10,7 +10,8 @@ function extractFromRepositoryVals(repoStr) {
 }
 
 function autoPopulatePRTitle() {
-	var prTitle = $("#pull_request").text();
+	var selectData = $("#pull_request").select2('data');
+	var prTitle = selectData[0].text;
 
 	var repoStr = $("#repository").val();
 	var repoVals = extractFromRepositoryVals(repoStr);
