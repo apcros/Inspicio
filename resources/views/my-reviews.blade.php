@@ -46,8 +46,10 @@
 			<a class="btn btn-info" href="/reviews/{{$review->id}}/view" target="_blank">View</a>
 			@if ($review->status == 'open')
 				<a onclick="closeReview('{{$review->id}}')" id="review-close-{{$review->id}}" class="btn btn-warning">Close</a>
+				<a href="/reviews/{{$review->id}}/edit" id="review-edit-{{$review->id}}" class="btn btn-info">Edit</a>
 			@else 
 				<a onclick="reopenReview('{{$review->id}}')" id="review-close-{{$review->id}}" class="btn btn-warning">Re-Open</a>
+				<a disabled href="#" id="review-edit-{{$review->id}}" class="btn btn-info">Edit</a>
 			@endif
 		</li>
 	@endforeach

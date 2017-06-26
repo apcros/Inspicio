@@ -53,8 +53,10 @@
 			@if(session('user_id') == $review->author_id)
 					@if ($review->status == 'open')
 			  			<a onclick="closeReview('{{$review->id}}')" id="review-close-{{$review->id}}" class="btn btn-warning">Close</a>
+			  			<a href="/reviews/{{$review->id}}/edit" id="review-edit-{{$review->id}}" class="btn btn-info">Edit</a>
 			  		@else
 			  			<a onclick="reopenReview('{{$review->id}}')" id="review-close-{{$review->id}}" class="btn btn-warning">Re-Open</a>
+			  			<a disabled href="#" id="review-edit-{{$review->id}}" class="btn btn-info">Edit</a>
 			  		@endif
 			@endif
 			  		<a href="{{$review->url}}" target="_blank" class="btn btn-info">View</a>

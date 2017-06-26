@@ -91,6 +91,16 @@ class ReviewRequest extends Controller {
 		return redirect('/reviews/' . $review_request_id . '/view');
 	}
 
+    public function edit(Request $request, $id) {
+        $title              = $request->input('title');
+        $language           = $request->input('language');
+        $description        = $request->input('description');
+    }
+
+    public function editForm($id) {
+
+    }
+    
 	public function createForm() {
 
 		$accounts        = $this->availableAccounts();

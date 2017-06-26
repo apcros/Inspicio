@@ -48,6 +48,8 @@ function closeReview(id) {
 	showModalConfirm('Closing review','You are about to close your review, are you sure ?', function() {
 		reviewAction(id,"/ajax/reviews/"+id+"/close",function() {
 			$("#review-close-"+id).html("Re-open");
+			$("#review-edit-"+id).attr("disabled",true);
+			$("#review-edit-"+id).attr("href","#");
 			$("#review-close-"+id).attr("onclick","reopenReview('"+id+"');");
 		})
 	});
@@ -55,6 +57,8 @@ function closeReview(id) {
 function reopenReview(id) {
 	reviewAction(id,"/ajax/reviews/"+id+"/reopen",function() {
 			$("#review-close-"+id).html("Close");
+			$("#review-edit-"+id).attr("disabled",false);
+			$("#review-edit-"+id).attr("href","/reviews/"+id+"/edit");
 			$("#review-close-"+id).attr("onclick","closeReview('"+id+"');");
 		})
 }

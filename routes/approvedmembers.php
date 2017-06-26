@@ -4,6 +4,10 @@
 
 Route::get('/reviews/create', 'ReviewRequest@createForm');
 Route::post('/reviews/create', 'ReviewRequest@create');
+
+Route::get('/reviews/{reviewid}/edit', 'ReviewRequest@editForm');
+Route::post('/reviews/{reviewid}/edit', 'ReviewRequest@edit');
+
 Route::get('/ajax/reviews/pulls/{owner}/{repository}/{account_id}', 'ReviewRequest@getOpenedPullRequestForRepo');
 Route::get('/ajax/reviews/branches/{owner}/{repository}/{account_id}', 'ReviewRequest@getBranches');
 
