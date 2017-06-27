@@ -98,6 +98,10 @@ class Bitbucket implements GitProviderInterface {
 		return $std_prs;
 	}
 
+	public function updatePullRequest($owner, $repository, $url, $title, $description) {
+		return [false, 'Not supported'];
+	}
+
 	public function createPullRequest($owner, $repository, $head, $base, $title, $description) {
 		$this->ua->addHeader('Content-Type: application/json');
 		$request_data = json_encode([

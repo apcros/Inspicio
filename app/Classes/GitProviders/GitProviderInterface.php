@@ -10,6 +10,8 @@ interface GitProviderInterface {
 
 	public function listPullRequestsForRepo($owner, $repository);
 
+	public function updatePullRequest($owner, $repository, $pr_id, $title, $description);
+
 	public function createPullRequest($owner, $repository, $head, $base, $title, $description);
 
 	public function listBranchesForRepo($owner, $repository);

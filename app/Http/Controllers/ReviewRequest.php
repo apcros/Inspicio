@@ -14,6 +14,10 @@ use \Ramsey\Uuid\Uuid;
 
 class ReviewRequest extends Controller {
 
+	private function cleanDescription($description) {
+		return Purifier::clean($description, ['HTML.Allowed' => 'b,strong,i,em,u,a[href|title],ul,ol,li,p,br,pre,h2,h3,h4']);
+	}
+
 	public function create(Request $request) {
 		$title              = $request->input('title');
 		$repository_account = $request->input('repository');
@@ -21,7 +25,7 @@ class ReviewRequest extends Controller {
 		$pull_request_url   = $request->input('pull_request');
 		$description        = $request->input('description');
 
-		$html_description = Purifier::clean($description, ['HTML.Allowed' => 'b,strong,i,em,u,a[href|title],ul,ol,li,p,br,pre,h2,h3,h4']);
+		$html_description = $this->cleanDescription($description);
 
 		if ($this->getPoints() == 0) {
 			Log::warning('[ USER ' . session('user_id') . '] Attempted to create a review with no points');
@@ -91,16 +95,84 @@ class ReviewRequest extends Controller {
 		return redirect('/reviews/' . $review_request_id . '/view');
 	}
 
-    public function edit(Request $request, $id) {
-        $title              = $request->input('title');
-        $language           = $request->input('language');
-        $description        = $request->input('description');
-    }
+	public function edit(Request $request, $id) {
+		$title       = $request->input('title');
+		$language    = $request->input('language');
+		$description = $request->input('description');
+		$update_git  = $request->input('update_on_git');
 
-    public function editForm($id) {
+		$review = DB::table('requests')->where('id', $id)->first();
 
-    }
-    
+		$user_id = session('user_id');
+
+		if ($user_id != $review->author_id) {
+			return view('home', ['error_message' => "You can't edit someone else code review request"]);
+		}
+
+		if ($review->status != 'open') {
+			return view('home', ['error_message' => "You can't edit a closed code review request"]);
+		}
+
+		$html_description = $this->cleanDescription($description);
+
+		try {
+			DB::table('requests')->where('id', $id)->update([
+				'updated_at'  => \Carbon\Carbon::now(),
+				'name'        => $title,
+				'description' => $html_description,
+				'skill_id'    => $language,
+			]);
+			Log::info("[USER $user_id] Updated their code review $id request on Inspicio");
+		} catch (\Illuminate\Database\QueryException $e) {
+			Log::error("[USER $user_id] SQL Error caught while editing Pull request : " . $e->getMessage());
+
+			return view('home', ['error_message' => 'An internal error ocurred while trying to edit your review request']);
+		}
+
+		$account        = DB::table('accounts')->where('id', $review->account_id)->first();
+		$provider_clean = ucfirst($account->provider);
+
+		$git_message = "Not updated on $provider_clean";
+
+		if ($update_git) {
+
+			$client = $this->getClient($account->provider);
+			$client->setToken($account->token);
+
+			list($owner, $repository) = explode('/', $review->repository);
+			list($status, $error)     = $client->updatePullRequest($owner, $repository, $review->url, $title, $html_description);
+
+			if ($status) {
+				$git_message = "Updated on $provider_clean";
+				Log::info("[USER $user_id] Updated their code review $id request on $provider_clean");
+			} else {
+				$git_message = "Not updated on $provider_clean for the following reason : $error";
+				Log::warning("[USER $user_id] Failed to update their code review $id request on $provider_clean : $error");
+			}
+
+		}
+
+		return view('home', ['info_message' => "Updated code review request on Inspicio, $git_message"]);
+
+	}
+
+	public function editForm($id) {
+		$languages = DB::table('skills')->get();
+		$review    = DB::table('requests')->where('id', $id)->first();
+		$account   = DB::table('accounts')->where('id', $review->account_id)->first();
+		$user_id   = session('user_id');
+
+		if ($user_id != $review->author_id) {
+			return view('home', ['error_message' => "You can't edit someone else code review request"]);
+		}
+
+		return view('editreview', [
+			'review'    => $review,
+			'provider'  => ucfirst($account->provider),
+			'languages' => $languages,
+		]);
+	}
+
 	public function createForm() {
 
 		$accounts        = $this->availableAccounts();

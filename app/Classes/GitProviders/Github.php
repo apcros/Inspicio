@@ -135,6 +135,10 @@ class Github implements GitProviderInterface {
 		return $std_branches;
 	}
 
+	public function updatePullRequest($owner, $repository, $url, $title, $description) {
+		return [false, 'Pull request url invalid'];
+	}
+
 	public function createPullRequest($owner, $repository, $head, $base, $title, $description) {
 		$api_url = $this->api . '/repos/' . $owner . '/' . $repository . '/pulls';
 
