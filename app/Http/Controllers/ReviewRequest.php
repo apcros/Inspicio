@@ -152,7 +152,10 @@ class ReviewRequest extends Controller {
 
 		}
 
-		return view('home', ['info_message' => "Updated code review request on Inspicio, $git_message"]);
+		return view('home', [
+			'info_message' => "Updated code review request on Inspicio, $git_message",
+			'info_html'    => "<p><a href='/reviews/$id/view' class='btn btn-primary'>View on Inspicio</a></p>",
+		]);
 
 	}
 

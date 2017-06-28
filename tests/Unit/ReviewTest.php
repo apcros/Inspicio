@@ -110,13 +110,14 @@ class ReviewTest extends TestCase {
 		]);
 
 		$response = $this->withSession($this->user_data)->post('/reviews/' . $this->user_review_id . '/edit', [
-			'title'       => 'Amazing a new title',
-			'description' => '<p><b>Loook at meeeeee</b></p><script>alert("And I am a nasty script that should be ditched"</script>',
-			'language'    => 2,
-			'update_on_git'  => 'on',
+			'title'         => 'Amazing a new title',
+			'description'   => '<p><b>Loook at meeeeee</b></p><script>alert("And I am a nasty script that should be ditched"</script>',
+			'language'      => 2,
+			'update_on_git' => 'on',
 		]);
 		$content = $response->getContent();
-		$this->assertRegExp("/Pull request url invalid/", $content, "PR updated and message is correct");
+		//TODO investigate mocking UserAgent::class for the app to allow for finer test
+		$this->assertRegExp("/Updated code review request on Inspicio/", $content, "PR updated and message is correct");
 
 	}
 
