@@ -75,4 +75,50 @@ class ReviewTest extends TestCase {
 		]);
 	}
 
+	public function testEditReview() {
+		$this->seed('DatabaseSeederForTests');
+
+		$response = $this->withSession($this->user_data_bis)->get('/reviews/' . $this->user_review_id . '/edit');
+		$content  = $response->getContent();
+		$this->assertRegExp("/You can&#039;t edit someone else code review request/", $content, "Can't edit someone else PR");
+
+		$response = $this->withSession($this->user_data_bis)->post('/reviews/' . $this->user_review_id . '/edit', [
+			'title'       => 'blah',
+			'description' => 'blah',
+			'language'    => 2,
+		]);
+		$content = $response->getContent();
+		$this->assertRegExp("/You can&#039;t edit someone else code review request/", $content, "Can't edit someone else PR");
+
+		$response = $this->withSession($this->user_data)->get('/reviews/' . $this->user_review_id . '/edit');
+		$content  = $response->getContent();
+		$this->assertRegExp("/Wow this is a description/", $content, "Description is populated");
+		$this->assertRegExp("/Amazing code review request/", $content, "Title is populated");
+
+		$response = $this->withSession($this->user_data)->post('/reviews/' . $this->user_review_id . '/edit', [
+			'title'       => 'Amazing a new title',
+			'description' => '<p><b>Loook at meeeeee</b></p><script>alert("And I am a nasty script that should be ditched"</script>',
+			'language'    => 2,
+		]);
+		$content = $response->getContent();
+		$this->assertRegExp("/Updated code review request on Inspicio, Not updated on Github/", $content, "PR updated and message is correct");
+		$this->assertDatabaseHas('requests', [
+			'name'        => 'Amazing a new title',
+			'description' => '<p><b>Loook at meeeeee</b></p>',
+			'skill_id'    => 2,
+			'id'          => $this->user_review_id,
+		]);
+
+		$response = $this->withSession($this->user_data)->post('/reviews/' . $this->user_review_id . '/edit', [
+			'title'         => 'Amazing a new title',
+			'description'   => '<p><b>Loook at meeeeee</b></p><script>alert("And I am a nasty script that should be ditched"</script>',
+			'language'      => 2,
+			'update_on_git' => 'on',
+		]);
+		$content = $response->getContent();
+		//TODO investigate mocking UserAgent::class for the app to allow for finer test
+		$this->assertRegExp("/Updated code review request on Inspicio/", $content, "PR updated and message is correct");
+
+	}
+
 }

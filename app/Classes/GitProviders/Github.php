@@ -135,6 +135,36 @@ class Github implements GitProviderInterface {
 		return $std_branches;
 	}
 
+	public function updatePullRequest($owner, $repository, $url, $title, $description) {
+		$url_parts = array_reverse(explode('/', $url));
+		$pr_id     = $url_parts[0];
+
+		if (!$pr_id) {
+			return [false, 'Pull request url invalid'];
+		}
+
+		$api_url = $this->api . '/repos/' . $owner . '/' . $repository . '/pulls/' . $pr_id;
+
+		$raw_response = $this->ua->patch($api_url, json_encode([
+			'title' => $title,
+			'body'  => $description,
+		]));
+
+		Log::debug("[updatePullRequest][$owner/$repository] $raw_response");
+
+		$json = json_decode($raw_response);
+
+		if (isset($json->html_url)) {
+			return [true, null];
+		}
+
+		if (isset($json->message)) {
+			return [false, $json->message];
+		}
+
+		return [false, 'API Error'];
+	}
+
 	public function createPullRequest($owner, $repository, $head, $base, $title, $description) {
 		$api_url = $this->api . '/repos/' . $owner . '/' . $repository . '/pulls';
 
@@ -144,7 +174,7 @@ class Github implements GitProviderInterface {
 			'head'  => $head,
 			'base'  => $base,
 		]));
-		Log::debug("[createPullRequest][$owner/$repository]" . $raw_response);
+		Log::debug("[createPullRequest][$owner/$repository] $raw_response");
 		$pull_request = json_decode($raw_response);
 
 		$error_message = 'Failed to create pull request';

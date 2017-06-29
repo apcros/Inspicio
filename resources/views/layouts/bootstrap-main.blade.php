@@ -68,11 +68,17 @@
 				<div class="alert alert-danger">
 					<h3>An error ocurred !</h3>
 				    {{ $error_message }}
+				    @if (isset($error_html))
+				    	{!! $error_html !!}
+				    @endif
 				</div>
 			@endif
 			@if (isset($info_message))
 				<div class="alert alert-info">
 				    {{ $info_message }}
+				  	@if (isset($info_html))
+				    	{!! $info_html !!}
+				    @endif
 				</div>
 			@endif
 			@yield('content')

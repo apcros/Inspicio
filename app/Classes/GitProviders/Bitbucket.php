@@ -98,6 +98,40 @@ class Bitbucket implements GitProviderInterface {
 		return $std_prs;
 	}
 
+	public function updatePullRequest($owner, $repository, $url, $title, $description) {
+		$url_parts = array_reverse(explode('/', $url));
+		$pr_id     = $url_parts[0];
+
+		if (!$pr_id) {
+			return [false, 'Pull request url invalid'];
+		}
+
+		$this->ua->addHeader('Content-Type: application/json');
+		$api_url      = $this->api . "/2.0/repositories/$owner/$repository/pullrequests/$pr_id";
+		$raw_response = $this->ua->put($api_url, json_encode([
+			'title'       => $title,
+			'description' => strip_tags($description),
+		]));
+
+		Log::debug("[updatePullRequest][$owner/$repository] $raw_response");
+		$json = json_decode($raw_response);
+
+		if (isset($json->links)) {
+			return [true, null];
+		}
+
+		if (isset($json->error)) {
+
+			if (isset($json->error->message)) {
+				return [false, $json->error->message];
+			}
+
+		}
+
+		return [false, 'API Error'];
+
+	}
+
 	public function createPullRequest($owner, $repository, $head, $base, $title, $description) {
 		$this->ua->addHeader('Content-Type: application/json');
 		$request_data = json_encode([

@@ -7,7 +7,7 @@ class UserAgent {
 	private $headers;
 
 	public function __construct() {
-		$this->curl = curl_init();
+		$this->curl    = curl_init();
 		$this->headers = array();
 		$this->setOpt(CURLOPT_RETURNTRANSFER, 1);
 	}
@@ -25,13 +25,29 @@ class UserAgent {
 		return $this->do_curl();
 	}
 
+	private function custom_http_verb_request($url, $data, $verb) {
+		$this->setOpt(CURLOPT_CUSTOMREQUEST, $verb);
+		$this->setOpt(CURLOPT_URL, $url);
+		$this->setOpt(CURLOPT_POSTFIELDS, $data);
+
+		return $this->do_curl();
+	}
+
+	public function patch($url, $data) {
+		return $this->custom_http_verb_request($url, $data, 'PATCH');
+	}
+
+	public function put($url, $data) {
+		return $this->custom_http_verb_request($url, $data, 'PUT');
+	}
+
 	public function getHeaders() {
 		return $this->headers;
 	}
 
 	/*
-	Takes $data and post it to $url using curl
-	 */
+		Takes $data and post it to $url using curl
+	*/
 	public function post($url, $data) {
 
 		$this->setOpt(CURLOPT_POST, 1);
@@ -57,8 +73,8 @@ class UserAgent {
 	}
 
 	/*
-	A short cut to avoid having to repass the curl handler
-	 */
+		A short cut to avoid having to repass the curl handler
+	*/
 	private function setOpt($option, $val) {
 		curl_setopt($this->curl, $option, $val);
 	}
