@@ -95,6 +95,14 @@ class ReviewRequest extends Controller {
 		return redirect('/reviews/' . $review_request_id . '/view');
 	}
 
+	public function bulkImportForm() {
+
+	}
+
+	public function bulkImport() {
+
+	}
+
 	public function edit(Request $request, $id) {
 		$title       = $request->input('title');
 		$language    = $request->input('language');

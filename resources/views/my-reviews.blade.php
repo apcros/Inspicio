@@ -2,7 +2,17 @@
 @section('title', 'My Review Request')
 
 @section('content')
-
+@if (count($reviews) == 0)
+	<div class="alert alert-warning">
+		<h4>Oh noes, you don't have any reviews !</h4>
+		<hr>
+		<p>Don't panic, you can create one easily, either from scratch or from an existing Git pull request</p>
+		<a class="btn btn-primary" href="/reviews/create">Create/Import code review requests</a>
+		<hr>
+		<p>Alternatively, if you want to import several in a single action, you can use the bulk import feature : </p>
+		<a class="btn btn-primary" href="/reviews/bulk-import">Bulk import code review requests</a>
+	</div>
+@endif
 <ul class="list-group">
 	@foreach ($reviews as $review)
 		<li class="list-group-item">

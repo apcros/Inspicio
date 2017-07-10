@@ -41,7 +41,9 @@ class Home extends Controller {
 
 		DB::table('users')->where('id', $user_id)->update(['is_confirmed' => true]);
 
-		return view('home', ['info_message' => 'User confirmed with success']);
+		return view('home', [
+			'info_message' => 'User confirmed with success',
+		]);
 	}
 
 	public function displayDiscover() {

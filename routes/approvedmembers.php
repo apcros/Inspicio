@@ -5,6 +5,9 @@
 Route::get('/reviews/create', 'ReviewRequest@createForm');
 Route::post('/reviews/create', 'ReviewRequest@create');
 
+Route::get('/reviews/bulk-import', 'ReviewRequest@bulkImportForm');
+Route::post('/reviews/bulk-import', 'ReviewRequest@bulkImport');
+
 Route::get('/reviews/{reviewid}/edit', 'ReviewRequest@editForm');
 Route::post('/reviews/{reviewid}/edit', 'ReviewRequest@edit');
 
