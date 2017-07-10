@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Classes\GitProviderFactory;
 use App\Http\Controllers\Controller;
 use App\Notifications\ActionOnYourReview;
 use App\User;
@@ -104,6 +105,43 @@ class ReviewRequestApi extends Controller {
 
 		return $this->apiResponse('Review request unfollowed', 1);
 
+	}
+
+	public function listAllAvailablePrsForImport() {
+		$user_id  = session('user_id');
+		$accounts = DB::table('accounts')->where('user_id', $user_id)->get();
+
+		$repositories_available = [];
+
+		Log::info("[USER ID $user_id ] Fetching repo and PR for " . count($accounts) . " accounts");
+
+		foreach ($accounts as $account) {
+
+			$factory = new GitProviderFactory($provider);
+			$client  = $factory->getProviderEngine();
+
+			$client = $this->getClient($account->provider);
+			$client->setToken($account->token);
+
+			$repositories = $client->listRepositories();
+
+			foreach ($repositories as $repository) {
+				list($owner, $repository) = explode('/', $repository->name);
+				Log::info("[USER ID $user_id] Fetching $owner/$repository prs..");
+				$open_prs = $client->listPullRequestsForRepo($owner, $repository);
+
+				if (count($open_prs) > 0) {
+					$repositories_available[] = [
+						'repository'    => $repository,
+						'pull_requests' => $open_prs,
+					];
+				}
+
+			}
+
+		}
+
+		return $this->apiResponse($repositories_available, 1);
 	}
 
 	public function track($id) {

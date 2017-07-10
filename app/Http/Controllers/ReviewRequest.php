@@ -96,7 +96,14 @@ class ReviewRequest extends Controller {
 	}
 
 	public function bulkImportForm() {
+		$user_id = session('user_id');
+		$user    = DB::table('users')->where('id', $user_id)->first();
 
+		if ($user->points == 0) {
+			return view('home', ['error_message' => "You have 0 points left, You can't import any pull requests. Please review someone else code to gain points"]);
+		}
+
+		return view('bulk-import', ['user' => $user]);
 	}
 
 	public function bulkImport() {

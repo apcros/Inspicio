@@ -19,6 +19,7 @@ Route::post('/ajax/reviews/{reviewid}/untrack', 'ReviewRequestApi@untrack');
 Route::post('/ajax/reviews/{reviewid}/approve', 'ReviewRequestApi@approve');
 Route::post('/ajax/reviews/{reviewid}/reopen', 'ReviewRequestApi@reopen');
 Route::post('/ajax/reviews/{reviewid}/close', 'ReviewRequestApi@close');
+Route::get('/ajax/reviews/available-for-import', 'ReviewRequestApi@listAllAvailablePrsForImport');
 
 Route::post('/ajax/account/skills', 'Profile@addSkill');
 Route::post('/ajax/account/skills/{id}/delete', 'Profile@deleteSkill');
