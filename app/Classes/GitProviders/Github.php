@@ -135,6 +135,10 @@ class Github implements GitProviderInterface {
 		return $std_branches;
 	}
 
+	public function getPullRequestData($url) {
+
+	}
+
 	public function updatePullRequest($owner, $repository, $url, $title, $description) {
 		$url_parts = array_reverse(explode('/', $url));
 		$pr_id     = $url_parts[0];

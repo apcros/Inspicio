@@ -112,27 +112,25 @@ class ReviewRequestApi extends Controller {
 		$accounts = DB::table('accounts')->where('user_id', $user_id)->get();
 
 		$repositories_available = [];
-
+		//TODO using getAccounts from ReviewRequest instead, to force refresh where it's needed
 		Log::info("[USER ID $user_id ] Fetching repo and PR for " . count($accounts) . " accounts");
 
 		foreach ($accounts as $account) {
 
-			$factory = new GitProviderFactory($provider);
+			$factory = new GitProviderFactory($account->provider);
 			$client  = $factory->getProviderEngine();
-
-			$client = $this->getClient($account->provider);
 			$client->setToken($account->token);
 
 			$repositories = $client->listRepositories();
 
 			foreach ($repositories as $repository) {
-				list($owner, $repository) = explode('/', $repository->name);
-				Log::info("[USER ID $user_id] Fetching $owner/$repository prs..");
-				$open_prs = $client->listPullRequestsForRepo($owner, $repository);
+				list($owner, $repository_name) = explode('/', $repository->name);
+				Log::info("[USER ID $user_id] Fetching $owner/$repository_name prs..");
+				$open_prs = $client->listPullRequestsForRepo($owner, $repository_name);
 
 				if (count($open_prs) > 0) {
 					$repositories_available[] = [
-						'repository'    => $repository,
+						'object'        => $repository,
 						'pull_requests' => $open_prs,
 					];
 				}
@@ -141,7 +139,12 @@ class ReviewRequestApi extends Controller {
 
 		}
 
-		return $this->apiResponse($repositories_available, 1);
+		$user = DB::table('users')->where('id', $user_id)->first();
+
+		return $this->apiResponse([
+			'repositories' => $repositories_available,
+			'points'       => $user->points,
+		], 1);
 	}
 
 	public function track($id) {

@@ -10,10 +10,10 @@
 	  <h2>Bulk import reviews</h2>
 	  <div class="alert">
 	  	<p>You have <b>{{$user->points}} points</b> left, which means you can import up to {{$user->points}} pull requests to Inspicio</p>
-	  	<select class="form-control" name="prs_selected" id ="prs_selected">
-	  	</select>
+	  	<div id="async_loading">
+	  	</div>
 	  	<hr>
-	  	<button type="submit" class="btn btn-primary" disabled>Import selected pull requests</button>
+	  	<button type="submit" class="btn btn-primary" id="import-btn" disabled>Import selected pull requests</button>
 	  </div>
 	  <script type="text/javascript" src="{{ secure_asset('js/bulk-import-form.js') }}"></script>
 @endsection

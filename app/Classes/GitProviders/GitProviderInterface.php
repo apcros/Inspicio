@@ -14,6 +14,8 @@ interface GitProviderInterface {
 
 	public function createPullRequest($owner, $repository, $head, $base, $title, $description);
 
+	public function getPullRequestData($url);
+
 	public function listBranchesForRepo($owner, $repository);
 
 	public function listRepositories();
@@ -21,4 +23,5 @@ interface GitProviderInterface {
 	public function setToken($token);
 
 	public function refreshToken($refresh_token);
+
 }

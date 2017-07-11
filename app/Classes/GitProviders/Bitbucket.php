@@ -79,6 +79,10 @@ class Bitbucket implements GitProviderInterface {
 		return new UserInfo(['login' => $json->username]);
 	}
 
+	public function getPullRequestData($url) {
+
+	}
+
 	public function listPullRequestsForRepo($owner, $repository) {
 
 		$prs = $this->paginate(
