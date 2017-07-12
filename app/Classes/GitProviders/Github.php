@@ -137,13 +137,60 @@ class Github implements GitProviderInterface {
 
 	public function getPullRequestData($url) {
 
+		$pr_metadata = $this->splitPrUrl($url);
+
+		if (!$pr_metadata) {
+			return [false, 'Pull request url invalid'];
+		}
+
+		$api_url      = $this->api . '/repos/' . $pr_metadata['owner'] . '/' . $pr_metadata['repository'] . '/pulls/' . $pr_metadata['id'];
+		$raw_response = $this->ua->get($api_url);
+
+		Log::debug("[getPullRequestData][$url] $raw_response");
+		$json = json_decode($raw_response);
+
+		if (!isset($json->html_url)) {
+			return [false, 'Failed to fetch pull request information'];
+		}
+
+		if (isset($json->head->repo->full_name)) {
+			$repository_name = $json->head->repo->full_name;
+		} else {
+			$repository_name = $json->base->repo->full_name;
+		}
+
+		return [true, new PullRequest([
+			'name'        => $json->title,
+			'url'         => $json->html_url,
+			'description' => $json->body,
+			'repository'  => $repository_name,
+			'language'    => $json->base->repo->language,
+		])];
+
+	}
+
+	private function splitPrUrl($url) {
+		$url_parts = array_reverse(explode('/', $url));
+
+//https://github.com/owner/repository/pull/id
+
+		if (count($url_parts) < 5) {
+			return false;
+		}
+
+		return [
+			'id'         => htmlspecialchars($url_parts[0]),
+			'owner'      => htmlspecialchars($url_parts[3]),
+			'repository' => htmlspecialchars($url_parts[2]),
+		];
+
 	}
 
 	public function updatePullRequest($owner, $repository, $url, $title, $description) {
-		$url_parts = array_reverse(explode('/', $url));
-		$pr_id     = $url_parts[0];
+		$pr_metadata = $this->splitPrUrl($url);
+		$pr_id       = $pr_metadata['id'];
 
-		if (!$pr_id) {
+		if (!$pr_metadata) {
 			return [false, 'Pull request url invalid'];
 		}
 

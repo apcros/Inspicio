@@ -131,6 +131,7 @@ class ReviewRequestApi extends Controller {
 				if (count($open_prs) > 0) {
 					$repositories_available[] = [
 						'object'        => $repository,
+						'account_id'    => $account->id,
 						'pull_requests' => $open_prs,
 					];
 				}

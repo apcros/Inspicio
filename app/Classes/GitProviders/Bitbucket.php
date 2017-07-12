@@ -83,6 +83,23 @@ class Bitbucket implements GitProviderInterface {
 
 	}
 
+	private function splitPrUrl($url) {
+		$url_parts = array_reverse(explode('/', $url));
+
+//https://bitbucket.org/owner/repository/pull-requests/id
+
+		if (count($url_parts) < 5) {
+			return false;
+		}
+
+		return [
+			'id'         => htmlspecialchars($url_parts[0]),
+			'owner'      => htmlspecialchars($url_parts[3]),
+			'repository' => htmlspecialchars($url_parts[2]),
+		];
+
+	}
+
 	public function listPullRequestsForRepo($owner, $repository) {
 
 		$prs = $this->paginate(
@@ -103,8 +120,8 @@ class Bitbucket implements GitProviderInterface {
 	}
 
 	public function updatePullRequest($owner, $repository, $url, $title, $description) {
-		$url_parts = array_reverse(explode('/', $url));
-		$pr_id     = $url_parts[0];
+		$pr_metadata = $this->splitPrUrl($url);
+		$pr_id       = $pr_metadata['id'];
 
 		if (!$pr_id) {
 			return [false, 'Pull request url invalid'];
