@@ -6,14 +6,12 @@ function loadPrs() {
 	$.getJSON("/ajax/reviews/available-for-import", function (data) {
 		var html = "<select class='form-control' name='prs_selected[]' id='prs_selected' multiple='multiple'>";
 
-		console.log(data);
-
-		if(data.success == 1) {
+		if(data.success === 1) {
 			var repositories = data.message.repositories;
 			var points = data.message.points;
-			$.each(repositories, function (key_repo, repository) {
-				$.each(repository.pull_requests, function (key_pr, pull_request) {
-					html += "<option value='"+pull_request.url+","+repository.account_id+"'>"+pull_request.name+" (<b>"+repository.object.name+"</b>) </option>";
+			$.each(repositories, function (keyRepo, repository) {
+				$.each(repository.pull_requests, function (keyPr, pullRequest) {
+					html += "<option value='"+pullRequest.url+","+repository.account_id+"'>"+pullRequest.name+" (<b>"+repository.object.name+"</b>) </option>";
 				});
 				
 			});

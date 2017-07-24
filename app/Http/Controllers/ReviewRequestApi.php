@@ -111,7 +111,7 @@ class ReviewRequestApi extends Controller {
 		$user_id  = session('user_id');
 		$accounts = DB::table('accounts')->where('user_id', $user_id)->get();
 
-		$repositories_available = [];
+		$repos_available = [];
 		//TODO using getAccounts from ReviewRequest instead, to force refresh where it's needed
 		Log::info("[USER ID $user_id ] Fetching repo and PR for " . count($accounts) . " accounts");
 
@@ -129,7 +129,7 @@ class ReviewRequestApi extends Controller {
 				$open_prs = $client->listPullRequestsForRepo($owner, $repository_name);
 
 				if (count($open_prs) > 0) {
-					$repositories_available[] = [
+					$repos_available[] = [
 						'object'        => $repository,
 						'account_id'    => $account->id,
 						'pull_requests' => $open_prs,
@@ -143,7 +143,7 @@ class ReviewRequestApi extends Controller {
 		$user = DB::table('users')->where('id', $user_id)->first();
 
 		return $this->apiResponse([
-			'repositories' => $repositories_available,
+			'repositories' => $repos_available,
 			'points'       => $user->points,
 		], 1);
 	}
