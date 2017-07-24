@@ -80,6 +80,36 @@ class Bitbucket implements GitProviderInterface {
 	}
 
 	public function getPullRequestData($url) {
+		$pr_metadata = $this->splitPrUrl($url);
+
+		if (!$pr_metadata) {
+			return [false, 'Pull request url invalid'];
+		}
+
+		$api_url      = $this->api . '/2.0/repositories/' . $pr_metadata['owner'] . '/' . $pr_metadata['repository'] . '/pullrequests/' . $pr_metadata['id'];
+		$raw_response = $this->ua->get($api_url);
+
+		Log::debug("[getPullRequestData][$url] $raw_response");
+		$json = json_decode($raw_response);
+
+		if (isset($json->links)) {
+
+			return [true, new PullRequest([
+				'name'        => $json->title,
+				'url'         => $json->links->html->href,
+				'description' => $json->description,
+				'repository'  => $pr_metadata['repository'],
+				'language'    => '',
+			])];
+		}
+
+		if (isset($json->error)) {
+
+			if (isset($json->error->message)) {
+				return [false, $json->error->message];
+			}
+
+		}
 
 	}
 
