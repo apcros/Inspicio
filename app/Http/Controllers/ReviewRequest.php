@@ -108,6 +108,7 @@ class ReviewRequest extends Controller {
 	}
 
 	public function bulkImport(Request $request) {
+        //TODO : Implement duplicate detection
 		$prs_to_import      = $request->input('prs_selected');
 		$user_id            = session('user_id');
 		$processing_results = [];
@@ -124,10 +125,11 @@ class ReviewRequest extends Controller {
 			if (!$account) {
 				Log::warning("[USER ID $user_id] Missing account $account_id for $pr_url");
 				$processing_results[] = [
-					'title'   => '',
-					'success' => 0,
-					'url'     => $pr_url,
-					'message' => 'Account error',
+					'title'    => '',
+					'success'  => 0,
+					'url'      => $pr_url,
+					'provider' => 'Git provider',
+					'message'  => 'Account error',
 				];
 				continue;
 			}
@@ -139,10 +141,11 @@ class ReviewRequest extends Controller {
 
 			if (!$fetch_success) {
 				$processing_results[] = [
-					'title'   => '',
-					'success' => 0,
-					'url'     => $pr_url,
-					'message' => $data_fetch,
+					'title'    => '',
+					'success'  => 0,
+					'url'      => $pr_url,
+					'provider' => ucfirst($account->provider),
+					'message'  => $data_fetch,
 				];
 				continue;
 			}
@@ -150,9 +153,10 @@ class ReviewRequest extends Controller {
 			list($import_success, $data_import) = $this->importPullRequest($data_fetch, $user_id, $account_id);
 
 			$current_result = [
-				'title'   => $data_fetch->name,
-				'url'     => $data_fetch->url,
-				'success' => 1,
+				'title'    => $data_fetch->name,
+				'url'      => $data_fetch->url,
+				'provider' => ucfirst($account->provider),
+				'success'  => 1,
 			];
 
 			if (!$import_success) {
