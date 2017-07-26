@@ -6,6 +6,7 @@ use App\Classes\GitProviderFactory;
 use App\Classes\Models\Git\PullRequest;
 use App\Http\Controllers\Controller;
 use App\Notifications\ActionOnYourReview;
+use App\ReviewRequestModel;
 use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -26,74 +27,30 @@ class ReviewRequest extends Controller {
 		$pull_request_url   = $request->input('pull_request');
 		$description        = $request->input('description');
 
-		$html_description = $this->cleanDescription($description);
+		$head_branch = $request->input('head_branch');
+		$base_branch = $request->input('base_branch');
 
-		if ($this->getPoints() == 0) {
-			Log::warning('[ USER ' . session('user_id') . '] Attempted to create a review with no points');
+		$user_id                       = session('user_id');
+		list($repo_owner, $account_id) = explode(',', $repository_account);
 
-			return view('home', ['error_message' => "You don't have any points left. Please review someone else code to get points"]);
+		$review_request = new \App\ReviewRequestModel($user_id);
+
+		list($success, $result) = $review_request->create([
+			'account_id'       => $account_id,
+			'title'            => $title,
+			'description'      => $description,
+			'repo_owner'       => $repo_owner,
+			'base'             => $base_branch,
+			'head'             => $head_branch,
+			'pull_request_url' => $pull_request_url,
+			'language'         => $language,
+		]);
+
+		if (!$success) {
+			return view('home', ['error_message' => $result]);
 		}
 
-		list($owner_repo, $account_id) = explode(',', $repository_account);
-
-		$account = $this->getAccount($account_id, session('user_id'));
-
-		if (!$account) {
-			Log::error('[ USER ' . session('user_id') . '] No account available');
-
-			return view('home', ['error_message' => 'Unexpected error']);
-		}
-
-		if (!$pull_request_url) {
-
-			$head_branch = $request->input('head_branch');
-			$base_branch = $request->input('base_branch');
-
-			$client = $this->getClient($account->provider);
-			$client->setToken($account->token);
-
-			list($owner, $repo) = explode('/', $owner_repo);
-
-			$pr_result = $client->createPullRequest($owner, $repo, $head_branch, $base_branch, $title, $html_description);
-
-			if ($pr_result['success'] == 0 || !isset($pr_result['url'])) {
-				Log::error('[USER ' . session('user_id') . '] Failed to create PR on ' . $account->provider);
-
-				return view('home', ['error_message' => 'Error while creating your code review request : ' . $pr_result['error']]);
-			}
-
-			Log::info('[USER ' . session('user_id') . '] Created PR ' . $pr_result['url'] . ' on ' . $account->provider);
-			$pull_request_url = $pr_result['url'];
-		}
-
-		$review_request_id = Uuid::uuid4()->toString();
-
-		try {
-			DB::table('requests')->insert([
-				'id'          => $review_request_id,
-				'name'        => $title,
-				'description' => $html_description,
-				'url'         => $pull_request_url,
-				'status'      => 'open',
-				'skill_id'    => $language,
-				'author_id'   => session('user_id'),
-				'repository'  => $owner_repo,
-				'account_id'  => $account_id,
-				'created_at'  => \Carbon\Carbon::now(),
-				'updated_at'  => \Carbon\Carbon::now(),
-			]);
-
-			DB::table('users')->where('id', session('user_id'))->decrement('points');
-
-		} catch (\Illuminate\Database\QueryException $e) {
-			Log::error('[USER ' . session('user_id') . '] SQL Error caught while adding Pull request : ' . $e->getMessage());
-
-			return view('home', ['error_message' => 'An error ocurred while trying to add your review request']);
-		}
-
-		Log::info('[USER ' . session('user_id') . '] Review request created');
-
-		return redirect('/reviews/' . $review_request_id . '/view');
+		return redirect('/reviews/' . $result . '/view');
 	}
 
 	public function bulkImportForm() {
@@ -108,7 +65,7 @@ class ReviewRequest extends Controller {
 	}
 
 	public function bulkImport(Request $request) {
-        //TODO : Implement duplicate detection
+		//TODO : Implement duplicate detection
 		$prs_to_import      = $request->input('prs_selected');
 		$user_id            = session('user_id');
 		$processing_results = [];
@@ -513,7 +470,7 @@ class ReviewRequest extends Controller {
 		$user   = DB::table('users')->where('id', $userid)->first();
 
 		//TODO make eloquent models instead of re-using the default one in a horrible way
-		$user_model        = new User();
+		$user_model        = new User($owner->id);
 		$user_model->email = $owner->email;
 
 		$user_model->notify(new ActionOnYourReview($user, $review, $action));

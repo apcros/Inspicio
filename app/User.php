@@ -4,6 +4,7 @@ namespace App;
 
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class User {
 	use Notifiable;
@@ -30,6 +31,10 @@ class User {
 		$user = $this->load();
 
 		return $user->points;
+	}
+
+	public function removePoint() {
+		return DB::table('users')->where('id', $this->user_id)->decrement('points');
 	}
 
 	public function getGitAccount($account_id) {
@@ -78,6 +83,10 @@ class User {
 
 	public function getKey() {
 		return $this->email;
+	}
+
+	public function getId() {
+		return $this->user_id;
 	}
 
 }
