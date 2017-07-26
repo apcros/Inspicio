@@ -7,6 +7,12 @@ class PullRequest {
 
 	public $url;
 
+	public $description;
+
+	public $language;
+
+	public $repository;
+
 	public function __construct($args) {
 
 		foreach ($args as $attribute => $value) {
