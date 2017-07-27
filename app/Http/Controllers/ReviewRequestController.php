@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Classes\GitProviderFactory;
-use App\Classes\Models\Git\PullRequest;
 use App\Http\Controllers\Controller;
 use App\Notifications\ActionOnYourReview;
 use App\ReviewRequest;
@@ -12,7 +11,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use \Mews\Purifier\Facades\Purifier;
-use \Ramsey\Uuid\Uuid;
 
 class ReviewRequestController extends Controller {
 
@@ -74,10 +72,12 @@ class ReviewRequestController extends Controller {
 			return view('home', ['error_message' => "No pull requests selected !"]);
 		}
 
+		$user = new User($user_id);
+
 		foreach ($prs_to_import as $data_to_import) {
 			list($pr_url, $account_id) = explode(',', $data_to_import);
 
-			$account = $this->getAccount($account_id, $user_id);
+			$account = $user->getGitAccount($account_id);
 
 			if (!$account) {
 				Log::warning("[USER ID $user_id] Missing account $account_id for $pr_url");
@@ -91,9 +91,7 @@ class ReviewRequestController extends Controller {
 				continue;
 			}
 
-			$client = $this->getClient($account->provider);
-			$client->setToken($account->token);
-
+			$client                           = $user->getAccountClient($account);
 			list($fetch_success, $data_fetch) = $client->getPullRequestData($pr_url);
 
 			if (!$fetch_success) {
@@ -107,7 +105,17 @@ class ReviewRequestController extends Controller {
 				continue;
 			}
 
-			list($import_success, $data_import) = $this->importPullRequest($data_fetch, $user_id, $account_id);
+			$pr = $data_fetch;
+
+			$review_request                     = new \App\ReviewRequest($user_id);
+			list($import_success, $data_import) = $review_request->create([
+				'account_id'           => $account_id,
+				'title'                => $pr->name,
+				'description'          => $pr->description,
+				'repo_owner'           => $pr->repository,
+				'pull_request_url'     => $pr->url,
+				'language_search_term' => $pr->language,
+			]);
 
 			$current_result = [
 				'title'    => $data_fetch->name,
@@ -127,57 +135,6 @@ class ReviewRequestController extends Controller {
 		}
 
 		return view('bulk-import-results', ['results' => $processing_results]);
-
-	}
-
-	private function importPullRequest(PullRequest $pr, $user_id, $account_id) {
-
-		$language_id      = $this->guessLanguageId($pr->language);
-		$html_description = $this->cleanDescription($pr->description);
-
-		$user = DB::table('users')->where('id', $user_id)->first();
-
-		if ($user->points <= 0) {
-			return [false, 'Not enough points left !'];
-		}
-
-		$review_request_id = Uuid::uuid4()->toString();
-
-		DB::table('requests')->insert([
-			'id'          => $review_request_id,
-			'updated_at'  => \Carbon\Carbon::now(),
-			'created_at'  => \Carbon\Carbon::now(),
-			'name'        => $pr->name,
-			'description' => $html_description,
-			'url'         => $pr->url,
-			'status'      => 'open',
-			'skill_id'    => $language_id,
-			'repository'  => $pr->repository,
-			'account_id'  => $account_id,
-			'author_id'   => $user_id,
-		]);
-		DB::table('users')->where('id', $user_id)->decrement('points');
-
-		return [true, $review_request_id];
-	}
-
-	private function guessLanguageId($language_to_guess) {
-		/* It's not really guessing anything for now
-			        But because Inspicio's language list come from GitHub that
-			        Should be good enough for now.
-		*/
-
-		$language = DB::table('skills')
-			->where('name', 'like', strtoupper($language_to_guess))
-			->first();
-
-		if ($language) {
-			return $language->id;
-		}
-
-		//Should probably have a better default than the first one in the list. (TODO)
-
-		return 1;
 
 	}
 

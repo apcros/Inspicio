@@ -2,6 +2,7 @@
 
 namespace App;
 
+use App\Classes\GitProviderFactory;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -48,9 +49,8 @@ class User {
 
 			if ($account->expire_epoch <= time()) {
 
-				$factory = new GitProviderFactory($account->provider);
-				$client  = $factory->getProviderEngine();
-				$tokens  = $client->refreshToken($account->refresh_token);
+				$client = $this->getAccountClient($account, false);
+				$tokens = $client->refreshToken($account->refresh_token);
 
 				Log::info("[USER $user_id] Token expired, refreshing for $user_id (Account $account_id)");
 
@@ -68,6 +68,17 @@ class User {
 		}
 
 		return $account;
+	}
+
+	public function getAccountClient($account, $set_token = true) {
+		$factory = new GitProviderFactory($account->provider);
+		$client  = $factory->getProviderEngine();
+
+		if ($set_token) {
+			$client->setToken($account->token);
+		}
+
+		return $client;
 	}
 
 	public function load() {

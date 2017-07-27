@@ -2,7 +2,6 @@
 
 namespace App;
 
-use App\Classes\GitProviderFactory;
 use App\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -36,7 +35,7 @@ class ReviewRequest {
 
 		$cleaned_description = $this->cleanDescription($args['description']);
 
-		if (!$args['pull_request_url']) {
+		if (!isset($args['pull_request_url'])) {
 			list($creation_status, $creation_data) = $this->createOnGit($args['head'], $args['base'], $args['repo_owner'], $args['title'], $cleaned_description, $account);
 
 			if (!$creation_status) {
@@ -46,6 +45,10 @@ class ReviewRequest {
 			}
 
 			$args['pull_request_url'] = $creation_data;
+		}
+
+		if (!isset($args['language'])) {
+			$args['language'] = $this->guessLanguageId($args['language_search_term']);
 		}
 
 		$review_request_id = Uuid::uuid4()->toString();
@@ -78,9 +81,8 @@ class ReviewRequest {
 
 	private function createOnGit($head, $base, $repo_owner, $title, $description, $account) {
 		list($owner, $repo) = explode('/', $repo_owner);
-		$factory            = new GitProviderFactory($account->provider);
-		$client             = $factory->getProviderEngine();
-		$client->setToken($account->token);
+		$$client            = $this->user->getAccountClient($account);
+
 		$result = $client->createPullRequest($owner, $repo, $head, $base, $title, $description);
 
 		if ($result['success'] == 0 || !isset($result['url'])) {
@@ -92,6 +94,25 @@ class ReviewRequest {
 
 	private function cleanDescription($html_description) {
 		return Purifier::clean($html_description, ['HTML.Allowed' => 'b,strong,i,em,u,a[href|title],ul,ol,li,p,br,pre,h2,h3,h4']);
+	}
+
+	private function guessLanguageId($language_search_term) {
+		/* It's not really guessing anything for now
+			        But because Inspicio's language list come from GitHub that
+			        Should be good enough for now.
+		*/
+
+		$language = DB::table('skills')
+			->where('name', 'like', strtoupper($language_search_term))
+			->first();
+
+		if ($language) {
+			return $language->id;
+		}
+
+		//Should probably have a better default than the first one in the list. (TODO)
+
+		return 1;
 	}
 
 }
