@@ -11,5 +11,5 @@
 Route::get('/account', 'Profile@summary');
 Route::post('/account', 'Profile@updateProfile');
 
-Route::get('/reviews/mine', 'ReviewRequest@viewAllMine');
-Route::get('/reviews/tracked', 'ReviewRequest@viewAllTracked');
+Route::get('/reviews/mine', 'ReviewRequestController@viewAllMine');
+Route::get('/reviews/tracked', 'ReviewRequestController@viewAllTracked');

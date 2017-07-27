@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Log;
 use \Mews\Purifier\Facades\Purifier;
 use \Ramsey\Uuid\Uuid;
 
-class ReviewRequestModel {
+class ReviewRequest {
 
 	private $user;
 	private $log_prefix;

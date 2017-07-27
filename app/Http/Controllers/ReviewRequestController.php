@@ -6,7 +6,7 @@ use App\Classes\GitProviderFactory;
 use App\Classes\Models\Git\PullRequest;
 use App\Http\Controllers\Controller;
 use App\Notifications\ActionOnYourReview;
-use App\ReviewRequestModel;
+use App\ReviewRequest;
 use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Log;
 use \Mews\Purifier\Facades\Purifier;
 use \Ramsey\Uuid\Uuid;
 
-class ReviewRequest extends Controller {
+class ReviewRequestController extends Controller {
 
 	private function cleanDescription($description) {
 		return Purifier::clean($description, ['HTML.Allowed' => 'b,strong,i,em,u,a[href|title],ul,ol,li,p,br,pre,h2,h3,h4']);
@@ -33,7 +33,7 @@ class ReviewRequest extends Controller {
 		$user_id                       = session('user_id');
 		list($repo_owner, $account_id) = explode(',', $repository_account);
 
-		$review_request = new \App\ReviewRequestModel($user_id);
+		$review_request = new \App\ReviewRequest($user_id);
 
 		list($success, $result) = $review_request->create([
 			'account_id'       => $account_id,
