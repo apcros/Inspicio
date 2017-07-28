@@ -12,9 +12,78 @@ class ReviewRequest {
 
 	private $user;
 	private $log_prefix;
-	public function __construct($user_id) {
-		$this->user = new User($user_id);
-		$log_prefix = "[USER $user_id - ReviewRequest]";
+	public function __construct($user_id = false) {
+		$this->log_prefix = "[ReviewRequest]";
+
+		if ($user_id) {
+			$this->user       = new User($user_id);
+			$this->log_prefix = "[USER $user_id - ReviewRequest]";
+		}
+
+	}
+
+	public function load($id) {
+		try {
+			return DB::table('requests')
+				->join('users', 'requests.author_id', '=', 'users.id')
+				->join('skills', 'requests.skill_id', '=', 'skills.id')
+				->select('requests.*', 'users.nickname', 'skills.name as language')
+				->orderBy('requests.updated_at', 'desc')
+				->where('requests.id', $id)
+				->first();
+		} catch (\Illuminate\Database\QueryException $e) {
+			//Only debug and not error as it's likely to be due to invalid uuid representation
+			Log::debug("Exception when getting $id : " . $e->getMessage());
+
+			return false;
+		}
+
+	}
+
+	public function edit(array $args) {
+		$id      = $args['id'];
+		$review  = DB::table('requests')->where('id', $id)->first();
+		$user_id = $this->user->getId();
+
+		if (!$review) {
+			return [false, 'Code review request not found'];
+		}
+
+		if ($user_id != $review->author_id) {
+			return [false, "You can't edit someone else code review request"];
+		}
+
+		if ($review->status != 'open') {
+			return [false, "You can't edit a closed code review request"];
+		}
+
+		$html_description = $this->cleanDescription($args['description']);
+
+		try {
+			DB::table('requests')->where('id', $id)->update([
+				'updated_at'  => \Carbon\Carbon::now(),
+				'name'        => $args['title'],
+				'description' => $html_description,
+				'skill_id'    => $args['language'],
+			]);
+			Log::info($this->log_prefix . " Updated their code review $id request on Inspicio");
+		} catch (\Illuminate\Database\QueryException $e) {
+			Log::error($this->log_prefix . " SQL Error caught while editing Pull request : " . $e->getMessage());
+
+			return [false, 'An internal error ocurred while trying to edit your review request'];
+		}
+
+		$overall_success = true;
+		$message         = "Updated code review request on Inspicio";
+
+		if (isset($args['update_on_git'])) {
+			$account                              = $this->user->getGitAccount($review->account_id);
+			list($update_success, $update_result) = $this->updateOnGit($review->repository, $review->url, $args['title'], $html_description, $account);
+			$message .= ', ' . $update_result;
+		}
+
+		return [true, $message];
+
 	}
 
 	public function create(array $args) {
@@ -81,7 +150,7 @@ class ReviewRequest {
 
 	private function createOnGit($head, $base, $repo_owner, $title, $description, $account) {
 		list($owner, $repo) = explode('/', $repo_owner);
-		$$client            = $this->user->getAccountClient($account);
+		$client             = $this->user->getAccountClient($account);
 
 		$result = $client->createPullRequest($owner, $repo, $head, $base, $title, $description);
 
@@ -90,6 +159,25 @@ class ReviewRequest {
 		}
 
 		return [true, $pr_result['url']];
+	}
+
+	private function updateOnGit($repo_owner, $url, $title, $description, $account) {
+		list($owner, $repository) = explode('/', $repo_owner);
+		$client                   = $this->user->getAccountClient($account);
+
+		list($status, $error) = $client->updatePullRequest($owner, $repository, $url, $title, $description);
+		$provider_clean       = ucfirst($account->provider);
+
+		if ($status) {
+			Log::info($this->log_prefix . "Updated their code review $title request on $provider_clean");
+
+			return [true, "Updated on $provider_clean"];
+		} else {
+			Log::warning($this->log_prefix . "Failed to update their code review $title request on $provider_clean : $error");
+
+			return [false, "Not updated on $provider_clean for the following reason : $error"];
+		}
+
 	}
 
 	private function cleanDescription($html_description) {

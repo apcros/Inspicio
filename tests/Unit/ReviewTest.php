@@ -101,7 +101,7 @@ class ReviewTest extends TestCase {
 			'language'    => 2,
 		]);
 		$content = $response->getContent();
-		$this->assertRegExp("/Updated code review request on Inspicio, Not updated on Github/", $content, "PR updated and message is correct");
+		$this->assertRegExp("/Updated code review request on Inspicio/", $content, "PR updated and message is correct");
 		$this->assertDatabaseHas('requests', [
 			'name'        => 'Amazing a new title',
 			'description' => '<p><b>Loook at meeeeee</b></p>',
