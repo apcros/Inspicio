@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Classes\GitProviderFactory;
 use App\Http\Controllers\Controller;
 use App\Notifications\ActionOnYourReview;
+use App\ReviewRequest;
 use App\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -14,11 +15,12 @@ class ReviewRequestApi extends Controller {
 	private $MINIMUM_TIME_BEFORE_APPROVAL = 120;
 
 	public function approve($id) {
-		$user_id              = session('user_id');
-		list($review, $error) = $this->fetchReview($id);
+		$user_id                = session('user_id');
+		$review_request         = new \App\ReviewRequest($user_id);
+		list($success, $review) = $review_request->load($id);
 
-		if (!$review) {
-			return $this->apiResponse($error);
+		if (!$success) {
+			return $this->apiResponse($review);
 		}
 
 		if ($review->author_id == $user_id) {
@@ -70,13 +72,14 @@ class ReviewRequestApi extends Controller {
 	}
 
 	public function untrack($id) {
-		list($review, $error) = $this->fetchReview($id);
+		$user_id        = session('user_id');
+		$review_request = new \App\ReviewRequest($user_id);
 
-		if (!$review) {
-			return $this->apiResponse($error);
+		list($success, $review) = $review_request->load($id);
+
+		if (!$success) {
+			return $this->apiResponse($review);
 		}
-
-		$user_id = session('user_id');
 
 		try {
 			$tracking = DB::table('request_tracking')
@@ -91,7 +94,7 @@ class ReviewRequestApi extends Controller {
 			}
 
 			DB::table('request_tracking')->where([
-				['user_id', '=', session('user_id')],
+				['user_id', '=', $user_id],
 				['request_id', '=', $id],
 			])->update(['is_active' => false]);
 
@@ -149,14 +152,13 @@ class ReviewRequestApi extends Controller {
 	}
 
 	public function track($id) {
+		$user_id                = session('user_id');
+		$review_request         = new \App\ReviewRequest($user_id);
+		list($success, $review) = $review_request->load($id);
 
-		list($review, $error) = $this->fetchReview($id);
-
-		if (!$review) {
-			return $this->apiResponse($error);
+		if (!$success) {
+			return $this->apiResponse($review);
 		}
-
-		$user_id = session('user_id');
 
 		if ($review->author_id == $user_id) {
 			Log::warning("[USER $user_id ] Attempted to follow his own review ($id)");
@@ -210,10 +212,12 @@ class ReviewRequestApi extends Controller {
 	}
 
 	private function changeReviewStatus($id, $status) {
-		list($review, $error) = $this->fetchReview($id);
+		$user_id                = session('user_id');
+		$review_request         = new \App\ReviewRequest($user_id);
+		list($success, $review) = $review_request->load($id);
 
-		if (!$review) {
-			return $this->apiResponse($error);
+		if (!$success) {
+			return $this->apiResponse($review);
 		}
 
 		$user_id = session('user_id');
@@ -240,31 +244,6 @@ class ReviewRequestApi extends Controller {
 
 	}
 
-	private function fetchReview($id) {
-		$valid_uuid = preg_match("/^(\{)?[a-f\d]{8}(-[a-f\d]{4}){4}[a-f\d]{8}(?(1)\})$/i", $id);
-
-		if (!$valid_uuid) {
-			return array(false, 'Invalid UUID');
-		}
-
-		try {
-			$review = DB::table('requests')
-				->join('users', 'requests.author_id', '=', 'users.id')
-				->join('skills', 'requests.skill_id', '=', 'skills.id')
-				->select('requests.*', 'users.nickname', 'skills.name as language')
-				->orderBy('requests.updated_at', 'desc')
-				->where('requests.id', $id)
-				->first();
-
-			return array($review, null);
-		} catch (\Illuminate\Database\QueryException $e) {
-			Log::error("[REVIEW $id] SQL error : " . $e->getMessage());
-
-			return array(false, 'Database Error');
-		}
-
-	}
-
 	private function apiResponse($message, $success = 0) {
 		return response()->json([
 			'success' => $success,
@@ -273,10 +252,12 @@ class ReviewRequestApi extends Controller {
 	}
 
 	private function notifyUserEmail($userid, $reviewid, $action) {
-		list($review, $error) = $this->fetchReview($reviewid);
+		$user_id                = session('user_id');
+		$review_request         = new \App\ReviewRequest($user_id);
+		list($success, $review) = $review_request->load($reviewid);
 
-		if (!$review) {
-			Log::error("Failed to notify $userid about $reviewid ($action) Because : $error");
+		if (!$success) {
+			Log::error("Failed to notify $userid about $reviewid ($action) Because : $review_data");
 
 			return 0;
 		}
@@ -284,7 +265,6 @@ class ReviewRequestApi extends Controller {
 		$owner = DB::table('users')->where('id', $review->author_id)->first();
 		$user  = DB::table('users')->where('id', $userid)->first();
 
-		//TODO make eloquent models instead of re-using the default one in a horrible way
 		$user_model        = new User($owner->id);
 		$user_model->email = $owner->email;
 

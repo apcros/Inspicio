@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Classes\GitProviderFactory;
 use App\Http\Controllers\Controller;
 use App\Notifications\ActionOnYourReview;
 use App\ReviewRequest;
@@ -10,13 +9,8 @@ use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use \Mews\Purifier\Facades\Purifier;
 
 class ReviewRequestController extends Controller {
-
-	private function cleanDescription($description) {
-		return Purifier::clean($description, ['HTML.Allowed' => 'b,strong,i,em,u,a[href|title],ul,ol,li,p,br,pre,h2,h3,h4']);
-	}
 
 	public function create(Request $request) {
 		$title              = $request->input('title');
@@ -185,24 +179,21 @@ class ReviewRequestController extends Controller {
 
 	public function createForm() {
 
-		$accounts        = $this->availableAccounts();
-		$user_id         = session('user_id');
+		$user_id  = session('user_id');
+		$user     = new User($user_id);
+		$accounts = $user->getAvailableAccounts();
+
 		$reposPerAccount = array();
-		$points          = $this->getPoints();
+		$points          = $user->getPoints();
 
 		if ($points == 0) {
 			return view('home', ['error_message' => "You don't have any points left. Please review someone else code to get points"]);
 		}
 
-		$user = new User($user_id);
-
 		foreach ($accounts as $account) {
 
 			$account_checked = $user->getGitAccount($account->id);
 			$client          = $user->getAccountClient($account_checked);
-
-//To force refresh where needed
-			//Provider and id are not going to changen, but token might just have been changed by the above statement
 
 			$reposPerAccount[] = array(
 				'account_id' => $account_checked->id,
@@ -217,8 +208,12 @@ class ReviewRequestController extends Controller {
 	}
 
 	public function displayReview($reviewid) {
-		$review_request = new \App\ReviewRequest();
-		$review         = $review_request->load($reviewid);
+		$review_request                = new \App\ReviewRequest();
+		list($review_success, $review) = $review_request->load($reviewid);
+
+		if (!$review_success) {
+			return view('home', ['error_message' => $review]);
+		}
 
 		if (!$review) {
 			return view('home', ['error_message' => 'Review Request not found !']);
@@ -317,32 +312,13 @@ class ReviewRequestController extends Controller {
 			->get();
 	}
 
-	private function availableAccounts() {
-		return DB::table('accounts')->where('user_id', session('user_id'))->get();
-	}
-
-	private function getPoints() {
-		$user = DB::table('users')
-			->select('points')
-			->where('id', session('user_id'))
-			->first();
-
-		return $user->points;
-	}
-
-	private function getClient($provider) {
-		$factory = new GitProviderFactory($provider);
-
-		return $factory->getProviderEngine();
-	}
-
 	private function notifyUserEmail($userid, $reviewid, $action) {
-		$review_request = new \App\ReviewRequest($user_id);
-		$review         = $review_request->load($reviewid);
-		$owner          = DB::table('users')->where('id', $review->author_id)->first();
-		$user           = DB::table('users')->where('id', $userid)->first();
+		$review_request         = new \App\ReviewRequest($user_id);
+		list($success, $review) = $review_request->load($reviewid);
 
-		//TODO make eloquent models instead of re-using the default one in a horrible way
+		$owner = DB::table('users')->where('id', $review->author_id)->first();
+		$user  = DB::table('users')->where('id', $userid)->first();
+
 		$user_model        = new User($owner->id);
 		$user_model->email = $owner->email;
 

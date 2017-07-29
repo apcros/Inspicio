@@ -81,9 +81,12 @@ class User {
 		return $client;
 	}
 
+    public function getAvailableAccounts() {
+        return DB::table('accounts')->where('user_id', $this->user_id)->get();
+    }
+
 	public function load() {
 		return DB::table('users')
-			->select('points')
 			->where('id', $this->user_id)
 			->first();
 	}

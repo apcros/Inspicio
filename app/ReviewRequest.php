@@ -23,19 +23,27 @@ class ReviewRequest {
 	}
 
 	public function load($id) {
+
+		$valid_uuid = preg_match("/^(\{)?[a-f\d]{8}(-[a-f\d]{4}){4}[a-f\d]{8}(?(1)\})$/i", $id);
+
+		if (!$valid_uuid) {
+			return [false, 'Invalid UUID'];
+		}
+
 		try {
-			return DB::table('requests')
+			$review = DB::table('requests')
 				->join('users', 'requests.author_id', '=', 'users.id')
 				->join('skills', 'requests.skill_id', '=', 'skills.id')
 				->select('requests.*', 'users.nickname', 'skills.name as language')
 				->orderBy('requests.updated_at', 'desc')
 				->where('requests.id', $id)
 				->first();
-		} catch (\Illuminate\Database\QueryException $e) {
-			//Only debug and not error as it's likely to be due to invalid uuid representation
-			Log::debug("Exception when getting $id : " . $e->getMessage());
 
-			return false;
+			return [true, $review];
+		} catch (\Illuminate\Database\QueryException $e) {
+			Log::error("Exception when getting $id : " . $e->getMessage());
+
+			return [false, 'Database Error'];
 		}
 
 	}
@@ -73,16 +81,18 @@ class ReviewRequest {
 			return [false, 'An internal error ocurred while trying to edit your review request'];
 		}
 
+		$message = "Updated code review request on Inspicio";
+
 		$overall_success = true;
-		$message         = "Updated code review request on Inspicio";
 
 		if (isset($args['update_on_git'])) {
 			$account                              = $this->user->getGitAccount($review->account_id);
 			list($update_success, $update_result) = $this->updateOnGit($review->repository, $review->url, $args['title'], $html_description, $account);
+			$overall_success                      = $update_success;
 			$message .= ', ' . $update_result;
 		}
 
-		return [true, $message];
+		return [$overall_success, $message];
 
 	}
 
@@ -155,10 +165,10 @@ class ReviewRequest {
 		$result = $client->createPullRequest($owner, $repo, $head, $base, $title, $description);
 
 		if ($result['success'] == 0 || !isset($result['url'])) {
-			return [false, 'Error while creating your code review request : ' . $pr_result['error']];
+			return [false, 'Error while creating your code review request : ' . $result['error']];
 		}
 
-		return [true, $pr_result['url']];
+		return [true, $result['url']];
 	}
 
 	private function updateOnGit($repo_owner, $url, $title, $description, $account) {
@@ -172,11 +182,11 @@ class ReviewRequest {
 			Log::info($this->log_prefix . "Updated their code review $title request on $provider_clean");
 
 			return [true, "Updated on $provider_clean"];
-		} else {
-			Log::warning($this->log_prefix . "Failed to update their code review $title request on $provider_clean : $error");
-
-			return [false, "Not updated on $provider_clean for the following reason : $error"];
 		}
+
+		Log::warning($this->log_prefix . "Failed to update their code review $title request on $provider_clean : $error");
+
+		return [false, "Not updated on $provider_clean for the following reason : $error"];
 
 	}
 
