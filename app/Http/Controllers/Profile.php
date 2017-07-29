@@ -42,7 +42,7 @@ class Profile extends Controller {
 			]);
 
 			if ($previous_user_data->email != $new_email) {
-                session(['user_email' => $new_email]);
+				session(['user_email' => $new_email]);
 				$this->triggerReconfirm($user_id);
 			}
 
@@ -192,7 +192,7 @@ class Profile extends Controller {
 		DB::table('users')->where('id', $user_id)->update(['is_confirmed' => false, 'confirm_token' => $new_token]);
 		$user = DB::table('users')->where('id', $user_id)->first();
 
-		$user_model        = new User();
+		$user_model        = new User($user_id);
 		$user_model->email = $user->email;
 		$user_model->notify(new ChangedEmail($user));
 	}

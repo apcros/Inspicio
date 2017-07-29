@@ -285,7 +285,7 @@ class ReviewRequestApi extends Controller {
 		$user  = DB::table('users')->where('id', $userid)->first();
 
 		//TODO make eloquent models instead of re-using the default one in a horrible way
-		$user_model        = new User();
+		$user_model        = new User($owner->id);
 		$user_model->email = $owner->email;
 
 		$user_model->notify(new ActionOnYourReview($user, $review, $action));

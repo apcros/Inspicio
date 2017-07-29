@@ -2,17 +2,17 @@
 
 //All the routes that require the user to have a confirmed account.
 
-Route::get('/reviews/create', 'ReviewRequest@createForm');
-Route::post('/reviews/create', 'ReviewRequest@create');
+Route::get('/reviews/create', 'ReviewRequestController@createForm');
+Route::post('/reviews/create', 'ReviewRequestController@create');
 
-Route::get('/reviews/bulk-import', 'ReviewRequest@bulkImportForm');
-Route::post('/reviews/bulk-import', 'ReviewRequest@bulkImport');
+Route::get('/reviews/bulk-import', 'ReviewRequestController@bulkImportForm');
+Route::post('/reviews/bulk-import', 'ReviewRequestController@bulkImport');
 
-Route::get('/reviews/{reviewid}/edit', 'ReviewRequest@editForm');
-Route::post('/reviews/{reviewid}/edit', 'ReviewRequest@edit');
+Route::get('/reviews/{reviewid}/edit', 'ReviewRequestController@editForm');
+Route::post('/reviews/{reviewid}/edit', 'ReviewRequestController@edit');
 
-Route::get('/ajax/reviews/pulls/{owner}/{repository}/{account_id}', 'ReviewRequest@getOpenedPullRequestForRepo');
-Route::get('/ajax/reviews/branches/{owner}/{repository}/{account_id}', 'ReviewRequest@getBranches');
+Route::get('/ajax/reviews/pulls/{owner}/{repository}/{account_id}', 'ReviewRequestController@getOpenedPullRequestForRepo');
+Route::get('/ajax/reviews/branches/{owner}/{repository}/{account_id}', 'ReviewRequestController@getBranches');
 
 Route::post('/ajax/reviews/{reviewid}/track', 'ReviewRequestApi@track');
 Route::post('/ajax/reviews/{reviewid}/untrack', 'ReviewRequestApi@untrack');

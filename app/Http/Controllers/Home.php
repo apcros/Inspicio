@@ -171,7 +171,7 @@ class Home extends Controller {
 		Log::info("Created user  $user_id , needs confirmation first. (Confirm url : " . env('APP_URL') . "/confirm/$user_id/$confirm_token )");
 
 		$user              = DB::table('users')->where('id', $user_id)->first();
-		$user_model        = new User();
+		$user_model        = new User($user_id);
 		$user_model->email = $user->email;
 		$user_model->notify(new RegisteredAccount($user));
 

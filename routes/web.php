@@ -21,7 +21,7 @@ Route::get('/oauth/callback/{provider}', 'OAuthLogin@stepTwo');
 
 Route::get('/confirm/{user_id}/{confirm_token}','Home@confirm');
 
-Route::get('/reviews/{reviewid}/view', 'ReviewRequest@displayReview');
+Route::get('/reviews/{reviewid}/view', 'ReviewRequestController@displayReview');
 Route::get('/members/{userid}/profile', 'Profile@displayPublicProfile');
 
 Route::post('/api/reviews/search','Home@search');
