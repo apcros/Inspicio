@@ -257,7 +257,7 @@ class ReviewRequestApi extends Controller {
 		list($success, $review) = $review_request->load($reviewid);
 
 		if (!$success) {
-			Log::error("Failed to notify $userid about $reviewid ($action) Because : $review_data");
+			Log::error("Failed to notify $userid about $reviewid ($action) Because : $review");
 
 			return 0;
 		}

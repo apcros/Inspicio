@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Notifications\ActionOnYourReview;
 use App\ReviewRequest;
 use App\User;
 use Illuminate\Http\Request;
@@ -310,19 +309,6 @@ class ReviewRequestController extends Controller {
 				['requests.status', '=', 'open'],
 			])
 			->get();
-	}
-
-	private function notifyUserEmail($userid, $reviewid, $action) {
-		$review_request         = new \App\ReviewRequest($user_id);
-		list($success, $review) = $review_request->load($reviewid);
-
-		$owner = DB::table('users')->where('id', $review->author_id)->first();
-		$user  = DB::table('users')->where('id', $userid)->first();
-
-		$user_model        = new User($owner->id);
-		$user_model->email = $owner->email;
-
-		$user_model->notify(new ActionOnYourReview($user, $review, $action));
 	}
 
 }
