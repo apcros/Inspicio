@@ -98,7 +98,7 @@ class Bitbucket implements GitProviderInterface {
 				'name'        => $json->title,
 				'url'         => $json->links->html->href,
 				'description' => $json->description,
-				'repository'  => $pr_metadata['repository'],
+				'repository'  => $pr_metadata['owner'] . '/' . $pr_metadata['repository'],
 				'language'    => '',
 			])];
 		}
