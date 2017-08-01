@@ -44,6 +44,53 @@ class ReviewRequestController extends Controller {
 		return redirect('/reviews/' . $result . '/view');
 	}
 
+	public function autoImportStatus() {
+		$user_id      = session('user_id');
+		$user         = new User($user_id);
+		$auto_imports = DB::table('auto_imports')->where('user_id', $user_id)->get();
+		$statuses     = array();
+
+		foreach ($auto_imports as $auto_import) {
+
+			$results = DB::table('auto_imports_result')->where([
+				['created_at', '>=', \Carbon\Carbon::now()->subWeek()],
+				['auto_import_id', '=', $auto_import->id],
+			])->get();
+
+			$statuses[] = [
+				'auto_import' => $auto_import,
+				'results'     => $results,
+			];
+		}
+
+		return view('auto-import', [
+			'statuses'        => $statuses,
+			'reposPerAccount' => $this->listReposPerAccount($user),
+		]);
+	}
+
+	public function autoImportSetup(Request $request) {
+		$repositories = $request->input('repositories');
+		$user_id      = session('user_id');
+
+//TODO Check the input format
+		foreach ($repositories as $repository) {
+			list($repo_name, $account_id) = explode(',', $repository);
+			//TODO Avoid duplicates
+			DB::table('auto_imports')->insert([
+				'repository'  => $repo_name,
+				'account_id'  => $account_id,
+				'user_id'     => $user_id,
+				'is_active'   => true,
+				'send_result' => false, //TODO send_result
+				'updated_at'  => \Carbon\Carbon::now(),
+				'created_at'  => \Carbon\Carbon::now(),
+			]);
+		}
+
+		return redirect('/reviews/auto-import');
+	}
+
 	public function bulkImportForm() {
 		$user_id = session('user_id');
 		$user    = DB::table('users')->where('id', $user_id)->first();
@@ -178,16 +225,24 @@ class ReviewRequestController extends Controller {
 
 	public function createForm() {
 
-		$user_id  = session('user_id');
-		$user     = new User($user_id);
-		$accounts = $user->getAvailableAccounts();
+		$user_id = session('user_id');
+		$user    = new User($user_id);
 
-		$reposPerAccount = array();
-		$points          = $user->getPoints();
+		$points = $user->getPoints();
 
 		if ($points == 0) {
 			return view('home', ['error_message' => "You don't have any points left. Please review someone else code to get points"]);
 		}
+
+		return view('newreview', [
+			'reposPerAccount' => $this->listReposPerAccount($user),
+			'points'          => $points,
+			'languages'       => DB::table('skills')->get()]);
+	}
+
+	private function listReposPerAccount($user) {
+		$reposPerAccount = array();
+		$accounts        = $user->getAvailableAccounts();
 
 		foreach ($accounts as $account) {
 
@@ -200,10 +255,7 @@ class ReviewRequestController extends Controller {
 			);
 		}
 
-		return view('newreview', [
-			'reposPerAccount' => $reposPerAccount,
-			'points'          => $points,
-			'languages'       => DB::table('skills')->get()]);
+		return $reposPerAccount;
 	}
 
 	public function displayReview($reviewid) {

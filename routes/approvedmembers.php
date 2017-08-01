@@ -8,6 +8,9 @@ Route::post('/reviews/create', 'ReviewRequestController@create');
 Route::get('/reviews/bulk-import', 'ReviewRequestController@bulkImportForm');
 Route::post('/reviews/bulk-import', 'ReviewRequestController@bulkImport');
 
+Route::get('/reviews/auto-import', 'ReviewRequestController@autoImportStatus');
+Route::post('/reviews/auto-import', 'ReviewRequestController@autoImportSetup');
+
 Route::get('/reviews/{reviewid}/edit', 'ReviewRequestController@editForm');
 Route::post('/reviews/{reviewid}/edit', 'ReviewRequestController@edit');
 
