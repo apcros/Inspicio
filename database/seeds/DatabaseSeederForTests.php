@@ -62,5 +62,54 @@ class DatabaseSeederForTests extends Seeder {
 			'created_at'  => \Carbon\Carbon::now(),
 			'updated_at'  => \Carbon\Carbon::now(),
 		]);
+
+		DB::table('auto_imports')->insert([
+			'repository'  => 'amazing/blah',
+			'account_id'  => '4cff704c-efe4-4024-9fa1-e5c0d7eaf2c5',
+			'user_id'     => '7636b30e-6db2-41b6-91b3-33560b9638c2',
+			'is_active'   => true,
+			'send_result' => false,
+			'created_at'  => \Carbon\Carbon::now(),
+			'updated_at'  => \Carbon\Carbon::now(),
+		]);
+
+		DB::table('auto_imports')->insert([
+			'repository'  => 'supercool/beepbeep',
+			'account_id'  => '4cff704c-efe4-4024-9fa1-e5c0d7eaf2c5',
+			'user_id'     => '7636b30e-6db2-41b6-91b3-33560b9638c2',
+			'is_active'   => true,
+			'send_result' => false,
+			'created_at'  => \Carbon\Carbon::now(),
+			'updated_at'  => \Carbon\Carbon::now(),
+		]);
+
+		DB::table('auto_imports')->insert([
+			'repository'  => 'uwot/m8',
+			'account_id'  => '4cff704c-efe4-4024-9fa1-e5c0d7eaf2c5',
+			'user_id'     => '7636b30e-6db2-41b6-91b3-33560b9638c2',
+			'is_active'   => true,
+			'send_result' => false,
+			'created_at'  => \Carbon\Carbon::now(),
+			'updated_at'  => \Carbon\Carbon::now(),
+		]);
+
+		DB::table('auto_imports')->insert([
+			'repository'  => 'great/otheruser',
+			'account_id'  => '1b157096-aa5b-4019-9839-c345b063447e',
+			'user_id'     => 'e6ca8f33-b196-4006-b7e6-3f2ffef3df92',
+			'is_active'   => true,
+			'send_result' => false,
+			'created_at'  => \Carbon\Carbon::now(),
+			'updated_at'  => \Carbon\Carbon::now(),
+		]);
+		DB::table('auto_imports')->insert([
+			'repository'  => 'amazing/disabled',
+			'account_id'  => '4cff704c-efe4-4024-9fa1-e5c0d7eaf2c5',
+			'user_id'     => '7636b30e-6db2-41b6-91b3-33560b9638c2',
+			'is_active'   => false,
+			'send_result' => false,
+			'created_at'  => \Carbon\Carbon::now(),
+			'updated_at'  => \Carbon\Carbon::now(),
+		]);
 	}
 }

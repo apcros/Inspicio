@@ -16,7 +16,7 @@ class AutoImport {
 	public function run() {
 		$auto_imports = $this->listAllWatchedRepositories();
 
-		if (!$repos) {
+		if (!$auto_imports) {
 			Log::debug('Nothing to auto import');
 		}
 
@@ -27,10 +27,8 @@ class AutoImport {
 	}
 
 	private function importFromRepository($auto_import) {
-		$user    = new User($auto_import->user_id);
-		$account = $user->getGitAccount($auto_import->account_id);
-		$client  = $user->getAccountClient($account);
 
+		$client             = $this->getGitClient($auto_import->user_id, $auto_import->account_id);
 		list($owner, $repo) = $auto_import->repository;
 		$pull_requests      = $client->listPullRequestsForRepo($owner, $repo);
 
@@ -41,7 +39,10 @@ class AutoImport {
 		$results = array();
 
 		foreach ($pull_requests as $pull_request) {
-			$duplicated_pr = DB::table('requests')->where('url', $pull_request->url)->first();
+			$duplicated_pr = DB::table('requests')->where([
+				['url', '=', $pull_request->url],
+				['author_id', '=', $auto_import->user_id],
+			])->first();
 
 			if ($duplicated_pr) {
 				Log::info($pull_request->url . "(" . $pull_request->name . ") Is already on Inspicio");
@@ -59,36 +60,46 @@ class AutoImport {
 			$review_request = new \App\ReviewRequest($auto_import->user_id);
 
 			list($success_create, $create_data) = $review_request->create([
-				'account_id'           => $account->id,
+				'account_id'           => $auto_import->account_id,
 				'title'                => $fetch_data->name,
 				'description'          => $fetch_data->description,
 				'repo_owner'           => $fetch_data->repository,
 				'pull_request_url'     => $fetch_data->url,
 				'language_search_term' => $fetch_data->language,
 			]);
-			Log::info("Imported " . $fetch_data->url . " Into Inspicio : $create_data");
-			$result[] = $this->insertImportResult($auto_import->id, $success_fetch, $create_data);
+
+			$result[] = $this->insertImportResult($auto_import->id, $success_create, $create_data);
 
 		}
 
 	}
 
+//This really should be private, but phpunit doesn't let me mock private methods :'(
+	public function getGitClient($user_id, $account_id) {
+		$user    = new User($user_id);
+		$account = $user->getGitAccount($account_id);
+		$client  = $user->getAccountClient($account);
+
+		return $client;
+	}
+
 	private function insertImportResult($import_id, $success, $data) {
 		$result = [
-			'auto_import_id' => $auto_import->id,
+			'auto_import_id' => $import_id,
 			'created_at'     => \Carbon\Carbon::now(),
 			'updated_at'     => \Carbon\Carbon::now(),
+			'is_success'     => $success,
 		];
 
 		if (!$success) {
-			$result['success'] = 0;
-			$result['error']   = $data;
+			$result['error'] = $data;
+			Log::error("Failed to import import_id = $import_id into Inspicio : $data");
 
 			return DB::table('auto_imports_result')->insertGetId($result);
 		}
 
-		$result['success']    = 1;
 		$result['request_id'] = $data;
+		Log::info("Imported $import_id Into Inspicio : $data");
 
 		return DB::table('auto_imports_result')->insertGetId($result);
 	}
