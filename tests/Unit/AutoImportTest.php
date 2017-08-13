@@ -2,6 +2,7 @@
 
 namespace Tests\Unit;
 
+use App\Classes\AutoImport;
 use App\Classes\Models\Git\PullRequest;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Support\Facades\DB;
@@ -54,4 +55,5 @@ class AutoImportTest extends TestCase {
 		$this->assertEquals(4, $success);
 
 	}
+
 }

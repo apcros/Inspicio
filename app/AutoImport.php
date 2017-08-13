@@ -112,7 +112,7 @@ class AutoImport {
 	}
 
 	public function update($import_id, $user_id, $is_active) {
-		$auto_import = DB::table('auto_imports')->where('id', $import_id)->get();
+		$auto_import = DB::table('auto_imports')->where('id', $import_id)->first();
 
 		if (!$auto_import) {
 			return [false, "Auto Import entry not found"];
@@ -122,9 +122,9 @@ class AutoImport {
 			return [false, "You can't update someone else Auto Import Entry"];
 		}
 
-		DB::table('auto_imports')->update([
+		DB::table('auto_imports')->where('id', $import_id)->update([
 			'is_active' => $is_active,
-		])->where('id', $import_id);
+		]);
 
 		return [true, 'Updated with success'];
 	}

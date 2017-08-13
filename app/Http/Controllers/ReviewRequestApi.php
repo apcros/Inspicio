@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Notifications\ActionOnYourReview;
 use App\ReviewRequest;
 use App\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 

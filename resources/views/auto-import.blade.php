@@ -24,8 +24,8 @@
 						<span class="label label-success pull-left">Active</span>
 						<button class="btn btn-danger btn-xs pull-right" onclick="updateAutoImport(false,'{{$status['auto_import']->id}}')"><span class="glyphicon glyphicon-remove-sign"></span> Disable ?</button>
 					@else
-						<span class="label label-danger pull-right">Disabled</span>
-						<button class="btn btn-danger btn-xs pull-right" onclick="updateAutoImport(true,'{{$status['auto_import']->id}}')"><span class="glyphicon glyphicon-ok"></span> Enable ?</button>
+						<span class="label label-danger pull-left">Disabled</span>
+						<button class="btn btn-success btn-xs pull-right" onclick="updateAutoImport(true,'{{$status['auto_import']->id}}')"><span class="glyphicon glyphicon-ok"></span> Enable ?</button>
 					@endif
 					&nbsp;
 					<a role="button" data-toggle="collapse" data-parent="#{{$status['auto_import']->id}}" href="#{{$status['auto_import']->id}}_result" aria-expanded="true" aria-controls="{{$status['auto_import']->id}}_result">
