@@ -65,6 +65,7 @@ class ReviewRequestController extends Controller {
 
 		return view('auto-import', [
 			'statuses'        => $statuses,
+			'points'          => $user->getPoints(),
 			'reposPerAccount' => $this->listReposPerAccount($user),
 		]);
 	}

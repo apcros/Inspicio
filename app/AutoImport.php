@@ -29,14 +29,16 @@ class AutoImport {
 	private function importFromRepository($auto_import) {
 
 		$client             = $this->getGitClient($auto_import->user_id, $auto_import->account_id);
-		list($owner, $repo) = $auto_import->repository;
-		$pull_requests      = $client->listPullRequestsForRepo($owner, $repo);
+		list($owner, $repo) = explode('/', $auto_import->repository);
+		Log::info("Found $owner / $repo in the setup auto-imports");
+		$pull_requests = $client->listPullRequestsForRepo($owner, $repo);
 
 		if (!$pull_requests) {
 			return false;
 		}
 
 		$results = array();
+		$user    = new User($auto_import->user_id);
 
 		foreach ($pull_requests as $pull_request) {
 			$duplicated_pr = DB::table('requests')->where([
@@ -46,6 +48,11 @@ class AutoImport {
 
 			if ($duplicated_pr) {
 				Log::info($pull_request->url . "(" . $pull_request->name . ") Is already on Inspicio");
+				continue;
+			}
+
+			if ($user->getPoints() < 1) {
+				Log::warning("No points left, Ignoring import for " . $auto_import->user_id);
 				continue;
 			}
 
@@ -102,6 +109,24 @@ class AutoImport {
 		Log::info("Imported $import_id Into Inspicio : $data");
 
 		return DB::table('auto_imports_result')->insertGetId($result);
+	}
+
+	public function update($import_id, $user_id, $is_active) {
+		$auto_import = DB::table('auto_imports')->where('id', $import_id)->get();
+
+		if (!$auto_import) {
+			return [false, "Auto Import entry not found"];
+		}
+
+		if ($auto_import->user_id != $user_id) {
+			return [false, "You can't update someone else Auto Import Entry"];
+		}
+
+		DB::table('auto_imports')->update([
+			'is_active' => $is_active,
+		])->where('id', $import_id);
+
+		return [true, 'Updated with success'];
 	}
 
 }

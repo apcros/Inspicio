@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\AutoImport;
 use App\Classes\GitProviderFactory;
 use App\Http\Controllers\Controller;
 use App\Notifications\ActionOnYourReview;
@@ -69,6 +70,21 @@ class ReviewRequestApi extends Controller {
 		Log::info("[USER $user_id] Review $id approved");
 
 		return $this->apiResponse("Successfully approved (+1 point)", 1);
+	}
+
+	public function updateAutoImport($id, Request $request) {
+		$enabled = $request->input('enabled');
+		$user_id = session('user_id');
+
+		$auto_import             = new \App\AutoImport();
+		list($is_success, $data) = $auto_import->update($id, $user_id, $enabled);
+
+		if (!$is_success) {
+			return $this->apiResponse($data);
+		}
+
+		return $this->apiResponse($data, 1);
+
 	}
 
 	public function untrack($id) {
