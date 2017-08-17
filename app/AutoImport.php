@@ -21,7 +21,7 @@ class AutoImport {
 		}
 
 		foreach ($auto_imports as $auto_import) {
-			$import_results = $this->importFromRepository($auto_import);
+			$this->importFromRepository($auto_import);
 		}
 
 	}
