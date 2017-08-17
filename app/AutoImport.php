@@ -37,8 +37,7 @@ class AutoImport {
 			return false;
 		}
 
-		$results = array();
-		$user    = new User($auto_import->user_id);
+		$user = new User($auto_import->user_id);
 
 		foreach ($pull_requests as $pull_request) {
 			$duplicated_pr = DB::table('requests')->where([
@@ -60,7 +59,7 @@ class AutoImport {
 
 			if (!$success_fetch) {
 				Log::error("Error while trying to retrieve pr data from " . $pull_request->url . " " . $fetch_data);
-				$result[] = $this->insertImportResult($auto_import->id, false, $fetch_data);
+				$this->insertImportResult($auto_import->id, false, $fetch_data);
 				continue;
 			}
 
@@ -75,7 +74,7 @@ class AutoImport {
 				'language_search_term' => $fetch_data->language,
 			]);
 
-			$result[] = $this->insertImportResult($auto_import->id, $success_create, $create_data);
+			$this->insertImportResult($auto_import->id, $success_create, $create_data);
 
 		}
 

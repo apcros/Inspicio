@@ -1,5 +1,5 @@
 $(document).ready(function(){
-	$('#repositories').select2();
+	$("#repositories").select2();
 });
 
 function updateAutoImport(enabled, id) {
@@ -11,10 +11,10 @@ function updateAutoImport(enabled, id) {
 			if(data.success) {
 				location.reload();
 			} else {
-				displayPopup('snackbar-error', 'Error '+data.message, 4000);
+				displayPopup("snackbar-error", "Error "+data.message, 4000);
 			}
-		},'json')
+		},"json")
 	.fail(function(data) {
-		displayPopup('snackbar-error', 'Unexpected error ocurred ', 4000);
-	})
+		displayPopup("snackbar-error", "Unexpected error ocurred ", 4000);
+	});
 }
