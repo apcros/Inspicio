@@ -45,6 +45,7 @@
 			            <li><a href="/reviews/tracked">Show tracked</a></li>
 			            <li><a href="/reviews/create">Create new</a></li>
 			            <li><a href="/reviews/bulk-import">Bulk import</a></li>
+			            <li><a href="/reviews/auto-import">Auto import</a></li>
 			          </ul>
 			        </li>
 		        @else

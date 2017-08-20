@@ -8,6 +8,9 @@ Route::post('/reviews/create', 'ReviewRequestController@create');
 Route::get('/reviews/bulk-import', 'ReviewRequestController@bulkImportForm');
 Route::post('/reviews/bulk-import', 'ReviewRequestController@bulkImport');
 
+Route::get('/reviews/auto-import', 'ReviewRequestController@autoImportStatus');
+Route::post('/reviews/auto-import', 'ReviewRequestController@autoImportSetup');
+
 Route::get('/reviews/{reviewid}/edit', 'ReviewRequestController@editForm');
 Route::post('/reviews/{reviewid}/edit', 'ReviewRequestController@edit');
 
@@ -20,6 +23,7 @@ Route::post('/ajax/reviews/{reviewid}/approve', 'ReviewRequestApi@approve');
 Route::post('/ajax/reviews/{reviewid}/reopen', 'ReviewRequestApi@reopen');
 Route::post('/ajax/reviews/{reviewid}/close', 'ReviewRequestApi@close');
 Route::get('/ajax/reviews/available-for-import', 'ReviewRequestApi@listAllAvailablePrsForImport');
+Route::post('/ajax/auto-import/{id}', 'ReviewRequestApi@updateAutoImport');
 
 Route::post('/ajax/account/skills', 'Profile@addSkill');
 Route::post('/ajax/account/skills/{id}/delete', 'Profile@deleteSkill');
