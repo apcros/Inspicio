@@ -14,14 +14,14 @@
 Please note that you don't need both Bitbucket and Github, you need at least one. (It's recommended to setup both)
 
 - Setup the following env variables : 
-
+```
   MAIL_USERNAME=...Your mailtrap SMTP username...
   MAIL_PASSWORD=... Your mailtrap SMTP password..
   GITHUB_CLIENT_ID=..Your dev Github app oauth client_id..
   GITHUB_SECRET=...Your dev Github app oauth secret..
   BITBUCKET_CLIENT_ID=..Your dev Bitbucket app oauth client_id..
   BITBUCKET_SECRET=..Your dev Bitbucket app oauth secret..
-
+```
 - Cd in Inspicio-DevTools/vagrant-box
 - Run vagrant up
 
