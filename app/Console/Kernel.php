@@ -14,6 +14,7 @@ class Kernel extends ConsoleKernel {
 	protected $commands = [
 		Commands\RefreshLanguageList::class,
 		Commands\AutoImportProcess::class,
+		Commands\OverdueCheckerProcess::class,
 	];
 
 	/**
@@ -24,6 +25,8 @@ class Kernel extends ConsoleKernel {
 	 */
 	protected function schedule(Schedule $schedule) {
 		$schedule->command('autoimport:process')->everyTenMinutes();
+		$schedule->command('overduechecker:process')->weekly();
+
 	}
 
 	/**
