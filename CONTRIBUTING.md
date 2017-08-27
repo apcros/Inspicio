@@ -13,7 +13,14 @@
 
 Please note that you don't need both Bitbucket and Github, you need at least one. (It's recommended to setup both)
 
-- Setup the following env variables : 
+- Cd in Inspicio-DevTools/vagrant-box
+- Run vagrant up
+
+The first provisioning will take several minutes please be patient.
+Once done, you'll be able to access inspicio.devbox from your browser on your host.
+All the Inspicio code will be in Inspicio-DevTools/vagrant-box/vm-www-data, You can edit from your host, or directly from the vm.
+
+For Inspicio to work properly, you need to add additional values in vm-www-data/Inspicio/.env : 
 ```
   MAIL_USERNAME=...Your mailtrap SMTP username...
   MAIL_PASSWORD=... Your mailtrap SMTP password..
@@ -22,12 +29,6 @@ Please note that you don't need both Bitbucket and Github, you need at least one
   BITBUCKET_CLIENT_ID=..Your dev Bitbucket app oauth client_id..
   BITBUCKET_SECRET=..Your dev Bitbucket app oauth secret..
 ```
-- Cd in Inspicio-DevTools/vagrant-box
-- Run vagrant up
-
-The first provisioning will take several minutes please be patient.
-Once done, you'll be able to access inspicio.devbox from your browser on your host.
-All the Inspicio code will be in Inspicio-DevTools/vagrant-box/vm-www-data, You can edit from your host, or directly from the vm.
 
 Once you're happy with your changes, run phpunit from the vm while being in the Inspicio directory.
 Commit directly from the vm. (Will add support for SSH key to be sent to the vm in the near futur)
