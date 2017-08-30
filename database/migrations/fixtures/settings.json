@@ -1,0 +1,26 @@
+[
+	{
+		"key" : "notify_approval_overdue",
+		"default": "1"
+	},
+	{
+		"key" : "notify_closing_overdue",
+		"default" : "1"
+	},
+	{
+		"key" : "notify_follows",
+		"default" : "1"
+	},
+	{
+		"key" : "notify_approvals",
+		"default" : "1"
+	},
+	{
+		"key" : "hide_email",
+		"default" : "0"
+	},
+	{
+		"key" : "suggest_review_requests",
+		"default" : "0"
+	}
+]

@@ -13,6 +13,7 @@ class Kernel extends ConsoleKernel {
 	 */
 	protected $commands = [
 		Commands\RefreshLanguageList::class,
+		Commands\SyncSettings::class,
 		Commands\AutoImportProcess::class,
 		Commands\OverdueCheckerProcess::class,
 	];
