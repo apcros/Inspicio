@@ -14,10 +14,15 @@ class CreateSettings extends Migration {
 	public function up() {
 		Schema::create('settings', function (Blueprint $table) {
 			$table->string('key');
-			$table->string('default');
+			$table->string('type');
+			$table->string('category');
+			$table->string('name');
+			$table->string('value');
 			$table->primary('key');
 		});
+
 		DB::table('settings')->insert($this->getSettings());
+
 		Schema::create('user_settings', function (Blueprint $table) {
 			$table->increments('id');
 			$table->string('value');

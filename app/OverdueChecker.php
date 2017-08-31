@@ -3,6 +3,7 @@
 namespace App;
 
 use App\User;
+use App\UserSettingsManager;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -74,7 +75,12 @@ But we will remind theses users to approve
 				foreach ($pending_approvals as $pending_approval) {
 					if ($pending_approval->updated_at <= \Carbon\Carbon::now()->subWeeks(2)) {
 						$user = DB::table('users')->where('id', $pending_approval->user_id)->first();
-						$this->addToNotificationList($user, 'ReviewFollowedForTooLong', $review);
+
+						$user_settings_manager = new UserSettingsManager($user->id);
+						if ($user_settings_manager->get('notify_approval_overdue') == 1) {
+							$this->addToNotificationList($user, 'ReviewFollowedForTooLong', $review);
+						}
+
 					}
 
 				}
@@ -87,7 +93,13 @@ But we will remind theses users to approve
 
 			if ($followers && $review->updated_at <= \Carbon\Carbon::now()->subWeeks(2)) {
 				$author = DB::table('users')->where('id', $review->author_id)->first();
-				$this->addToNotificationList($author, 'ReviewOpenedTooLong', $review);
+
+				$author_settings_manager = new UserSettingsManager($author->id);
+
+				if ($author_settings_manager->get('notify_closing_overdue') == 1) {
+					$this->addToNotificationList($author, 'ReviewOpenedTooLong', $review);
+				}
+
 			}
 
 		}

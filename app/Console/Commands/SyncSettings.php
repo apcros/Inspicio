@@ -39,30 +39,31 @@ class SyncSettings extends Command {
 		$settings = $this->loadSettingsFromJson();
 
 		foreach ($settings as $setting) {
-			$key         = $setting['key'];
-			$default_val = $setting['default'];
+			$key = $setting['key'];
 
 			$current_setting = DB::table('settings')->where('key', $key)->first();
 
 			if ($current_setting) {
 
-				if ($current_setting->default != $default_val) {
-					$this->info("$key  default value changed ! Switching from " . $current_setting->default . " to $default_val");
+				if (
+					$current_setting->value != $setting['value'] ||
+					$current_setting->name != $setting['name'] ||
+					$current_setting->type != $setting['type'] ||
+					$current_setting->category != $setting['category']
+				) {
+					$this->info("$key Changed new value :" . var_export($setting, true));
 					DB::table('settings')
 						->where('key', $key)
-						->update([
-							'default' => $setting['default'],
-						]);
+						->update($setting);
 				}
 
 			}
 
 			if (!$current_setting) {
-				$this->info("New setting detected : inserting $key in DB with $default_val as the default val");
-				DB::table('settings')->insert([
-					'key'     => $key,
-					'default' => $default_val,
-				]);
+				$this->info("New setting detected : inserting $key in DB : " . var_export($setting, true));
+				DB::table('settings')->insert(
+					$setting
+				);
 				$this->info("Inserted $key with success");
 			}
 

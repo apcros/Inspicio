@@ -5,15 +5,17 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Notifications\ChangedEmail;
 use App\User;
+use App\UserSettingsManager;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class Profile extends Controller {
 	public function summary() {
-		$user_id  = session('user_id');
-		$user     = DB::table('users')->where('id', $user_id)->first();
-		$accounts = DB::table('accounts')->where('user_id', $user_id)->get();
+		$user_id               = session('user_id');
+		$user                  = DB::table('users')->where('id', $user_id)->first();
+		$user_settings_manager = new UserSettingsManager($user_id);
+		$accounts              = DB::table('accounts')->where('user_id', $user_id)->get();
 
 		$skills           = $this->getAllSkills($user_id);
 		$available_skills = DB::table('skills')->get();
@@ -22,6 +24,7 @@ class Profile extends Controller {
 			'user'             => $user,
 			'accounts'         => $accounts,
 			'skills'           => $skills,
+			'settings'         => $user_settings_manager->get_all(),
 			'available_skills' => $available_skills,
 		]);
 	}
@@ -55,6 +58,23 @@ class Profile extends Controller {
 		}
 
 		return redirect('/account');
+
+	}
+
+	public function updateSettings(Request $request) {
+		$user_id  = session('user_id');
+		$settings = $request->input('settings');
+
+		$user_settings_manager = new UserSettingsManager($user_id);
+
+		foreach ($settings as $setting) {
+			$user_settings_manager->set($setting->key, $setting->value);
+		}
+
+		return response()->json([
+			'success' => 1,
+			'message' => 'Settings updated',
+		]);
 
 	}
 
