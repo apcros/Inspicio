@@ -27,6 +27,11 @@ class UserSettingsManager {
 	private function cast_type($type, $value) {
 
 		if ($type == 'boolean') {
+
+			if ($value == 'false') {
+				return false;
+			}
+
 			return (bool) $value;
 		}
 
@@ -74,6 +79,8 @@ class UserSettingsManager {
 			if ($user_setting) {
 				$merged_settings[$setting->key]->value = $user_setting->value;
 			}
+
+			$merged_settings[$setting->key]->value = $this->cast_type($setting->type, $merged_settings[$setting->key]->value);
 
 		}
 

@@ -18,14 +18,14 @@
 		"value" : true,
 		"name": "Notification when someone follow your review",
 		"type": "boolean",
-		"category": "notifications"
+		"category": "not_active"
 	},
 	{
 		"key" : "notify_approvals",
 		"value" : true,
 		"name": "Notification when someone approve your review",
 		"type": "boolean",
-		"category": "notifications"
+		"category": "not_active"
 	},
 	{
 		"key" : "hide_email",

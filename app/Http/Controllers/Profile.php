@@ -62,13 +62,21 @@ class Profile extends Controller {
 	}
 
 	public function updateSettings(Request $request) {
-		$user_id  = session('user_id');
+		$user_id = session('user_id');
+
 		$settings = $request->input('settings');
+
+		if (!$settings) {
+			return response()->json([
+				'success' => 0,
+				'message' => 'No settings specified',
+			]);
+		}
 
 		$user_settings_manager = new UserSettingsManager($user_id);
 
 		foreach ($settings as $setting) {
-			$user_settings_manager->set($setting->key, $setting->value);
+			$user_settings_manager->set($setting['key'], $setting['value']);
 		}
 
 		return response()->json([

@@ -141,9 +141,9 @@
 		  			<td>
 		  			@if ($setting->type == 'boolean')
 		  				@if($setting->value)
-		  					<input type="checkbox" name="{{$setting->key}}" checked="checked">
+		  					<input type="checkbox" id="{{$setting->key}}" name="setting_{{$setting->key}}" checked="checked">
 		  				@else
-		  					<input type="checkbox" name="{{$setting->key}}">
+		  					<input type="checkbox" id="{{$setting->key}}" name="setting_{{$setting->key}}">
 		  				@endif
 		  				
 		  			@endif
@@ -154,7 +154,7 @@
 		  	</table>
 		  </div>
 		  	<div class="panel-footer">
-		  		<a class="btn btn-info">Save</a>
+		  		<button onclick="updateSettings()" class="btn btn-info">Save</button>
 		  	</div>
 		</div>
 	<div id="modal-skill" class="modal fade" role="dialog">
@@ -197,4 +197,5 @@
 		});
 	</script>
 	<script type="text/javascript" src="{{ secure_asset('js/async-action-skills.js') }}"></script>
+	<script type="text/javascript" src="{{ secure_asset('js/async-action-settings.js') }}"></script>
 @endsection
