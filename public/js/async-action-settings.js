@@ -11,8 +11,6 @@ function updateSettings() {
 		});
 	});
 
-	console.log(jsonObj);
-
 	$.post(window.location.origin+"/ajax/settings", jsonObj, function(data) {
 		if(data.success) {
 			displayPopup("snackbar-success", data.message, 4000);
