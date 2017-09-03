@@ -4,6 +4,7 @@ function updateSettings() {
 	};
 	$(":input[name^='setting_']").each(function(index) {
 		var setting = $(this);
+		//TODO : Handle cases where setting is NOT a boolean
 		jsonObj.settings.push({
 			key: setting.attr("id"),
 			value: setting.is(":checked"),
@@ -11,7 +12,7 @@ function updateSettings() {
 	});
 
 	console.log(jsonObj);
-	
+
 	$.post(window.location.origin+"/ajax/settings", jsonObj, function(data) {
 		if(data.success) {
 			displayPopup("snackbar-success", data.message, 4000);
