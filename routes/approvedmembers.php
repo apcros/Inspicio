@@ -23,6 +23,7 @@ Route::post('/ajax/reviews/{reviewid}/approve', 'ReviewRequestApi@approve');
 Route::post('/ajax/reviews/{reviewid}/reopen', 'ReviewRequestApi@reopen');
 Route::post('/ajax/reviews/{reviewid}/close', 'ReviewRequestApi@close');
 Route::get('/ajax/reviews/available-for-import', 'ReviewRequestApi@listAllAvailablePrsForImport');
+Route::post('/ajax/settings', 'Profile@updateSettings');
 Route::post('/ajax/auto-import/{id}', 'ReviewRequestApi@updateAutoImport');
 
 Route::post('/ajax/account/skills', 'Profile@addSkill');
