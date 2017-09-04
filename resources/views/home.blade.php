@@ -32,6 +32,7 @@
     		</div>
     	</div>
     @endforeach
+    {{$hot_reviews->links()}}
     </div>
     <div role="tabpanel" class="tab-pane" id="latest_reviews">
     @foreach ($latest_reviews as $review)
@@ -47,6 +48,7 @@
     		</div>
     	</div>
     @endforeach
+    {{$latest_reviews->links()}}
     </div>
     <div role="tabpanel" class="tab-pane" id="search">
     	<div class="panel panel-default">

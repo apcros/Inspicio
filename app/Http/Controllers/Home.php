@@ -46,7 +46,7 @@ class Home extends Controller {
 		]);
 	}
 
-	public function displayDiscover() {
+	public function displayDiscover(Request $request) {
 
 		$hot_reviews    = $this->fetchReviewsOrderBy('followers');
 		$latest_reviews = $this->fetchReviewsOrderBy('requests.created_at');
@@ -73,8 +73,7 @@ class Home extends Controller {
 			->where('status', 'open')
 			->orderBy($column, 'desc')
 			->groupBy('skills.name', 'users.nickname', 'requests.id')
-			->limit(20)
-			->get();
+			->paginate(10);
 	}
 
 	public function search(Request $request) {
