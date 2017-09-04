@@ -59,6 +59,7 @@ class ProfileTest extends TestCase {
 			'id'           => $this->user_data['user_id'],
 			'is_confirmed' => false,
 		]);
+
 	}
 	public function testSkill() {
 		$this->seed('DatabaseSeederForTests');
@@ -88,5 +89,30 @@ class ProfileTest extends TestCase {
 				'success' => 1,
 				'message' => 'Skill deleted',
 			]);
+	}
+
+	public function testSettings() {
+		$this->seed('DatabaseSeederForTests');
+
+		$response = $this->withSession($this->user_data)->get('/account');
+		$response->assertStatus(200);
+		$content = $response->getContent();
+		$this->assertRegExp('/name="setting_notify_approval_overdue" checked="checked">/', $content, 'User settings are correct');
+
+		$this->withSession($this->user_data)
+			->json('POST', '/ajax/settings', ['settings' => [
+				[
+					'key'   => 'notify_approval_overdue',
+					'value' => 'false',
+				],
+			]])->assertJson([
+			'success' => 1,
+			'message' => 'Settings updated',
+		]);
+
+		$response = $this->withSession($this->user_data)->get('/account');
+		$response->assertStatus(200);
+		$content = $response->getContent();
+		$this->assertRegExp('/name="setting_notify_approval_overdue">/', $content, 'User settings were updated');
 	}
 }

@@ -121,6 +121,42 @@
 		  		<a onclick="$('#modal-skill').modal('show');" class="btn btn-info">Add new skill</a>
 		  	</div>
 		</div>
+	  	<div class="panel panel-default">
+		  <div class="panel-heading">
+		    <h3 class="panel-title">Account Settings</h3>
+		  </div>
+		  <div class="panel-body">
+		  	<table class="table table-bordered">
+			  	<tr>
+			  		<th>Option</th>
+			  		<th></th>
+			  	</tr>
+		  	@foreach ($settings as $setting)
+		  		<tr>
+		  		@if ($setting->category != 'not_active')
+		  			<td>
+		  			{{$setting->name}}
+		  			</td>
+
+		  			<td>
+		  			@if ($setting->type == 'boolean')
+		  				@if($setting->value)
+		  					<input type="checkbox" id="{{$setting->key}}" name="setting_{{$setting->key}}" checked="checked">
+		  				@else
+		  					<input type="checkbox" id="{{$setting->key}}" name="setting_{{$setting->key}}">
+		  				@endif
+		  				
+		  			@endif
+		  			</td>
+		  		@endif
+		  		</tr>
+		  	@endforeach
+		  	</table>
+		  </div>
+		  	<div class="panel-footer">
+		  		<button onclick="updateSettings()" class="btn btn-info">Save</button>
+		  	</div>
+		</div>
 	<div id="modal-skill" class="modal fade" role="dialog">
 	  <div class="modal-dialog" role="document">
 	    <div class="modal-content">
@@ -161,4 +197,5 @@
 		});
 	</script>
 	<script type="text/javascript" src="{{ secure_asset('js/async-action-skills.js') }}"></script>
+	<script type="text/javascript" src="{{ secure_asset('js/async-action-settings.js') }}"></script>
 @endsection

@@ -1,0 +1,45 @@
+[
+	{
+		"key" : "notify_approval_overdue",
+		"value": true,
+		"name": "Notification when approval is overdue",
+		"type": "boolean",
+		"category": "notifications"
+	},
+	{
+		"key" : "notify_closing_overdue",
+		"value" : true,
+		"name": "Notification when a ReviewRequest was opened too long",
+		"type" : "boolean",
+		"category": "notifications"
+	},
+	{
+		"key" : "notify_follows",
+		"value" : true,
+		"name": "Notification when someone follow your review",
+		"type": "boolean",
+		"category": "not_active"
+	},
+	{
+		"key" : "notify_approvals",
+		"value" : true,
+		"name": "Notification when someone approve your review",
+		"type": "boolean",
+		"category": "not_active"
+	},
+	{
+		"key" : "hide_email",
+		"value" : false,
+		"name": "Hide your email",
+		"type": "boolean",
+		"category": "not_active"
+	},
+	{
+		"key" : "suggest_review_requests",
+		"value" : false,
+		"name": "Suggest me Review Request to follow",
+		"type": "boolean",
+		"category": "not_active"
+
+	}
+]
