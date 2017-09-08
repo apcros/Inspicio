@@ -14,7 +14,6 @@ function search(page) {
 		}
 		,function(result) {
 			var html = "";
-			console.log(result);
 			$.each(result.reviews.data, function(key, val) {
 				html += '<li class="list-group-item">\
 				<a href="/reviews/'+val.id+'/view" class="btn btn-info pull-right" target="_blank">View</a>\
@@ -23,19 +22,41 @@ function search(page) {
 				<p><span class="label label-default"> Author : '+val.author+'</span></p>\
 				</li>';
 			});
+			/* TODO : Move this horror to VueJS
+			   This is really really awful, but no need in doing something clean as this will be ditched for VueJS soon
+				09/09/2017 (Putting the date so I can't get away with leaving this 10 years in the code...)
+			 */
 			html += '<ul class="pagination">';
+			var previous_bind = false;
+			var next_bind = false;
 			if(result.reviews.prev_page_url != null){
-				html += "<li><a onclick='search("+(result.reviews.current_page-1)+");' >Previous</a></li>";
+				html += "<li><a href='#' id='previous-a'>Previous</a></li>";
+				previous_bind = true;
 			}else {
 				html += "<li class='disabled'><a href='#' aria-label='Next'>Previous</a></li>";
 			}
 				html += "<li class='active'><a href='#'>"+result.reviews.current_page+"</a></li>";
 			if(result.reviews.next_page_url != null) {
-				html += "<li><a onclick='search("+(result.reviews.current_page+1)+");' >Next</a></li>";
+				html += "<li><a href='#' id='next-a'>Next</a></li>";
+				next_bind = true;
 			} else {
 				html += "<li class='disabled'><a href='#' aria-label='Next'>Next</a></li>";
+
 			}
 			$('#reviews-list').html(html);
+
+			if(previous_bind){
+				$( "#previous-a" ).click(function() {
+				  search((result.reviews.current_page-1));
+				});
+			}
+
+			if(next_bind) {
+				$("#next-a").click(function() {
+					search((result.reviews.current_page+1));
+				});
+			}
+
 	},'json')
 	.fail(function() {
 		$('#reviews-list').html('<div class="alert alert-danger"><b>Error while searching. Please try again</div>');
