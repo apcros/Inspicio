@@ -46,17 +46,22 @@ class Home extends Controller {
 		]);
 	}
 
-	public function displayDiscover() {
-
-		$hot_reviews    = $this->fetchReviewsOrderBy('followers');
-		$latest_reviews = $this->fetchReviewsOrderBy('requests.created_at');
-
-		$languages = DB::table('skills')->get();
-
+	public function displayLatest(Request $request) {
 		return view('home', [
-			'hot_reviews'    => $hot_reviews,
-			'latest_reviews' => $latest_reviews,
-			'languages'      => $languages,
+			'reviews' => $this->fetchReviewsOrderBy('requests.created_at'),
+		]);
+	}
+
+	public function displayTrending(Request $request) {
+		return view('hot', [
+			'reviews' => $this->fetchReviewsOrderBy('followers'),
+		]);
+
+	}
+
+	public function displaySearch() {
+		return view('search', [
+			'languages' => DB::table('skills')->get(),
 		]);
 	}
 
@@ -73,8 +78,7 @@ class Home extends Controller {
 			->where('status', 'open')
 			->orderBy($column, 'desc')
 			->groupBy('skills.name', 'users.nickname', 'requests.id')
-			->limit(20)
-			->get();
+			->paginate(10);
 	}
 
 	public function search(Request $request) {
@@ -104,8 +108,7 @@ class Home extends Controller {
 				return $query->where('requests.name', 'like', '%' . $search_str . '%')
 					->orWhere('requests.description', 'like', '%' . $search_str . '%'); //TODO : Consider performance impact of that description search
 			})
-			->limit(20)
-			->get();
+			->paginate(10);
 
 		return response()->json([
 			'success' => 1,

@@ -1,5 +1,5 @@
 @extends('layouts.bootstrap-main')
-@section('title', 'View Review Request')
+@section('title',  $review->name .' - View Review Request')
 
 @section('additional_head')
 	<meta property="og:title" content="{{ $review->name }}">
