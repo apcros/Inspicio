@@ -98,27 +98,27 @@ class HomeTest extends TestCase {
 				'query'     => 'NOT FOUNDS',
 				'languages' => [],
 			],
-			])->assertJson(['success' => 1, 'reviews' => []]);
+			])->assertJson(['success' => 1, 'reviews' => ['data' => []]]);
 
 		$this->json('POST', '/api/reviews/search',
 			['filters' => [
 				'query'     => 'NOT FOUNDS',
 				'languages' => [1, 2],
 			],
-			])->assertJson(['success' => 1, 'reviews' => []]);
+			])->assertJson(['success' => 1, 'reviews' => ['data' => []]]);
 
 		$this->json('POST', '/api/reviews/search',
 			['filters' => [
 				'query'     => '',
 				'languages' => [1, 2],
 			],
-			])->assertJson(['success' => 1, 'reviews' => [$review]]);
+			])->assertJson(['success' => 1, 'reviews' => ['data' => [$review]]]);
 
 		$this->json('POST', '/api/reviews/search',
 			['filters' => [
 				'query'     => 'Amazing',
 				'languages' => [],
 			],
-			])->assertJson(['success' => 1, 'reviews' => [$review]]);
+			])->assertJson(['success' => 1, 'reviews' => ['data' => [$review]]]);
 	}
 }
