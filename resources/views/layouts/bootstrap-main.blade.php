@@ -16,6 +16,11 @@
 		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
 		<script type="text/javascript" src="{{ secure_asset('js/snackbar.min.js') }}"></script>
 		<script type="text/javascript" src="{{ secure_asset('js/popout.js') }}"></script>
+		@if (App::environment('production'))
+			<script type="text/javascript" src="{{secure_asset('js/vue.min.js')}}"></script>
+		@else
+			<script type="text/javascript" src="{{secure_asset('js/vue.js')}}"></script>
+		@endif
 		@yield('additional_head')
 		<nav class="navbar navbar-default">
 		  <div class="container-fluid">
