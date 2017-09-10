@@ -4,6 +4,7 @@
 <meta name="description" content="A social hub for code reviews. Get your code reviewed !">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/css/select2.min.css" rel="stylesheet" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/js/select2.min.js"></script>
+<script type="text/javascript" src="{{ secure_asset('js/vuejs-utils.js') }}"></script>
 <script type="text/javascript" src="{{ secure_asset('js/search.js') }}"></script>
 @endsection
 @section('content')
@@ -38,6 +39,9 @@
 			</div>
 		</div>
 		<ul class="list-group" id="reviews-list">
+		</ul>
+		<ul v-cloak class="list-group" id="reviews-search-result">
+			@include('vuejs.search-reviews')
 		</ul>
 	</div></div>
 	@endsection
