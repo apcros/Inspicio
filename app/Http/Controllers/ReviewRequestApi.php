@@ -283,14 +283,14 @@ class ReviewRequestApi extends Controller {
 		$owner = DB::table('users')->where('id', $review->author_id)->first();
 		$user  = DB::table('users')->where('id', $userid)->first();
 
-		$user_model            = new User($owner->id);
-		$user_model->email     = $owner->email;
-		$user_settings_manager = new UserSettingsManager($owner->id);
+		$user_model        = new User($owner->id);
+		$user_model->email = $owner->email;
+		$settings_mngr     = new UserSettingsManager($owner->id);
 
 		if (
-			($user_settings_manager->get('notify_follows') == 1 && $action == 'followed')
+			($settings_mngr->get('notify_follows') == 1 && $action == 'followed')
 			||
-			($user_settings_manager->get('notify_approvals') == 1 && $action == 'approved')
+			($settings_mngr->get('notify_approvals') == 1 && $action == 'approved')
 		) {
 			$user_model->notify(new ActionOnYourReview($user, $review, $action));
 		}

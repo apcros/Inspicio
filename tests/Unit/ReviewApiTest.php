@@ -122,12 +122,12 @@ class ReviewApiTest extends TestCase {
 		$this->seed('DatabaseSeederForTests');
 		Notification::fake();
 
-		$author                = new User($this->user_data['user_id']);
-		$author->email         = $this->user_data['user_email'];
-		$user_settings_manager = new UserSettingsManager($this->user_data['user_id']);
+		$author        = new User($this->user_data['user_id']);
+		$author->email = $this->user_data['user_email'];
+		$settings_mngr = new UserSettingsManager($this->user_data['user_id']);
 
-		$user_settings_manager->set('notify_approvals', false);
-		$user_settings_manager->set('notify_follows', false);
+		$settings_mngr->set('notify_approvals', false);
+		$settings_mngr->set('notify_follows', false);
 
 		$this->withSession($this->user_data_bis)
 			->json('POST', '/ajax/reviews/' . $this->user_review_id . '/track');
