@@ -48,6 +48,7 @@ class ActionOnYourReview extends Notification implements ShouldQueue {
 			->greeting('Someone just ' . $this->action . ' your review !')
 			->line('Hey, ' . $this->user->nickname . ' just ' . $this->action . ' your review "' . $this->review->name . '"')
 			->action('See review', url(env('APP_URL') . '/reviews/' . $this->review->id . '/view'))
+			->line('You can disable theses notifications on your account')
 			->line('Thanks for using Inspicio for your reviews !');
 	}
 
