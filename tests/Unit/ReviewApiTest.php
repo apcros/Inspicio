@@ -2,6 +2,8 @@
 
 namespace Tests\Unit;
 
+use App\User;
+use App\UserSettingsManager;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
@@ -37,6 +39,13 @@ class ReviewApiTest extends TestCase {
 			'is_approved' => false,
 			'is_active'   => 1,
 		]);
+		$author        = new User($this->user_data['user_id']);
+		$author->email = $this->user_data['user_email'];
+
+		Notification::assertSentTo(
+			$author,
+			\App\Notifications\ActionOnYourReview::class
+		);
 
 		$response = $this->withSession($this->user_data_bis)
 			->json('POST', '/ajax/reviews/' . $this->user_review_id . '/approve')
@@ -57,6 +66,11 @@ class ReviewApiTest extends TestCase {
 				'success' => 1,
 				'message' => "Successfully approved (+1 point)",
 			]);
+
+		Notification::assertSentTo(
+			$author,
+			\App\Notifications\ActionOnYourReview::class
+		);
 
 		$response = $this->withSession($this->user_data_bis)
 			->json('POST', '/ajax/reviews/' . $this->user_review_id . '/approve')
@@ -101,6 +115,39 @@ class ReviewApiTest extends TestCase {
 			'points' => 6,
 		]);
 
+	}
+
+	public function testNotificationsDisabled() {
+
+		$this->seed('DatabaseSeederForTests');
+		Notification::fake();
+
+		$author                = new User($this->user_data['user_id']);
+		$author->email         = $this->user_data['user_email'];
+		$user_settings_manager = new UserSettingsManager($this->user_data['user_id']);
+
+		$user_settings_manager->set('notify_approvals', false);
+		$user_settings_manager->set('notify_follows', false);
+
+		$this->withSession($this->user_data_bis)
+			->json('POST', '/ajax/reviews/' . $this->user_review_id . '/track');
+		DB::table('request_tracking')->where([
+			['user_id', '=', $this->user_data_bis['user_id']],
+			['request_id', '=', $this->user_review_id],
+		])->update(['created_at' => \Carbon\Carbon::yesterday()]);
+
+		$this->withSession($this->user_data_bis)
+			->json('POST', '/ajax/reviews/' . $this->user_review_id . '/approve');
+
+		Notification::assertNotSentTo(
+			$author,
+			\App\Notifications\ActionOnYourReview::class
+		);
+
+		Notification::assertNotSentTo(
+			$author,
+			\App\Notifications\ActionOnYourReview::class
+		);
 	}
 
 	public function testTrackAndApprovalFail() {
