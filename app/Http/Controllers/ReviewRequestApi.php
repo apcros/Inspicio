@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Notifications\ActionOnYourReview;
 use App\ReviewRequest;
 use App\User;
+use App\UserSettingsManager;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -284,8 +285,16 @@ class ReviewRequestApi extends Controller {
 
 		$user_model        = new User($owner->id);
 		$user_model->email = $owner->email;
+		$settings_mngr     = new UserSettingsManager($owner->id);
 
-		$user_model->notify(new ActionOnYourReview($user, $review, $action));
+		if (
+			($settings_mngr->get('notify_follows') == 1 && $action == 'followed')
+			||
+			($settings_mngr->get('notify_approvals') == 1 && $action == 'approved')
+		) {
+			$user_model->notify(new ActionOnYourReview($user, $review, $action));
+		}
+
 	}
 
 }
