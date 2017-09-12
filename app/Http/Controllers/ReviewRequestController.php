@@ -74,10 +74,30 @@ class ReviewRequestController extends Controller {
 		$repositories = $request->input('repositories');
 		$user_id      = session('user_id');
 
-//TODO Check the input format
-		foreach ($repositories as $repository) {
-			list($repo_name, $account_id) = explode(',', $repository);
-			//TODO Avoid duplicates
+		list($is_valid, $data) = $this->validateAutoImportFormat($repositories);
+
+		if (!$is_valid) {
+			return view('home', [
+				'error_message' => $data,
+			]);
+		}
+
+		foreach ($data as $entry) {
+			$repo_name  = $entry['repo_name'];
+			$account_id = $entry['account_id'];
+
+			$duplicate = DB::table('auto_imports')->where([
+				['repository', '=', $repo_name],
+				['account_id', '=', $account_id],
+				['user_id', '=', $user_id],
+			])->first();
+
+			if ($duplicate) {
+				//We simply ignore in case of duplicate
+				Log::info("USER $user_id tried to created a duplicate entry in auto import, ignoring");
+				continue;
+			}
+
 			DB::table('auto_imports')->insert([
 				'repository'  => $repo_name,
 				'account_id'  => $account_id,
@@ -92,6 +112,35 @@ class ReviewRequestController extends Controller {
 		return redirect('/reviews/auto-import');
 	}
 
+	/*
+		Will take the data from the front-end, check it
+		and return a nicely formatted array
+	*/
+	private function validateAutoImportFormat($repositories) {
+
+		if (!is_array($repositories)) {
+			return [false, 'Incorrect format'];
+		}
+
+		$data = [];
+
+		foreach ($repositories as $repository) {
+			list($repo_name, $account_id) = explode(',', $repository);
+
+			if (empty($repo_name) || empty($account_id)) {
+				return [false, "Invalid format ($repository)"];
+			}
+
+			$data[] = [
+				'repo_name'  => $repo_name,
+				'account_id' => $account_id,
+			];
+
+		}
+
+		return [true, $data];
+	}
+
 	public function bulkImportForm() {
 		$user_id = session('user_id');
 		$user    = DB::table('users')->where('id', $user_id)->first();
@@ -103,8 +152,11 @@ class ReviewRequestController extends Controller {
 		return view('bulk-import', ['user' => $user]);
 	}
 
+	/*
+		Allow users to import one or several PRs from their Git account
+		with no input (apart from choosing which one to import)
+	*/
 	public function bulkImport(Request $request) {
-		//TODO : Implement duplicate detection
 		$prs_to_import      = $request->input('prs_selected');
 		$user_id            = session('user_id');
 		$processing_results = [];
@@ -128,6 +180,24 @@ class ReviewRequestController extends Controller {
 					'url'      => $pr_url,
 					'provider' => 'Git provider',
 					'message'  => 'Account error',
+				];
+				continue;
+			}
+
+			$duplicate = DB::table('requests')->where([
+				['author_id', '=', $user_id],
+				['url', '=', $pr_url],
+				['status', '=', 'open'], //We can forgive duplicates on closed review
+			])->first();
+
+			if ($duplicate) {
+				Log::info("[USER ID $user_id] Duplicate detected for $pr_url");
+				$processing_results[] = [
+					'title'    => $duplicate->name,
+					'success'  => 0,
+					'url'      => $pr_url,
+					'provider' => ucfirst($account->provider),
+					'message'  => 'Duplicate detected ! This review is already opened on your account with ID : ' . $duplicate->id,
 				];
 				continue;
 			}
