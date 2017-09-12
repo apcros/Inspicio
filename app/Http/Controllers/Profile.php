@@ -29,12 +29,15 @@ class Profile extends Controller {
 		]);
 	}
 
+	/*
+		Update generic profile information from
+		the Illuminate Request
+	*/
 	public function updateProfile(Request $request) {
 		$new_email = $request->input('email');
 		$new_name  = $request->input('name');
 		$user_id   = session('user_id');
 
-		//TODO not updating both if one is empty
 		try {
 			$previous_user_data = DB::table('users')->where('id', $user_id)->first();
 
@@ -61,6 +64,10 @@ class Profile extends Controller {
 
 	}
 
+	/*
+		Update the user set in the session settings
+		from the array in settings
+	*/
 	public function updateSettings(Request $request) {
 		$user_id = session('user_id');
 
@@ -214,6 +221,11 @@ class Profile extends Controller {
 
 	}
 
+	/*
+		Generate a new token and switch back the account to unconfirmed until
+		the user confirm the email.
+		(Useful when the user change its email)
+	*/
 	public function triggerReconfirm($user_id) {
 
 		$new_token = str_random(30);

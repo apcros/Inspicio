@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\AutoImport;
-use App\Classes\GitProviderFactory;
 use App\Http\Controllers\Controller;
 use App\Notifications\ActionOnYourReview;
 use App\ReviewRequest;
@@ -17,6 +16,15 @@ class ReviewRequestApi extends Controller {
 
 	private $MINIMUM_TIME_BEFORE_APPROVAL = 120;
 
+	/*
+		This will approve the ReviewRequest passed as parameters.
+		This will act as the user set in the session
+		It will check the time at which the review request has been followed
+		and refuse to approve it if it's less than the above
+		MINIMUM_TIME_BEFORE_APPROVAL (In seconds)
+
+		$id : The GUID of the Review Request to approve
+	*/
 	public function approve($id) {
 		$user_id                = session('user_id');
 		$review_request         = new \App\ReviewRequest($user_id);
@@ -74,6 +82,9 @@ class ReviewRequestApi extends Controller {
 		return $this->apiResponse("Successfully approved (+1 point)", 1);
 	}
 
+	/*
+		Will enable or disable AutoImport entries for the current user
+	*/
 	public function updateAutoImport($id, Request $request) {
 		$enabled = $request->input('enabled');
 		$user_id = session('user_id');
@@ -89,6 +100,10 @@ class ReviewRequestApi extends Controller {
 
 	}
 
+	/*
+		Unfollow a ReviewRequest by disabling the request_tracking
+		entry.
+	*/
 	public function untrack($id) {
 		$user_id        = session('user_id');
 		$review_request = new \App\ReviewRequest($user_id);
@@ -128,19 +143,27 @@ class ReviewRequestApi extends Controller {
 
 	}
 
+	/*
+		On every available GIT accounts for the current user, this will
+		list the repositories and for each repository it will list the pull requests
+		(This is used mainly on the AutoImport setup, to get immediately a list of
+		PR ready to be imported)
+		PRs will be returned ordered per Repo
+	*/
 	public function listAllAvailablePrsForImport() {
-		$user_id  = session('user_id');
-		$accounts = DB::table('accounts')->where('user_id', $user_id)->get();
+		$user_id = session('user_id');
+
+		$user     = new User($user_id);
+		$accounts = $user->getAvailableAccounts();
 
 		$repos_available = [];
-		//TODO using getAccounts from ReviewRequest instead, to force refresh where it's needed
+
 		Log::info("[USER ID $user_id ] Fetching repo and PR for " . count($accounts) . " accounts");
 
-		foreach ($accounts as $account) {
+		foreach ($accounts as $available_account) {
 
-			$factory = new GitProviderFactory($account->provider);
-			$client  = $factory->getProviderEngine();
-			$client->setToken($account->token);
+			$account = $user->getGitAccount($available_account->id);
+			$client  = $user->getAccountClient($account);
 
 			$repositories = $client->listRepositories();
 
@@ -169,6 +192,12 @@ class ReviewRequestApi extends Controller {
 		], 1);
 	}
 
+	/*
+		Will re-enable existing tracking if active user
+		unfollowed the Review request precendetly,
+		otherwise it'll create a new entry and notify the
+		PR owner.
+	*/
 	public function track($id) {
 		$user_id                = session('user_id');
 		$review_request         = new \App\ReviewRequest($user_id);
@@ -229,6 +258,11 @@ class ReviewRequestApi extends Controller {
 		return $this->changeReviewStatus($id, 'closed');
 	}
 
+	/*
+		Change the status of the ReviewRequest identified
+		by $id to $status
+		(Will act as the user set in the session)
+	*/
 	private function changeReviewStatus($id, $status) {
 		$user_id                = session('user_id');
 		$review_request         = new \App\ReviewRequest($user_id);
@@ -269,6 +303,11 @@ class ReviewRequestApi extends Controller {
 		]);
 	}
 
+	/*
+		Notify owner of a review of action on his review
+		(Follow or Approval) if he enabled the option
+		on his account
+	*/
 	private function notifyUserEmail($userid, $reviewid, $action) {
 		$user_id                = session('user_id');
 		$review_request         = new \App\ReviewRequest($user_id);

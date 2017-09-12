@@ -62,8 +62,6 @@ class OAuthLogin extends Controller {
 
 		if ($account) {
 			Log::warning("[USER $user_id] Duplicate account (id : " . $account->id . ')');
-			//TODO : Consider if we want to allow multiple users to share the same git account ?
-
 			return view('home', ['error_message' => 'This account is already in use']);
 		}
 
