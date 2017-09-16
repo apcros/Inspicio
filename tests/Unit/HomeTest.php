@@ -83,6 +83,18 @@ class HomeTest extends TestCase {
 
 	}
 
+	public function testNoReferral() {
+
+	}
+
+	public function testReferralWithNotifications() {
+
+	}
+
+	public function testReferralWithoutNotifications() {
+
+	}
+
 	public function testSearch() {
 		$this->seed('DatabaseSeederForTests');
 

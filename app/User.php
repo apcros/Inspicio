@@ -21,8 +21,15 @@ class User {
 
 	private $user_id;
 
-	public function __construct($user_id) {
+	public function __construct($user_id, $auto_load = false) {
 		$this->user_id = $user_id;
+
+		if ($auto_load) {
+			$user        = $this->load();
+			$this->name  = $user->name;
+			$this->email = $user->email;
+		}
+
 	}
 
 	/*
@@ -32,6 +39,10 @@ class User {
 		$user = $this->load();
 
 		return $user->points;
+	}
+
+	public function addPoints($count) {
+		return DB::table('users')->where('id', $this->user_id)->increment('points', $count);
 	}
 
 	public function removePoint() {
@@ -81,9 +92,9 @@ class User {
 		return $client;
 	}
 
-    public function getAvailableAccounts() {
-        return DB::table('accounts')->where('user_id', $this->user_id)->get();
-    }
+	public function getAvailableAccounts() {
+		return DB::table('accounts')->where('user_id', $this->user_id)->get();
+	}
 
 	public function load() {
 		return DB::table('users')
