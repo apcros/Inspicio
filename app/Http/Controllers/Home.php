@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Facades\UuidUtils;
 use App\Http\Controllers\Controller;
 use App\Notifications\RegisteredAccount;
 use App\User;
@@ -12,7 +13,13 @@ use Illuminate\Support\Facades\Log;
 use \Ramsey\Uuid\Uuid;
 
 class Home extends Controller {
-	public function chooseAuthProvider() {
+	public function chooseAuthProvider(Request $request) {
+		$referral = $request->input('referral');
+
+		if ($referral) {
+			session('referral', $referral);
+		}
+
 		return view('choose-auth-provider');
 	}
 
@@ -180,7 +187,22 @@ class Home extends Controller {
 		$user_model->email = $user->email;
 		$user_model->notify(new RegisteredAccount($user));
 
+		$referral = session('referral');
+
+		if ($referral) {
+			$this->processReferral($referral, $user_model);
+		}
+
 		return view('home', ['info_message' => 'Account created with success. You need to confirm your email. Check your inbox']);
+	}
+
+	private function processReferral($referral, $user) {
+
+		if (!UuidUtils::is_valid($referral)) {
+			Log::warning($user->id . ' tried to use an invalid uuid as referral user : ' . $referral);
+		}
+
+		$referred_by = DB::table('users')->where('id', $referral)->first();
 	}
 
 }
