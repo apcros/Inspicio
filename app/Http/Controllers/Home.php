@@ -185,8 +185,8 @@ class Home extends Controller {
 
 		Log::info("Created user  $user_id , needs confirmation first. (Confirm url : " . env('APP_URL') . "/confirm/$user_id/$confirm_token )");
 
-		$user = new User($user_id, true);
-		$user->notify(new RegisteredAccount($user->load()));
+		$user = new User($user_id);
+		$user->notify(new RegisteredAccount($user->data));
 
 		$referral = session('referral');
 
@@ -197,10 +197,10 @@ class Home extends Controller {
 		return view('home', ['info_message' => 'Account created with success. You need to confirm your email. Check your inbox']);
 	}
 
-	private function processReferral($referral, $user) {
+	private function processReferral($referral, $referee) {
 
 		if (!UuidUtils::is_valid($referral)) {
-			Log::warning($user->id . ' tried to use an invalid uuid as referral user : ' . $referral);
+			Log::warning($referee->data->id . ' tried to use an invalid uuid as referral user : ' . $referral);
 
 			return false;
 		}
@@ -208,16 +208,17 @@ class Home extends Controller {
 		$referred_by = DB::table('users')->where('id', $referral)->first();
 
 		if (!$referred_by) {
-			Log::warning($user->id . ' tried to use an unknown user as referral : ' . $referral);
+			Log::warning($referee->data->id . ' tried to use an unknown user as referral : ' . $referral);
 
 			return false;
 		}
 
 		$referred_by_user = new User($referred_by->id);
 		$referred_by_user->addPoints($this->POINTS_FOR_REFERRAL);
-		$user->addPoints($this->POINTS_FOR_REFERRAL);
+		$referee->addPoints($this->POINTS_FOR_REFERRAL);
 
-		$referred_by_user->notify(new UseOfReferralLink($user->load()));
+		$referred_by_user->notify(new UseOfReferralLink($referee->data, $referred_by));
+		Log::info("User " . $referee->data->id . " was referred by " . $referred_by->id);
 
 		return true;
 
