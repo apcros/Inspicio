@@ -41,5 +41,12 @@
 		"type": "boolean",
 		"category": "not_active"
 
+	},
+	{
+		"key": "notify_referrals",
+		"value": true,
+		"name": "Notification when someone use your referral link",
+		"type": "boolean",
+		"category": "notifications"
 	}
 ]

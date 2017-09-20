@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Notifications\RegisteredAccount;
 use App\Notifications\UseOfReferralLink;
 use App\User;
+use App\UserSettingsManager;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -20,7 +21,7 @@ class Home extends Controller {
 		$referral = $request->input('referral');
 
 		if ($referral) {
-			session('referral', $referral);
+			session(['referral' => $referral]);
 		}
 
 		return view('choose-auth-provider');
@@ -213,11 +214,23 @@ class Home extends Controller {
 			return false;
 		}
 
+		if (!$referred_by->is_confirmed) {
+			Log::warning($referee->data->id . ' was referred by a un-confirmed user : ' . $referral);
+
+			return false;
+
+		}
+
 		$referred_by_user = new User($referred_by->id);
 		$referred_by_user->addPoints($this->POINTS_FOR_REFERRAL);
 		$referee->addPoints($this->POINTS_FOR_REFERRAL);
 
-		$referred_by_user->notify(new UseOfReferralLink($referee->data, $referred_by));
+		$settings_mngr = new UserSettingsManager($referral);
+
+		if ($settings_mngr->get('notify_referrals') == 1) {
+			$referred_by_user->notify(new UseOfReferralLink($referee->data, $referred_by));
+		}
+
 		Log::info("User " . $referee->data->id . " was referred by " . $referred_by->id);
 
 		return true;

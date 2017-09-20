@@ -32,6 +32,32 @@ class HomeTest extends TestCase {
 		$this->assertRegExp('/Login/', $content, 'There is a login button on the page');
 	}
 
+	public function testReferralWithNotifications() {
+		$this->seed('DatabaseSeederForTests');
+		$referred_by = 'e6ca8f33-b196-4006-b7e6-3f2ffef3df92';
+		$user_data   = [
+			'email'         => 'referral@testest.co.uk',
+			'name'          => 'bob',
+			'auth_token'    => 'dummy',
+			'auth_provider' => 'github',
+			'accept_tos'    => 'on',
+		];
+
+		$this->withSession(['user_nickname' => 'referralnickname', 'referral' => $referred_by])->post('/register', $user_data);
+
+		$this->assertDatabaseHas('users', [
+			'email'  => 'referral@testest.co.uk',
+			'points' => 10,
+		]);
+
+		$this->assertDatabaseHas('users', [
+			'id'     => $referred_by,
+			'points' => 10,
+		]);
+
+		$author = new User($referred_by);
+	}
+
 	public function testRegister() {
 		Notification::fake();
 		$user_data = [
@@ -103,39 +129,6 @@ class HomeTest extends TestCase {
 			'points' => 5,
 		]);
 
-	}
-
-	public function testReferralWithNotifications() {
-
-		$this->seed('DatabaseSeederForTests');
-		Notification::fake();
-		$referred_by = '7636b30e-6db2-41b6-91b3-33560b9638c2';
-		$user_data   = [
-			'email'         => 'referral@testest.co.uk',
-			'name'          => 'bob',
-			'auth_token'    => 'dummy',
-			'auth_provider' => 'github',
-			'accept_tos'    => 'on',
-		];
-
-		$this->withSession(['user_nickname' => 'referralnickname', 'referral' => $referred_by])->post('/register', $user_data);
-
-		$this->assertDatabaseHas('users', [
-			'email'  => 'referral@testest.co.uk',
-			'points' => 10,
-		]);
-
-		$this->assertDatabaseHas('users', [
-			'id'     => $referred_by,
-			'points' => 10,
-		]);
-
-		$author = new User($referred_by);
-
-		Notification::assertSentTo(
-			$author,
-			\App\Notifications\UseOfReferraLink::class
-		);
 	}
 
 	public function testReferralWithoutNotifications() {
