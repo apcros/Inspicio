@@ -54,8 +54,6 @@ class HomeTest extends TestCase {
 			'id'     => $referred_by,
 			'points' => 10,
 		]);
-
-		$author = new User($referred_by);
 	}
 
 	public function testRegister() {
@@ -122,7 +120,7 @@ class HomeTest extends TestCase {
 			'accept_tos'    => 'on',
 		];
 
-		$response = $this->withSession(['user_nickname' => 'notareferral'])->post('/register', $user_data);
+		$this->withSession(['user_nickname' => 'notareferral'])->post('/register', $user_data);
 
 		$this->assertDatabaseHas('users', [
 			'email'  => 'notareferral@testest.co.uk',
