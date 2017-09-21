@@ -2,6 +2,8 @@
 
 namespace Tests\Unit;
 
+use App\User;
+use App\UserSettingsManager;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
@@ -28,6 +30,30 @@ class HomeTest extends TestCase {
 
 		$content = $response->getContent();
 		$this->assertRegExp('/Login/', $content, 'There is a login button on the page');
+	}
+
+	public function testReferralWithNotifications() {
+		$this->seed('DatabaseSeederForTests');
+		$referred_by = 'e6ca8f33-b196-4006-b7e6-3f2ffef3df92';
+		$user_data   = [
+			'email'         => 'referral@testest.co.uk',
+			'name'          => 'bob',
+			'auth_token'    => 'dummy',
+			'auth_provider' => 'github',
+			'accept_tos'    => 'on',
+		];
+
+		$this->withSession(['user_nickname' => 'referralnickname', 'referral' => $referred_by])->post('/register', $user_data);
+
+		$this->assertDatabaseHas('users', [
+			'email'  => 'referral@testest.co.uk',
+			'points' => 10,
+		]);
+
+		$this->assertDatabaseHas('users', [
+			'id'     => $referred_by,
+			'points' => 10,
+		]);
 	}
 
 	public function testRegister() {
@@ -81,6 +107,51 @@ class HomeTest extends TestCase {
 			'is_confirmed' => true,
 		]);
 
+	}
+
+	public function testNoReferral() {
+		Notification::fake();
+
+		$user_data = [
+			'email'         => 'notareferral@testest.co.uk',
+			'name'          => 'bob',
+			'auth_token'    => 'dummy',
+			'auth_provider' => 'github',
+			'accept_tos'    => 'on',
+		];
+
+		$this->withSession(['user_nickname' => 'notareferral'])->post('/register', $user_data);
+
+		$this->assertDatabaseHas('users', [
+			'email'  => 'notareferral@testest.co.uk',
+			'points' => 5,
+		]);
+
+	}
+
+	public function testReferralWithoutNotifications() {
+		$this->seed('DatabaseSeederForTests');
+		Notification::fake();
+		$referred_by   = '7636b30e-6db2-41b6-91b3-33560b9638c2';
+		$settings_mngr = new UserSettingsManager($referred_by);
+		$settings_mngr->set('notify_referrals', false);
+
+		$user_data = [
+			'email'         => 'referral@testest.co.uk',
+			'name'          => 'bob',
+			'auth_token'    => 'dummy',
+			'auth_provider' => 'github',
+			'accept_tos'    => 'on',
+		];
+
+		$this->withSession(['user_nickname' => 'referralnickname', 'referral' => $referred_by])->post('/register', $user_data);
+
+		$author = new User($referred_by);
+
+		Notification::assertNotSentTo(
+			$author,
+			\App\Notifications\UseOfReferraLink::class
+		);
 	}
 
 	public function testSearch() {

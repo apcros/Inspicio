@@ -2,11 +2,11 @@
 
 namespace App;
 
+use App\Facades\UuidUtils;
 use App\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use \Mews\Purifier\Facades\Purifier;
-use \Ramsey\Uuid\Uuid;
 
 class ReviewRequest {
 
@@ -24,9 +24,7 @@ class ReviewRequest {
 
 	public function load($id) {
 
-		$valid_uuid = preg_match("/^(\{)?[a-f\d]{8}(-[a-f\d]{4}){4}[a-f\d]{8}(?(1)\})$/i", $id);
-
-		if (!$valid_uuid) {
+		if (!UuidUtils::is_valid($id)) {
 			return [false, 'Invalid UUID'];
 		}
 
@@ -130,7 +128,7 @@ class ReviewRequest {
 			$args['language'] = $this->guessLanguageId($args['language_search_term']);
 		}
 
-		$review_request_id = Uuid::uuid4()->toString();
+		$review_request_id = UuidUtils::generate();
 		try {
 			DB::table('requests')->insert([
 				'id'          => $review_request_id,
