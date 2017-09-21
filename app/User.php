@@ -10,32 +10,35 @@ use Illuminate\Support\Facades\Log;
 class User {
 	use Notifiable;
 
-	/**
-	 * The attributes that are mass assignable.
-	 *
-	 * @var array
-	 */
-	protected $fillable = [
-		'name', 'email',
-	];
-
 	private $user_id;
+	public $data;
 
 	public function __construct($user_id) {
 		$this->user_id = $user_id;
+		$this->load();
 	}
 
 	/*
 		        This is a method in case we need to add additional checks later
 	*/
 	public function getPoints() {
-		$user = $this->load();
+		$this->load();
 
-		return $user->points;
+		return $this->data->points;
+	}
+
+	public function addPoints($count) {
+		$result = DB::table('users')->where('id', $this->user_id)->increment('points', $count);
+		$this->load();
+
+		return $result;
 	}
 
 	public function removePoint() {
-		return DB::table('users')->where('id', $this->user_id)->decrement('points');
+		$result = DB::table('users')->where('id', $this->user_id)->decrement('points');
+		$this->load();
+
+		return $result;
 	}
 
 	public function getGitAccount($account_id) {
@@ -81,22 +84,25 @@ class User {
 		return $client;
 	}
 
-    public function getAvailableAccounts() {
-        return DB::table('accounts')->where('user_id', $this->user_id)->get();
-    }
+	public function getAvailableAccounts() {
+		return DB::table('accounts')->where('user_id', $this->user_id)->get();
+	}
 
 	public function load() {
-		return DB::table('users')
+		$user = DB::table('users')
 			->where('id', $this->user_id)
 			->first();
+		$this->data = $user;
+
+		return $this->data;
 	}
 
 	public function routeNotificationForMail() {
-		return $this->email;
+		return $this->data->email;
 	}
 
 	public function getKey() {
-		return $this->email;
+		return $this->data->email;
 	}
 
 	public function getId() {

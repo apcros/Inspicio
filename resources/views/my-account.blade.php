@@ -39,7 +39,13 @@
 			  	<div class="alert alert-warning">
 			  		<b>Your email is not confirmed. Check your inbox</b>
 			  	</div>
-			  @endif
+			  @else
+				  <div class="alert alert-info">
+				  	<p><b>New</b> Your referral link :</p>
+				  	<p>{{env('APP_URL').'/choose-auth?referral='.$user->id}}</p>
+				  	<p>Win 5 points for each user registering using this link (And they will get 5 points too)</p>
+				  </div>
+			 @endif
 		  	<ul>
 		  		<li><b>Email :</b> {{$user->email}}</li>
 		  		<li><b>Name :</b> {{$user->name}}</li>
