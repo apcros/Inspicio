@@ -4,7 +4,7 @@ namespace App\Classes\GitProviders;
 interface GitProviderInterface {
 	public function fetchAccessToken($code);
 
-	public function getAuthorizeUrl($csrf_token, $redirect_uri);
+	public function getAuthorizeUrl($csrf_token, $redirect_uri, $level);
 
 	public function getUserInfo();
 
@@ -23,5 +23,9 @@ interface GitProviderInterface {
 	public function setToken($token);
 
 	public function refreshToken($refresh_token);
+
+	public function getAvailablePermissionLevels();
+
+	public function getCurrentPermissionLevel();
 
 }

@@ -40,7 +40,7 @@ class Bitbucket implements GitProviderInterface {
 
 	}
 
-	public function getAuthorizeUrl($csrf_token, $redirect_uri) {
+	public function getAuthorizeUrl($csrf_token, $redirect_uri, $level = null) {
 
 		return $this->bitbucket . '/site/oauth2/authorize?client_id='
 		. urlencode($this->client_id) . '&response_type=code';
@@ -111,6 +111,19 @@ class Bitbucket implements GitProviderInterface {
 
 		}
 
+	}
+
+	public function getAvailablePermissionLevels() {
+		return [
+			'maximum' => [
+				'scope'       => 'repo',
+				'description' => 'Public Repos (Read,Write)',
+			],
+		];
+	}
+
+	public function getCurrentPermissionLevel() {
+		return 'maximum';
 	}
 
 	private function splitPrUrl($url) {
