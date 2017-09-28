@@ -17,12 +17,45 @@ class UserAgent {
 		$this->setOpt(CURLOPT_HTTPHEADER, $this->headers);
 	}
 
-	public function get($url) {
+	public function get($url, $get_headers = false) {
 
 		$this->setOpt(CURLOPT_HTTPGET, 1);
 		$this->setOpt(CURLOPT_URL, $url);
 
-		return $this->do_curl();
+		if (!$get_headers) {
+			return $this->do_curl();
+		}
+
+		$this->setOpt(CURLOPT_HEADER, 1);
+		$response = $this->do_curl();
+
+		$header_size = curl_getinfo($this->curl, CURLINFO_HEADER_SIZE);
+
+		return $this->parseHeadersBody($response, $header_size);
+
+	}
+
+	public function parseHeadersBody($response, $header_size) {
+		$headers = substr($response, 0, $header_size);
+		$body    = substr($response, $header_size);
+
+		$headers_lines = explode("\n", $headers);
+
+		$headers = [];
+
+		foreach ($headers_lines as $header_line) {
+			$header_parts = explode(': ', $header_line);
+
+			if (count($header_parts) == 2) {
+				$headers[$header_parts[0]] = str_replace(["\n", "\r"], '', $header_parts[1]);
+			}
+
+		}
+
+		return [
+			'headers' => $headers,
+			'body'    => $body,
+		];
 	}
 
 	private function custom_http_verb_request($url, $data, $verb) {

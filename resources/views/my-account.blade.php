@@ -76,7 +76,7 @@
 				<td>{{$account->login}}</td>
 				<td>{{$account->created_at}}</td>
 				<td>{{$account->updated_at}}</td>
-				<td>{{$permissions[$account->provider][$account->permission_level]['description']}} <div class="pull-right"><button onclick="$('#modal-permissions-{{$account->provider}}').modal('show');" class="btn btn-info">.</button></div></td>
+				<td>{{$permissions[$account->provider][$account->permission_level]['description']}} <div class="pull-right"><button onclick="$('#modal-permissions-{{$account->provider}}').modal('show');" class="btn btn-info"><i class="fa fa-cogs" aria-hidden="true"></i></button></div></td>
 			</tr>
 			@endforeach
 		</table>
@@ -204,8 +204,8 @@
 					Please note that you will just be redirected to {{$git_provider}} with the relevant permission upgrade/downgrade request.
 					As such, <b>make sure you are logged in to the right {{$git_provider}} account before clicking the button.</b>
 				</div>
-				<div class="center-align">
-					<div class="btn-group-vertical" role="group" aria-label="...">
+				<div class="text-center">
+					<div class="btn-group-vertical" role="group">
 						@foreach ($git_permissions as $permission_key => $permission)
 						<a href="/oauth/{{$git_provider}}/?perm_level={{$permission_key}}" class="btn btn-info">{{$permission['description']}}</a>
 						@endforeach

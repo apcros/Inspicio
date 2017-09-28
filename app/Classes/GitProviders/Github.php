@@ -125,6 +125,21 @@ class Github implements GitProviderInterface {
 	}
 
 	public function getCurrentPermissionLevel() {
+		$raw_response  = $this->ua->get($this->api . '/user', true);
+		$current_scope = $raw_response['headers']['X-OAuth-Scopes'];
+
+		Log::debug('Current scope is : ' . $current_scope);
+
+		foreach ($this->getAvailablePermissionLevels() as $permission_name => $permission) {
+
+			if ($permission['scope'] == $current_scope) {
+				return $permission_name;
+			}
+
+		}
+
+		Log::warning("The current scope : " . $current_scope . " returned by the API does not exist, defaulting to Minimum");
+
 		return 'minimum';
 	}
 
