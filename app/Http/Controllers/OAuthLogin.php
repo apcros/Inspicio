@@ -192,7 +192,7 @@ the permission level.
 
 			return redirect('/');
 		} else {
-			session(['user_nickname' => $user_data->login]);
+			session(['user_nickname' => $user_data->login, 'user_permission_level' => $current_permission]);
 
 			return view('register', [
 				'auth_token'    => $tokens->token,

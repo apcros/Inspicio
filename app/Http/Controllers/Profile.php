@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Classes\GitProviderFactory;
 use App\Http\Controllers\Controller;
 use App\Notifications\ChangedEmail;
 use App\User;
@@ -17,6 +18,19 @@ class Profile extends Controller {
 		$user_settings_manager = new UserSettingsManager($user_id);
 		$accounts              = DB::table('accounts')->where('user_id', $user_id)->get();
 
+		$permissions = [];
+
+		foreach ($accounts as $account) {
+
+			if (!isset($permissions[$account->provider])) {
+				$provider                        = $account->provider;
+				$factory                         = new GitProviderFactory($provider);
+				$client                          = $factory->getProviderEngine();
+				$permissions[$account->provider] = $client->getAvailablePermissionLevels();
+			}
+
+		}
+
 		$skills           = $this->getAllSkills($user_id);
 		$available_skills = DB::table('skills')->get();
 
@@ -26,6 +40,7 @@ class Profile extends Controller {
 			'skills'           => $skills,
 			'settings'         => $user_settings_manager->get_all(),
 			'available_skills' => $available_skills,
+			'permissions'      => $permissions,
 		]);
 	}
 

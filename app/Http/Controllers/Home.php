@@ -146,6 +146,12 @@ class Home extends Controller {
 			return view('choose-auth-provider', ['error_message' => 'You need to accept the terms and conditions !']);
 		}
 
+		$permission_level = 'minimum';
+
+		if (session('permission_level') != '') {
+			$permission_level = session('permission_level');
+		}
+
 		$user_id       = UuidUtils::generate();
 		$account_id    = UuidUtils::generate();
 		$confirm_token = str_random(30);
@@ -167,14 +173,15 @@ class Home extends Controller {
 			);
 			DB::table('accounts')->insert(
 				[
-					'id'         => $account_id,
-					'provider'   => $auth_provider,
-					'login'      => $request->session()->get('user_nickname'),
-					'token'      => $auth_token,
-					'user_id'    => $user_id,
-					'is_main'    => true,
-					'created_at' => \Carbon\Carbon::now(),
-					'updated_at' => \Carbon\Carbon::now(),
+					'id'               => $account_id,
+					'provider'         => $auth_provider,
+					'login'            => $request->session()->get('user_nickname'),
+					'token'            => $auth_token,
+					'user_id'          => $user_id,
+					'permission_level' => $permission_level,
+					'is_main'          => true,
+					'created_at'       => \Carbon\Carbon::now(),
+					'updated_at'       => \Carbon\Carbon::now(),
 				]
 			);
 		} catch (\Illuminate\Database\QueryException $e) {
