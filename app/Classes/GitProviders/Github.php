@@ -110,16 +110,19 @@ class Github implements GitProviderInterface {
 	public function getAvailablePermissionLevels() {
 		return [
 			'maximum'             => [
-				'scope'       => 'repo',
-				'description' => 'Public & Private Repos (Read,Write)',
+				'scope'         => 'repo',
+				'description'   => 'Public & Private Repos (Read,Write)',
+				'can_create_pr' => true,
 			],
 			'maximum_public_only' => [
-				'scope'       => 'public_repo',
-				'description' => 'Public repos (Read,Write)',
+				'scope'         => 'public_repo',
+				'description'   => 'Public repos (Read,Write)',
+				'can_create_pr' => true,
 			],
 			'minimum'             => [
-				'scope'       => '',
-				'description' => 'Public info only (Read)',
+				'scope'         => '',
+				'description'   => 'Public info only (Read)',
+				'can_create_pr' => false,
 			],
 		];
 	}

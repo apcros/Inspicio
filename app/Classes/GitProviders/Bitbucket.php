@@ -116,8 +116,9 @@ class Bitbucket implements GitProviderInterface {
 	public function getAvailablePermissionLevels() {
 		return [
 			'maximum' => [
-				'scope'       => 'repo',
-				'description' => 'Public Repos (Read,Write)',
+				'scope'         => 'repo',
+				'description'   => 'Public Repos (Read,Write)',
+				'can_create_pr' => true,
 			],
 		];
 	}

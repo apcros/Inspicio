@@ -319,9 +319,12 @@ class ReviewRequestController extends Controller {
 
 			$account_checked = $user->getGitAccount($account->id);
 			$client          = $user->getAccountClient($account_checked);
+			$permissions     = $client->getAvailablePermissionLevels();
 
-			$reposPerAccount[] = array(
+			$current_permission = $permissions[$account_checked->permission_level];
+			$reposPerAccount[]  = array(
 				'account_id' => $account_checked->id,
+				'permission' => $current_permission,
 				'repos'      => $client->listRepositories(),
 			);
 		}
