@@ -23,14 +23,32 @@ class GithubTest extends TestCase {
 	}
 
 	public function testFetchAccessToken() {
+
 		$mocked_ua = $this->createMock(UserAgent::class);
-		$mocked_ua->method('post')->willReturn('{"access_token": "thisisafaketoken"}');
+		$this->mockGithubMethod('oauth-one', 'post', $mocked_ua);
+
 		$client = new Github("testest", "testest", $mocked_ua);
 
 		$this->assertEquals($client->fetchAccessToken('dummy'), new \App\Classes\Models\Git\Tokens([
-			'token'         => 'thisisafaketoken',
+			'token'         => 'thisisatoken',
 			'refresh_token' => null,
 			'expire_epoch'  => null,
 		]));
+	}
+
+	public function testGetUserInfo() {
+		$mocked_ua = $this->createMock(UserAgent::class);
+		$this->mockGithubMethod('get_user_info', 'get', $mocked_ua);
+
+		$client = new Github("test", "test", $mocked_ua);
+
+		$user = $client->getUserInfo();
+
+		$this->assertInstanceOf(\App\Classes\Models\Git\UserInfo::class, $user);
+		$this->assertEquals('This_is_the_nickname', $user->login);
+	}
+
+	private function mockGithubMethod($method, $type, $ua) {
+		$ua->method($type)->willReturn(file_get_contents(resource_path('test_fixtures/github/' . $method . '.json')));
 	}
 }
