@@ -16,12 +16,17 @@ class OAuthLogin extends Controller {
 		return redirect('/');
 	}
 
-	public function stepOne($provider) {
+	public function stepOne(Request $request, $provider) {
+		$permission_level = 'minimum';
+		if($request->has('perm_level')){
+			$permission_level = $request->input('perm_level');
+		}
+
 		$client = $this->getClient($provider);
 
 		$token = csrf_token();
 		session(['oauth_csrf' => $token]);
-		$redirect_to = $client->getAuthorizeUrl($token, env('APP_URL') . '/oauth/callback/' . $provider);
+		$redirect_to = $client->getAuthorizeUrl($token, env('APP_URL') . '/oauth/callback/' . $provider, $permission_level);
 
 		Log::info("[$provider] - OAuth Redirect (Step one)");
 		Log::debug("Redirect url : $redirect_to");
@@ -55,29 +60,53 @@ class OAuthLogin extends Controller {
 
 		}
 
-		$account = DB::table('accounts')->where([
+		$duplicate_account = DB::table('accounts')->where([
 			['login', '=', $login],
 			['provider', '=', $provider],
+			['user_id', '!=', $user_id],
 		])->first();
 
-		if ($account) {
-			Log::warning("[USER $user_id] Duplicate account (id : " . $account->id . ')');
+		if ($duplicate_account) {
+			Log::warning("[USER $user_id] Duplicate account (id : " . $duplicate_account->id . ')');
+
 			return view('home', ['error_message' => 'This account is already in use']);
+		}
+
+		$current_account = DB::table('accounts')->where([
+			['login', '=', $login],
+			['provider', '=', $provider],
+			['user_id', '=', $user_id],
+		])->first();
+		$permission_level = $client->getCurrentPermissionLevel();
+
+		if ($current_account) {
+
+			DB::table('accounts')->where('id', $current_account->id)->update([
+				'token'            => $tokens->token,
+				'refresh_token'    => $tokens->refresh_token,
+				'expire_epoch'     => $tokens->expire_epoch,
+				'updated_at'       => \Carbon\Carbon::now(),
+				'permission_level' => $permission_level,
+			]);
+			Log::info("[USER $user_id ] - Updated permission level to $permission_level on $login ($provider)");
+
+			return redirect('/account');
 		}
 
 		$account_id = Uuid::uuid4()->toString();
 		DB::table('accounts')->insert(
 			[
-				'id'            => $account_id,
-				'provider'      => $provider,
-				'login'         => $login,
-				'token'         => $tokens->token,
-				'refresh_token' => $tokens->refresh_token,
-				'expire_epoch'  => $tokens->expire_epoch,
-				'user_id'       => $user_id,
-				'is_main'       => false,
-				'created_at'    => \Carbon\Carbon::now(),
-				'updated_at'    => \Carbon\Carbon::now(),
+				'id'               => $account_id,
+				'provider'         => $provider,
+				'login'            => $login,
+				'token'            => $tokens->token,
+				'refresh_token'    => $tokens->refresh_token,
+				'expire_epoch'     => $tokens->expire_epoch,
+				'user_id'          => $user_id,
+				'permission_level' => $permission_level,
+				'is_main'          => false,
+				'created_at'       => \Carbon\Carbon::now(),
+				'updated_at'       => \Carbon\Carbon::now(),
 			]
 		);
 		Log::info("[USER $user_id] - Added $provider account $login");
@@ -122,21 +151,40 @@ class OAuthLogin extends Controller {
 
 		Log::info('Achieved stepTwo OAuth, user is : ' . $user_data->login);
 
-		$user = $this->getUser($user_data->login, $provider);
+		$user               = $this->getUser($user_data->login, $provider);
+		$current_permission = $client->getCurrentPermissionLevel();
 
 		if ($user) {
+
+			$account = DB::table('accounts')->where([
+				['login', '=', $user_data->login],
+				['user_id', '=', $user->id],
+				['provider', '=', $provider],
+			])->first();
+
+			$account_update = [
+				'provider'      => $provider,
+				'refresh_token' => $tokens->refresh_token,
+				'expire_epoch'  => $tokens->expire_epoch,
+				'updated_at'    => \Carbon\Carbon::now(),
+			];
+
+/*
+If the permission level on the saved account is different
+that means the user raised the permission settings (Since
+login use the minimum permissions level).
+Because of that we don't replace the token to avoid lowering
+the permission level.
+ */
+			if ($account->permission_level == $current_permission) {
+				$account_update['token'] = $tokens->token;
+			}
 
 			DB::table('accounts')->where([
 				['login', '=', $user_data->login],
 				['user_id', '=', $user->id],
 				['provider', '=', $provider],
-			])->update([
-				'provider'      => $provider,
-				'token'         => $tokens->token,
-				'refresh_token' => $tokens->refresh_token,
-				'expire_epoch'  => $tokens->expire_epoch,
-				'updated_at'    => \Carbon\Carbon::now(),
-			]);
+			])->update($account_update);
 
 			session(['user_nickname' => $user->nickname, 'user_email' => $user->email, 'user_id' => $user->id]);
 
@@ -144,7 +192,7 @@ class OAuthLogin extends Controller {
 
 			return redirect('/');
 		} else {
-			session(['user_nickname' => $user_data->login]);
+			session(['user_nickname' => $user_data->login, 'user_permission_level' => $current_permission]);
 
 			return view('register', [
 				'auth_token'    => $tokens->token,

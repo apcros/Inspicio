@@ -76,11 +76,19 @@ class Github implements GitProviderInterface {
 		get_authorize_url will simply return a string where the user should be redirected to start the process of
 		oauth auth.
 	*/
-	public function getAuthorizeUrl($csrf_token, $redirect_uri) {
+	public function getAuthorizeUrl($csrf_token, $redirect_uri, $level = 'minimum') {
+
+		$levels = $this->getAvailablePermissionLevels();
+		$scope  = '';
+
+		if (isset($levels[$level])) {
+			$scope = $levels[$level]['scope'];
+		}
+
 		return $this->github . '/login/oauth/authorize?client_id='
 		. urlencode($this->client_id) . '&state='
 		. urlencode($csrf_token) . '&redirect_uri='
-		. urlencode($redirect_uri) . '&scope=public_repo';
+		. urlencode($redirect_uri) . '&scope=' . $scope;
 	}
 
 	/*
@@ -97,6 +105,45 @@ class Github implements GitProviderInterface {
 		}
 
 		return false;
+	}
+
+	public function getAvailablePermissionLevels() {
+		return [
+			'maximum'             => [
+				'scope'         => 'repo',
+				'description'   => 'Public & Private Repos (Read,Write)',
+				'can_create_pr' => true,
+			],
+			'maximum_public_only' => [
+				'scope'         => 'public_repo',
+				'description'   => 'Public repos (Read,Write)',
+				'can_create_pr' => true,
+			],
+			'minimum'             => [
+				'scope'         => '',
+				'description'   => 'Public info only (Read)',
+				'can_create_pr' => false,
+			],
+		];
+	}
+
+	public function getCurrentPermissionLevel() {
+		$raw_response  = $this->ua->get($this->api . '/user', true);
+		$current_scope = $raw_response['headers']['X-OAuth-Scopes'];
+
+		Log::debug('Current scope is : ' . $current_scope);
+
+		foreach ($this->getAvailablePermissionLevels() as $permission_name => $permission) {
+
+			if ($permission['scope'] == $current_scope) {
+				return $permission_name;
+			}
+
+		}
+
+		Log::warning("The current scope : " . $current_scope . " returned by the API does not exist, defaulting to Minimum");
+
+		return 'minimum';
 	}
 
 	public function listPullRequestsForRepo($owner, $repository) {
