@@ -6,60 +6,62 @@ use App\Classes\Models\Git\PullRequest;
 use App\Classes\Models\Git\Repository;
 use App\Classes\Models\Git\Tokens;
 use App\Classes\Models\Git\UserInfo;
-use App\Classes\UserAgent;
+use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Log;
 
 /**
  *  A simple API client for Github,  handle OAuth login
  */
 class Github implements GitProviderInterface {
-	private $api = 'https://api.github.com';
 
-	private $app_secret;
-
-	private $client_id;
-
+	private $api    = 'https://api.github.com/';
 	private $github = 'https://github.com';
-
-	private $token = '';
-
-	private $ua;
-
+	private $token  = '';
+	private $default_headers;
 	//Public attribute, I'll go burn in hell
 	public $csrf_enabled = true;
 
-	function __construct($client_id, $app_secret, $ua = null) {
+	private $http_client;
+
+	private $app_secret;
+	private $client_id;
+
+	function __construct($client_id, $app_secret, $custom_handler = null) {
 		$this->client_id  = $client_id;
 		$this->app_secret = $app_secret;
 
+		$guzzle_args = ['base_uri' => $this->api, 'timeout' => 5.0];
+
 //Makes mocking way easier
-		if ($ua != null) {
-			$this->ua = $ua;
-		} else {
-			$this->ua = new UserAgent();
-			$this->ua->setHeaders(
-				array(
-					'Content-type: application/json',
-					'Accept: application/json',
-					'User-Agent: Inspicio',
-				));
+		if ($custom_handler != null) {
+			$guzzle_args['handler'] = $custom_handler;
 		}
 
+		$this->default_headers = [
+			'Content-type' => 'application/json',
+			'Accept'       => 'application/json',
+			'User-Agent'   => 'Inspicio',
+		];
+
+		$this->http_client = new Client($guzzle_args);
 	}
 
 	/*
 		Gets the GiHub temporary "code" and turns it into an access_token
 	*/
 	public function fetchAccessToken($code) {
+		$response = $this->http_client->request('POST', $this->github . '/login/oauth/access_token', [
+			'json'    => [
+				'client_id'     => $this->client_id,
+				'client_secret' => $this->app_secret,
+				'code'          => $code,
+			],
+			'headers' => $this->default_headers,
+		]);
+		$response_body = $response->getBody();
+		Log::debug('[fetchAccessToken] - ' . $response_body);
 
-		$raw_response = $this->ua->post($this->github . '/login/oauth/access_token', json_encode(array(
-			'client_id'     => $this->client_id,
-			'client_secret' => $this->app_secret,
-			'code'          => $code,
-		)));
-		Log::debug('[fetchAccessToken] - ' . $raw_response);
-
-		$json = json_decode($raw_response);
+		$json = json_decode($response_body);
 
 		if (isset($json->access_token)) {
 			$this->setToken($json->access_token);
@@ -95,10 +97,11 @@ class Github implements GitProviderInterface {
 		Simply returns the user, useful for auth purposes on the website
 	*/
 	public function getUserInfo() {
-		$raw_response = $this->ua->get($this->api . '/user');
-		Log::debug('[getUserInfo] - ' . $raw_response);
+		$response      = $this->http_client->request('GET', '/user', ['headers' => $this->default_headers]);
+		$response_body = $response->getBody();
+		Log::debug('[getUserInfo] - ' . $response_body);
 
-		$json = json_decode($raw_response);
+		$json = json_decode($response_body);
 
 		if (isset($json->login)) {
 			return new UserInfo(['login' => $json->login]);
@@ -128,8 +131,8 @@ class Github implements GitProviderInterface {
 	}
 
 	public function getCurrentPermissionLevel() {
-		$raw_response  = $this->ua->get($this->api . '/user', true);
-		$current_scope = $raw_response['headers']['X-OAuth-Scopes'];
+		$response      = $this->http_client->request('GET', '/user', ['headers' => $this->default_headers]);
+		$current_scope = $response->getHeader('X-OAuth-Scopes')[0];
 
 		Log::debug('Current scope is : ' . $current_scope);
 
@@ -190,11 +193,14 @@ class Github implements GitProviderInterface {
 			return [false, 'Pull request url invalid'];
 		}
 
-		$api_url      = $this->api . '/repos/' . $pr_metadata['owner'] . '/' . $pr_metadata['repository'] . '/pulls/' . $pr_metadata['id'];
-		$raw_response = $this->ua->get($api_url);
+		$api_url  = 'repos/' . $pr_metadata['owner'] . '/' . $pr_metadata['repository'] . '/pulls/' . $pr_metadata['id'];
+		$response = $this->http_client->request('GET', $api_url, [
+			'headers' => $this->default_headers,
+		]);
+		$response_body = $response->getBody();
 
-		Log::debug("[getPullRequestData][$url] $raw_response");
-		$json = json_decode($raw_response);
+		Log::debug("[getPullRequestData][$url] $response_body");
+		$json = json_decode($response_body);
 
 		if (!isset($json->html_url)) {
 			return [false, 'Failed to fetch pull request information'];
@@ -241,16 +247,19 @@ class Github implements GitProviderInterface {
 			return [false, 'Pull request url invalid'];
 		}
 
-		$api_url = $this->api . '/repos/' . $owner . '/' . $repository . '/pulls/' . $pr_id;
+		$api_url  = 'repos/' . $owner . '/' . $repository . '/pulls/' . $pr_id;
+		$response = $this->http_client->request('PATCH', $api_url, [
+			'json'    => [
+				'title' => $title,
+				'body'  => $description,
+			],
+			'headers' => $this->default_headers,
+		]);
+		$response_body = $response->getBody();
 
-		$raw_response = $this->ua->patch($api_url, json_encode([
-			'title' => $title,
-			'body'  => $description,
-		]));
+		Log::debug("[updatePullRequest][$owner/$repository] $response_body");
 
-		Log::debug("[updatePullRequest][$owner/$repository] $raw_response");
-
-		$json = json_decode($raw_response);
+		$json = json_decode($response_body);
 
 		if (isset($json->html_url)) {
 			return [true, null];
@@ -264,16 +273,20 @@ class Github implements GitProviderInterface {
 	}
 
 	public function createPullRequest($owner, $repository, $head, $base, $title, $description) {
-		$api_url = $this->api . '/repos/' . $owner . '/' . $repository . '/pulls';
+		$api_url = 'repos/' . $owner . '/' . $repository . '/pulls';
 
-		$raw_response = $this->ua->post($api_url, json_encode([
-			'title' => $title,
-			'body'  => $description,
-			'head'  => $head,
-			'base'  => $base,
-		]));
-		Log::debug("[createPullRequest][$owner/$repository] $raw_response");
-		$pull_request = json_decode($raw_response);
+		$response = $this->http_client->request('POST', $api_url, [
+			'json'    => [
+				'title' => $title,
+				'body'  => $description,
+				'head'  => $head,
+				'base'  => $base,
+			],
+			'headers' => $this->default_headers,
+		]);
+		$response_body = $response->getBody();
+		Log::debug("[createPullRequest][$owner/$repository] $response_body");
+		$pull_request = json_decode($response_body);
 
 		$error_message = 'Failed to create pull request';
 
@@ -301,12 +314,16 @@ class Github implements GitProviderInterface {
 	}
 
 	private function getRepoInfo($name) {
-		$api_url      = $this->api . '/repos/' . $name;
-		$raw_response = $this->ua->get($api_url);
+		$api_url = 'repos/' . $name;
 
-		Log::debug("[getRepoInfo][$name] $raw_response");
+		$response = $this->http_client->request('GET', $api_url, [
+			'headers' => $this->default_headers,
+		]);
+		$response_body = $response->getBody();
 
-		return json_decode($raw_response);
+		Log::debug("[getRepoInfo][$name] $response_body");
+
+		return json_decode($response_body);
 	}
 
 	public function listRepositories() {
@@ -348,8 +365,8 @@ class Github implements GitProviderInterface {
 	}
 
 	public function setToken($token) {
-		$this->ua->addHeader('Authorization: token ' . $token);
-		$this->token = $token;
+		$this->default_headers['Authorization'] = 'token ' . $token;
+		$this->token                            = $token;
 	}
 
 	public function refreshToken($refresh_token) {
@@ -364,10 +381,20 @@ class Github implements GitProviderInterface {
 		isset($per_page) ? ($per_page_arg = '') : ($per_page_arg = "&per_page=$per_page");
 
 		while ($fetch) {
+			$response = null;
+			try {
+				$response = $this->http_client->request('GET', $endpoint . "?page=$page" . $per_page_arg, [
+					'headers' => $this->default_headers,
+				]);
+			} catch (\Exception $e) {
+				Log::warning("Exception caught when fetching $endpoint : " . $e->getMessage());
+				return $data;
+			}
 
-			$raw_response = $this->ua->get($this->api . $endpoint . "?page=$page" . $per_page_arg);
-			Log::debug("[$method_name] - Page $page \n ===== \n" . $raw_response . "\n ===== \n");
-			$current_data = json_decode($raw_response, true);
+			$response_body = $response->getBody();
+
+			Log::debug("[$method_name] - Page $page \n ===== \n" . $response_body . "\n ===== \n");
+			$current_data = json_decode($response_body, true);
 
 			if (isset($current_data[0])) {
 				$page++;
