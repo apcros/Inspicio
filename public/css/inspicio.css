@@ -5,3 +5,49 @@ body {
 [v-cloak] {
 	display: none;
 }
+
+.raisin-black {
+	background-color: #251F2D;
+}
+
+.raisin-black-text {
+	color: #251F2D;
+}
+
+.lavender-mist {
+	background-color: #E3DDF3;
+}
+
+.lavender-mist-text {
+	color: #E3DDF3;
+}
+
+.regalia {
+ 	background-color: #592E83;
+}
+
+.regalia-text {
+	color: #592E83;
+}
+
+.middle-red-purple {
+	background-color: #230C33;
+}
+
+.middle-red-purple-text {
+	color: #230C33;
+}
+
+.giants-orange {
+	background-color: #FF5A23;
+}
+
+.giants-orange-text {
+	color: #FF5A23;
+}
+
+.navbar-logo {
+	height: 80%;
+	padding-left: 10px;
+	padding-top: 10%;
+}
