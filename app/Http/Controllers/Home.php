@@ -148,8 +148,8 @@ class Home extends Controller {
 
 		$permission_level = 'minimum';
 
-		if (session('permission_level') != '') {
-			$permission_level = session('permission_level');
+		if (session('user_permission_level') != '') {
+			$permission_level = session('user_permission_level');
 		}
 
 		$user_id       = UuidUtils::generate();

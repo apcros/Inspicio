@@ -5,7 +5,7 @@ use App\Classes\Models\Git\PullRequest;
 use App\Classes\Models\Git\Repository;
 use App\Classes\Models\Git\Tokens;
 use App\Classes\Models\Git\UserInfo;
-use App\Classes\UserAgent;
+use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -22,21 +22,29 @@ class Bitbucket implements GitProviderInterface {
 
 	private $token = '';
 
-	private $ua;
+	private $http_client;
 
 	//Public attribute, I'll go burn in hell
 	public $csrf_enabled = false;
 
-	function __construct($client_id, $app_secret, $ua = null) {
+	function __construct($client_id, $app_secret, $custom_handler = null) {
 		$this->client_id  = $client_id;
 		$this->app_secret = $app_secret;
 
+		$guzzle_args = ['base_uri' => $this->api, 'timeout' => 15.0];
+
 //Makes mocking way easier
-		if ($ua != null) {
-			$this->ua = $ua;
-		} else {
-			$this->ua = new UserAgent();
+		if ($custom_handler != null) {
+			$guzzle_args['handler'] = $custom_handler;
 		}
+
+		$this->default_headers = [
+			'Content-type' => 'application/json',
+			'Accept'       => 'application/json',
+			'User-Agent'   => 'Inspicio',
+		];
+
+		$this->http_client = new Client($guzzle_args);
 
 	}
 
@@ -47,11 +55,14 @@ class Bitbucket implements GitProviderInterface {
 	}
 
 	public function fetchAccessToken($code) {
-		$this->ua->addHeader('Authorization: Basic ' . base64_encode($this->client_id . ':' . $this->app_secret));
-		$raw_response = $this->ua->post($this->bitbucket . '/site/oauth2/access_token',
-			['grant_type' => "authorization_code", 'code' => $code]
+		$headers                  = $this->default_headers;
+		$headers['Authorization'] = 'Basic ' . base64_encode($this->client_id . ':' . $this->app_secret);
+		unset($headers['Content-type']);
+		$response = $this->http_client->request('POST', $this->bitbucket . '/site/oauth2/access_token',
+			['form_params' => ['grant_type' => "authorization_code", 'code' => $code], 'headers' => $headers]
 		);
 
+		$raw_response = $response->getBody();
 		Log::debug('[fetchAccessToken] - ' . $raw_response);
 
 		$json = json_decode($raw_response);
@@ -71,7 +82,9 @@ class Bitbucket implements GitProviderInterface {
 	}
 
 	public function getUserInfo() {
-		$raw_response = $this->ua->get($this->api . '/2.0/user');
+		$response = $this->http_client->request('GET', $this->api . '/2.0/user', ['headers' => $this->default_headers]);
+
+		$raw_response = $response->getBody();
 
 		Log::debug('[getUserInfo] - ' . $raw_response);
 		$json = json_decode($raw_response);
@@ -87,7 +100,8 @@ class Bitbucket implements GitProviderInterface {
 		}
 
 		$api_url      = $this->api . '/2.0/repositories/' . $pr_metadata['owner'] . '/' . $pr_metadata['repository'] . '/pullrequests/' . $pr_metadata['id'];
-		$raw_response = $this->ua->get($api_url);
+		$response     = $this->http_client->request('GET', $api_url, ['headers' => $this->default_headers]);
+		$raw_response = $response->getBody();
 
 		Log::debug("[getPullRequestData][$url] $raw_response");
 		$json = json_decode($raw_response);
@@ -171,12 +185,17 @@ class Bitbucket implements GitProviderInterface {
 			return [false, 'Pull request url invalid'];
 		}
 
-		$this->ua->addHeader('Content-Type: application/json');
-		$api_url      = $this->api . "/2.0/repositories/$owner/$repository/pullrequests/$pr_id";
-		$raw_response = $this->ua->put($api_url, json_encode([
-			'title'       => $title,
-			'description' => strip_tags($description),
-		]));
+		$api_url  = $this->api . "/2.0/repositories/$owner/$repository/pullrequests/$pr_id";
+		$response = $this->http_client->request('PUT', $api_url,
+			[
+				'json'    => [
+					'title'       => $title,
+					'description' => strip_tags($description),
+				],
+				'headers' => $this->default_headers,
+			]
+		);
+		$raw_response = $response->getBody();
 
 		Log::debug("[updatePullRequest][$owner/$repository] $raw_response");
 		$json = json_decode($raw_response);
@@ -198,8 +217,8 @@ class Bitbucket implements GitProviderInterface {
 	}
 
 	public function createPullRequest($owner, $repository, $head, $base, $title, $description) {
-		$this->ua->addHeader('Content-Type: application/json');
-		$request_data = json_encode([
+
+		$request_data = [
 			'source'      => [
 				'branch' => [
 					'name' => $head,
@@ -212,9 +231,14 @@ class Bitbucket implements GitProviderInterface {
 				],
 			],
 			'description' => strip_tags($description),
-		]);
+		];
 
-		$raw_response = $this->ua->post($this->api . "/2.0/repositories/$owner/$repository/pullrequests", $request_data);
+		$response = $this->http_client->request('POST', $this->api . "/2.0/repositories/$owner/$repository/pullrequests",
+			['json'   => $request_data,
+				'headers' => $this->default_headers,
+			]
+		);
+		$raw_response = $response->getBody();
 		Log::debug("[createPullRequest][$owner/$repository] - " . $raw_response);
 
 		$json          = json_decode($raw_response);
@@ -257,7 +281,12 @@ class Bitbucket implements GitProviderInterface {
 
 	public function listRepositories() {
 		//TODO Fetch the username and use the 2.0 api to be able to use pagination
-		$raw_response = $this->ua->get($this->api . '/1.0/user/repositories');
+
+		$response = $this->http_client->request('GET',
+			$this->api . '/1.0/user/repositories',
+			['headers' => $this->default_headers]
+		);
+		$raw_response = $response->getBody();
 		Log::debug('[listRepositories] - ' . $raw_response);
 
 		$repos     = json_decode($raw_response);
@@ -287,16 +316,26 @@ class Bitbucket implements GitProviderInterface {
 	}
 
 	public function setToken($token) {
-		$this->ua->setHeaders(['Authorization: Bearer ' . $token]);
-		$this->token = $token;
+		$this->default_headers['Authorization'] = 'Bearer ' . $token;
+		$this->token                            = $token;
 	}
 
 	public function refreshToken($refresh_token) {
-		$this->ua->addHeader('Authorization: Basic ' . base64_encode($this->client_id . ':' . $this->app_secret));
-		$raw_response = $this->ua->post($this->bitbucket . '/site/oauth2/access_token',
-			['grant_type' => 'refresh_token', 'refresh_token' => $refresh_token]
+		$headers                  = $this->default_headers;
+		$headers['Authorization'] = 'Basic ' . base64_encode($this->client_id . ':' . $this->app_secret);
+		unset($headers['Content-type']);
+		$response = $this->http_client->request('POST',
+			$this->bitbucket . '/site/oauth2/access_token',
+			[
+				'form_params' =>
+				[
+					'grant_type'    => 'refresh_token',
+					'refresh_token' => $refresh_token,
+				],
+				'headers'     => $headers,
+			]
 		);
-
+		$raw_response = $response->getBody();
 		Log::debug('[refreshToken] - ' . $refresh_token);
 
 		$json = json_decode($raw_response);
@@ -320,7 +359,11 @@ class Bitbucket implements GitProviderInterface {
 		$data  = [];
 
 		while ($fetch) {
-			$raw_response = $this->ua->get($this->api . '/' . $endpoint . "?pagelen=$pagelen&page=$page&$params");
+			$response = $this->http_client->request('GET',
+				$this->api . '/' . $endpoint . "?pagelen=$pagelen&page=$page&$params",
+				['headers' => $this->default_headers]
+			);
+			$raw_response = $response->getBody();
 			Log::debug("[$method_name] Page $page - \n ==== \n " . $raw_response . "\n ==== \n");
 			$current_data = json_decode($raw_response, true);
 
