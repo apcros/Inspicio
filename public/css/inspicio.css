@@ -45,9 +45,22 @@ body {
 .giants-orange-text {
 	color: #FF5A23;
 }
-
+.dropdown-content li>a {
+	color: #230C33;
+}
 .navbar-logo {
-	height: 80%;
+	height: 46px;
 	padding-left: 10px;
-	padding-top: 10%;
+	padding-top: 8px;
+}
+
+.dropdown-content {
+	width: auto !important;
+}
+
+.force-orange-highlight {
+	color: #FF5A23 !important;
+}
+nav ul li.active {
+    background-color: rgba(0,0,0,0.3);
 }
