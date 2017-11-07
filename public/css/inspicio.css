@@ -1,66 +1,77 @@
 body {
-	font-family: 'Molengo', sans-serif;
+    font-family: 'Molengo',sans-serif;
 }
 
 [v-cloak] {
-	display: none;
+    display: none;
 }
 
 .raisin-black {
-	background-color: #251F2D;
+    background-color: #251F2D;
 }
 
 .raisin-black-text {
-	color: #251F2D;
+    color: #251F2D;
 }
 
 .lavender-mist {
-	background-color: #E3DDF3;
+    background-color: #E3DDF3;
 }
 
 .lavender-mist-text {
-	color: #E3DDF3;
+    color: #E3DDF3;
 }
 
 .regalia {
- 	background-color: #592E83;
+    background-color: #592E83;
 }
 
 .regalia-text {
-	color: #592E83;
+    color: #592E83;
 }
 
 .middle-red-purple {
-	background-color: #230C33;
+    background-color: #230C33;
 }
 
 .middle-red-purple-text {
-	color: #230C33;
+    color: #230C33;
 }
 
 .giants-orange {
-	background-color: #FF5A23;
+    background-color: #FF5A23;
 }
 
 .giants-orange-text {
-	color: #FF5A23;
+    color: #FF5A23;
 }
-.dropdown-content li>a {
-	color: #230C33;
+
+.dropdown-content li > a {
+    color: #230C33;
 }
+
 .navbar-logo {
-	height: 46px;
-	padding-left: 10px;
-	padding-top: 8px;
+    height: 46px;
+    padding-top: 8px;
+    padding-left: 10px;
 }
 
 .dropdown-content {
-	width: auto !important;
+    width: auto !important;
 }
 
 .force-orange-highlight {
-	color: #FF5A23 !important;
+    color: #FF5A23 !important;
 }
+
+.action-btn-orange {
+    color: #FF5A23 !important;
+}
+
+.action-btn-orange:hover {
+    background-color: #251F2D !important;
+}
+
 nav ul li.active {
     background-color: rgba(0,0,0,0.3);
 }

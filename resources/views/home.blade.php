@@ -18,15 +18,26 @@
         </nav>
         <div class="container">
                     @foreach ($reviews as $review)
-                    <div class="panel panel-default">
-                        <div class="panel-body">
-                            <h4>{{$review->name}}</h4> By <b>{{$review->author}}</b> - {{$review->created_at}}
-                            <hr>
-                            <span class="label label-primary">{{$review->language}}</span>
-                            <span class="label label-primary">{{$review->followers}} Followers</span>
+                    <div class="card">
+                        <div class="card-content">
+                            <span class="card-title">{{$review->name}}</span>
+                            <div class="row">
+                                <div class="col s6 m3">
+                                    <i class="fa fa-user left" aria-hidden="true"></i>{{$review->author}}
+                                </div>
+                                <div class="col s6 m3">
+                                    <i class="fa fa-code left" aria-hidden="true"></i>{{$review->language}}
+                                </div>
+                                <div class="col s6 m3">
+                                    <i class="fa fa-calendar left" aria-hidden="true"></i>{{$review->created_at}}
+                                </div>
+                                <div class="col s6 m3">
+                                    <i class="fa fa-users left" aria-hidden="true"></i>{{$review->followers}} follower(s)
+                                </div>
+                            </div>
                         </div>
-                        <div class="panel-footer">
-                            <a href="/reviews/{{$review->id}}/view" class="btn btn-primary">See more...</a>
+                        <div class="card-action">
+                                <a href="/reviews/{{$review->id}}/view" class="action-btn-orange btn btn-flat waves-effect waves-light"><i class="fa fa-info-circle left" aria-hidden="true"></i>See more</a>
                         </div>
                     </div>
                     @endforeach
