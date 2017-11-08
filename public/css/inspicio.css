@@ -75,3 +75,7 @@ body {
 nav ul li.active {
     background-color: rgba(0,0,0,0.3);
 }
+
+.btn-info:hover {
+    background-color: #592E83;
+};
