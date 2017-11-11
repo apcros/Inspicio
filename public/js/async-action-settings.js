@@ -13,14 +13,14 @@ function updateSettings() {
 
 	$.post(window.location.origin+"/ajax/settings", jsonObj, function(data) {
 		if(data.success) {
-			displayPopup("snackbar-success", data.message, 4000);
+			Materialize.toast(data.message,4000, "green");
 		} else {
-			displayPopup("snackbar-error", "Error "+data.message, 4000);
+			Materialize.toast("Error "+data.message, 4000, "red");
 		}
 
 	})
 	.fail(function() {
-		displayPopup("snackbar-error", "Error while executing the request", 4000);
+		Materialize.toast("Error while executing the request",4000, "red");
 	});
 }
 

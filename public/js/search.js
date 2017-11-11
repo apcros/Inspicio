@@ -32,7 +32,7 @@ function search(page, trigger_loading = true) {
 
 	},'json')
 	.fail(function() {
-		Materialize.toast("Error while searching. Please try again", "red", 4000);
+		Materialize.toast("Error while searching. Please try again", 4000, "red");
 	})
 	.always(function() {
 		window.stopLoading("#start-search-btn",button_state);
