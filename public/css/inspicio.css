@@ -83,3 +83,7 @@ nav ul li.active {
 .pagination li.active {
    background-color: #230C33 !important;
 }
+[type="checkbox"]:checked+label:before {
+    border-right: 2px solid #FF5A23;
+    border-bottom: 2px solid #FF5A23;
+}

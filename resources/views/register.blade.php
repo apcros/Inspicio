@@ -1,30 +1,36 @@
-@extends('layouts.bootstrap-main')
+@extends('layouts.materialize-main')
 @section('title', 'Register')
 
 @section('content')
-	<div class="jumbotron">
-	  <h2>Register to Inspicio </h2>
-	  <div class="center-align">
-		<form method="POST" action="/register">
-		 {{ csrf_field() }}
-		  <div class="form-group">
-		    <label for="email">Email address</label>
-		    <input type="hidden" value="{{ $auth_token }}" name="auth_token"/>
+<div class="container">
+	<form method="POST" action="/register">
+			{{ csrf_field() }}
+			<input type="hidden" value="{{ $auth_token }}" name="auth_token"/>
 		    <input type="hidden" value="{{ $refresh_token }}" name="refresh_token"/>
 		    <input type="hidden" value="{{ $expire_epoch }}" name="expire_epoch"/>
 		    <input type="hidden" value="{{ $auth_provider }}" name="auth_provider"/>
-		    <input type="email" class="form-control" name="email" id="email" placeholder="Email">
-		  </div>
-		  <div class="form-group">
-		    <label for="name">Name</label>
-		    <input type="text" class="form-control" name="name" id="name" placeholder="Your name">
-		  </div>
-		  <div class="form-group">
-		  	<label for="accept_tos">I have read and I accept <a href="/tos">the ToS</a></label>
-		  	<input type="checkbox" name="accept_tos" id="accept_tos">
-		  </div>
-		  <button type="submit" class="btn btn-default">Register</button>
-		</form>
-	  </div>
-	</div>
+		<div class="card">
+			<div class="card-content">
+				<span class="card-title">Register to Inspicio</span>
+				<div class="row">
+					<div class="input-field col s12 m6">
+						<input placeholder="Your email address" id="email" name="email" type="email" class="validate">
+						<label for="email">Email</label>
+					</div>
+					<div class="input-field col s12 m6">
+						<input placeholder="Your name" id="name" name="name" type="text" class="validate">
+						<label for="name">Name</label>
+					</div>
+				</div>
+				<div class="row">
+						<input type="checkbox" id="accept_tos" name="accept_tos" />
+						<label for="accept_tos">I have read and I accept <a class="giants-orange-text" href="/tos">the ToS</a></label>
+				</div>
+			</div>
+			<div class="card-action">
+				<button type="submit" class="btn btn-info waves-effect waves-light middle-red-purple"><i class="fa fa-check-square-o left" aria-hidden="true"></i>Register</button>
+			</div>
+		</div>
+	</form>
+</div>
 @endsection
