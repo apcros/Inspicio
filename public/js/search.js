@@ -1,7 +1,9 @@
-function search(page) {
+function search(page, trigger_loading = true) {
 	var query_val = $("#review-keywords").val();
 	var languages_selected = $("#review-language").val();
 	var search_in_closed = $("#review-can-be-closed").prop('checked');
+
+	var button_state = window.startLoading("#start-search-btn");
 
 	$.post(window.location.origin+"/api/reviews/search",
 		{
@@ -30,9 +32,12 @@ function search(page) {
 
 	},'json')
 	.fail(function() {
-		window.displayPopup('snackbar-error','Error while searching. Please try again',4000);
+		Materialize.toast("Error while searching. Please try again", "red", 4000);
+	})
+	.always(function() {
+		window.stopLoading("#start-search-btn",button_state);
 	})
 }
 $(document).ready(function() {
-	$('#review-language').select2({placeholder: "Languages"});
+	$('#review-language').select2({placeholder: "Language(s)"});
 })

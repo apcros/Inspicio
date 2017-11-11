@@ -78,4 +78,8 @@ nav ul li.active {
 
 .btn-info:hover {
     background-color: #592E83;
-};
+}
+
+.pagination li.active {
+   background-color: #230C33 !important;
+}
