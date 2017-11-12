@@ -236,6 +236,15 @@ class Profile extends Controller {
 
 	}
 
+	public function listSkills() {
+		$user_id = session('user_id');
+
+		return response()->json([
+			'success' => 1,
+			'skills' => $this->getAllSkills($user_id)
+		]);
+	}
+
 	/*
 		Generate a new token and switch back the account to unconfirmed until
 		the user confirm the email.

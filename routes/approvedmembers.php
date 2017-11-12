@@ -26,5 +26,6 @@ Route::get('/ajax/reviews/available-for-import', 'ReviewRequestApi@listAllAvaila
 Route::post('/ajax/settings', 'Profile@updateSettings');
 Route::post('/ajax/auto-import/{id}', 'ReviewRequestApi@updateAutoImport');
 
+Route::get('/ajax/account/skills','Profile@listSkills');
 Route::post('/ajax/account/skills', 'Profile@addSkill');
 Route::post('/ajax/account/skills/{id}/delete', 'Profile@deleteSkill');

@@ -3,6 +3,7 @@
 @section('additional_head')
 <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/css/select2.min.css" rel="stylesheet" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/js/select2.min.js"></script>
+<script type="text/javascript" src="{{ secure_asset('js/vuejs-utils.js') }}"></script>
 @endsection
 @section('content')
 <div id="modal-account-update" class="modal fade" role="dialog">
@@ -104,9 +105,11 @@
 					<tr>
 						<th>Name</th>
 						<th>Level</th>
+						<th></th>
 					</tr>
 				</thead>
-				<tbody>
+				<tbody v-cloak id="skills-list">
+					@include('vuejs.skills-listing')
 				</tbody>
 			</table>
 		</div>
@@ -140,44 +143,6 @@
 	</div>
 </div>
 
-
-
-<div class="panel panel-default">
-	<div class="panel-heading">
-		<h3 class="panel-title">My Skills</h3>
-	</div>
-	<div class="panel-body">
-		<table class="table table-bordered" id="skill_list">
-			<tr>
-				<th>Name</th>
-				<th>Level</th>
-			</tr>
-			@foreach ($skills as $skill)
-			<tr id="skill-{{$skill->id}}">
-				<td>
-					{{$skill->name}}
-					@if ($skill->is_verified)
-					<span class="badge">Verified</span>
-					@endif
-				</td>
-				<td>
-					@if ($skill->level == 1)
-					Beginner/Junior
-					@elseif ($skill->level == 2)
-					Intermediate
-					@else
-					Advanced/Senior
-					@endif
-					<button onclick="deleteSkill('{{$skill->id}}')" class="btn btn-danger pull-right">Delete</button>
-				</td>
-			</tr>
-			@endforeach
-		</table>
-	</div>
-	<div class="panel-footer">
-		<a onclick="$('#modal-skill').modal('show');" class="btn btn-info">Add new skill</a>
-	</div>
-</div>
 <div id="modal-skill" class="modal fade" role="dialog">
 	<div class="modal-dialog" role="document">
 		<div class="modal-content">
