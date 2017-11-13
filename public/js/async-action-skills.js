@@ -1,5 +1,6 @@
 function addSkill() {
-	$("#review-action").attr('disabled', true);
+	var btn_status = window.startLoading("#new_skill_btn");
+
 	var skill_id = $('#skill').val();
 	var skill_name = $('#skill option:selected').text();
 	var level_id = $('#level').val();
@@ -7,16 +8,18 @@ function addSkill() {
 
 	$.post(window.location.origin+"/ajax/account/skills", {skill: skill_id, level: level_id}, function(data) {
 		if(data.success) {
-			displayPopup('snackbar-success', data.message, 4000);
-			$('#skill_list').append('<tr><td>'+skill_name+'</td><td>'+level_name+'</td></tr>');
+			Materialize.toast(data.message, 4000, "green");
+			loadSkills();
 		} else {
-			displayPopup('snackbar-error', 'Error '+data.message, 4000);
+			Materialize.toast(data.message, 4000, "red");
 		}
 
 	})
 	.fail(function() {
-		displayPopup('snackbar-error', 'Error while executing the request', 4000);
-		$("#review-action").attr('disabled', false);
+		Materialize.toast("Unexpected error while executing the request", 4000, "red");
+	})
+	.always(function() {
+		window.stopLoading("#new_skill_btn",btn_status);
 	});
 
 }

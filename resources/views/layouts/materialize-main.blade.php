@@ -23,6 +23,7 @@
 		<script type="text/javascript">
 			$(document).ready(function(){
 				$(".dropdown-button").dropdown();
+				$('.modal').modal();
 				$(".button-collapse").sideNav();
 			});
 		</script>

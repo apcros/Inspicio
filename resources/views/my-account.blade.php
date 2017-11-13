@@ -114,7 +114,7 @@
 			</table>
 		</div>
 		<div class="card-action">
-			<button onclick="" class="btn btn-info middle-red-purple waves-effect waves-light"><i class="fa fa-plus-square-o left" aria-hidden="true"></i>Add new skill</button>
+			<button id="new_skill_btn" onclick="$('#modal-skills').modal('open')" class="btn btn-info middle-red-purple waves-effect waves-light"><i class="fa fa-plus-square-o left" aria-hidden="true"></i>Add new skill</button>
 		</div>
 	</div>
 	<div class="card">
@@ -143,40 +143,39 @@
 	</div>
 </div>
 
-<div id="modal-skill" class="modal fade" role="dialog">
-	<div class="modal-dialog" role="document">
-		<div class="modal-content">
-			<div class="modal-header">
-				<h3>Add a new skill/language</h3>
+<div id="modal-skills" class="modal modal-fixed-footer">
+    <div class="modal-content">
+      <h4>Add a new skill/language</h4>
+      <div class="row">
+	      	<div class="input-field col s12 m6">
+	      		<b>Skill/Language</b>
+				<select name="skill" id="skill" placeholder="Select a skill/language" style="width: 100%">
+					<option></option>
+					@foreach ($available_skills as $skill)
+					<option value="{{$skill->id}}">{{$skill->name}}</option>
+					@endforeach
+				</select>
 			</div>
-			<div class="modal-body">
-				<div class="form-group">
-					<select name="skill" id="skill" class="form-control" placeholder="Select a skill/language" style="width: 100%">
-						<option></option>
-						@foreach ($available_skills as $skill)
-						<option value="{{$skill->id}}">{{$skill->name}}</option>
-						@endforeach
-					</select>
-				</div>
-				<div class="form-group">
-					<select name="level" id="level" class="form-control" placeholder="Language Level">
-						<option value="1">Beginner/Junior</option>
-						<option value="2">Intermediate</option>
-						<option value="3">Advanced/Senior</option>
-					</select>
-				</div>
-				<div class="alert alert-info">
-					Once you skill is added and you've done few reviews in that skill/language,
-					You can ask for skill verification to access premium review requests
-				</div>
-			</div>
-			<div class="modal-footer">
-				<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-				<button type="button" onclick="addSkill()" class="btn btn-primary" data-dismiss="modal">Add</button>
+			<div class="input-field col s12 m6">
+				<b>Level</b>
+				<select name="level" id="level" placeholder="Language Level" style="width: 100%">
+					<option value="1">Beginner/Junior</option>
+					<option value="2">Intermediate</option>
+					<option value="3">Advanced/Senior</option>
+				</select>
 			</div>
 		</div>
-	</div>
+		<div class="card-panel blue lighten-2">
+			Once you skill is added and you've done few reviews in that skill/language,
+			You can ask for skill verification to access premium review requests
+		</div>
+    </div>
+    <div class="modal-footer">
+      <a href="#!" class="modal-action modal-close waves-effect waves-red btn-flat ">Cancel</a>
+      <a href="#" onclick="addSkill()" class="modal-action modal-close waves-effect action-btn-orange btn-flat">Add</a>
+    </div>
 </div>
+
 @foreach ($permissions as $git_provider => $git_permissions)
 <div id="modal-permissions-{{$git_provider}}" class="modal fade" role="dialog">
 	<div class="modal-dialog" role="document">
@@ -208,6 +207,7 @@
 <script type="text/javascript">
 	$(document).ready(function(){
 		$('#skill').select2({placeholder: "Select a skill/language", autocomplete: "on"});
+		$('#level').select2({placeholder: "Select a level", autocomplete: "on"});
 	});
 </script>
 <script type="text/javascript" src="{{ secure_asset('js/async-action-skills.js') }}"></script>
