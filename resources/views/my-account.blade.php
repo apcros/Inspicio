@@ -6,26 +6,6 @@
 <script type="text/javascript" src="{{ secure_asset('js/vuejs-utils.js') }}"></script>
 @endsection
 @section('content')
-<div id="modal-account-update" class="modal fade" role="dialog">
-	<div class="modal-dialog modal-sm" role="document">
-		<div class="modal-content">
-			<div class="modal-body">
-				<h3>Update your account</h3>
-				<form method="POST" action="/account">
-					{{ csrf_field() }}
-					<b>Email</b>
-					<p><input type="email" class="form-control" name="email" value="{{$user->email}}"></p>
-					<b>Name</b>
-					<p><input type="name" class="form-control" name="name" value="{{$user->name}}"></p>
-				</div>
-				<div class="modal-footer">
-					<button type="submit" class="btn btn-primary">Confirm</button>
-				</form>
-				<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-			</div>
-		</div>
-	</div>
-</div>
 <div class="container">
 	<div class="card">
 		<div class="card-content">
@@ -60,7 +40,7 @@
 		    </ul>
 		</div>
 		<div class="card-action">
-			<button class="btn btn-info middle-red-purple waves-effect waves-light" onclick='$("#modal-account-update").modal("show");'><i class="fa fa-pencil-square-o left" aria-hidden="true"></i>Edit</button>
+			<button class="btn btn-info middle-red-purple waves-effect waves-light" onclick='$("#modal-account-update").modal("open");'><i class="fa fa-pencil-square-o left" aria-hidden="true"></i>Edit</button>
 		</div>
 	</div>
 	<div class="card">
@@ -85,7 +65,7 @@
 						<td>{{$account->created_at}}</td>
 						<td>{{$account->updated_at}}</td>
 						<td>{{$permissions[$account->provider][$account->permission_level]['description']}}</td>
-						<td><button onclick="$('#modal-permissions-{{$account->provider}}').modal('show');" class="btn btn-info middle-red-purple waves-effect waves-light right"><i class="fa fa-cogs" aria-hidden="true"></i></button></div></td>
+						<td><button onclick="$('#modal-permissions-{{$account->provider}}').modal('open');" class="btn btn-info middle-red-purple waves-effect waves-light right"><i class="fa fa-cogs" aria-hidden="true"></i></button></div></td>
 					</tr>
 					@endforeach
 		        </tbody>
@@ -143,6 +123,29 @@
 	</div>
 </div>
 
+<div id="modal-account-update" class="modal modal-fixed-footer">
+<form method="POST" action="/account">
+	{{ csrf_field() }}
+    <div class="modal-content">
+      <h4>Update your account</h4>
+      <div class="row">
+	      	<div class="input-field col s12 m6">
+				<input placeholder="Your new email" id="email" type="email" name="email" class="validate" value="{{$user->email}}">
+				<label for="email">Email</label>
+			</div>
+			<div class="input-field col s12 m6">
+				<input placeholder="Your new name" id="name" type="text" name="name" class="validate" value="{{$user->name}}">
+				<label for="name">Email</label>
+			</div>
+		</div>
+    </div>
+    <div class="modal-footer">
+      <a href="#!" class="modal-action modal-close waves-effect waves-red btn-flat ">Cancel</a>
+      <button href="#" type="submit" class="waves-effect action-btn-orange btn-flat">Save</button>
+    </div>
+</form>
+</div>
+
 <div id="modal-skills" class="modal modal-fixed-footer">
     <div class="modal-content">
       <h4>Add a new skill/language</h4>
@@ -177,31 +180,24 @@
 </div>
 
 @foreach ($permissions as $git_provider => $git_permissions)
-<div id="modal-permissions-{{$git_provider}}" class="modal fade" role="dialog">
-	<div class="modal-dialog" role="document">
-		<div class="modal-content">
-			<div class="modal-header">
-				<h3>Update permissions for {{ucfirst($git_provider)}}</h3>
+<div id="modal-permissions-{{$git_provider}}" class="modal modal-fixed-footer">
+    <div class="modal-content">
+      <h4>Update permissions for {{ucfirst($git_provider)}}</h4>
+      		<b>Available permission(s) :</b>
+	      	<div class="center-align row">
+		      	@foreach ($git_permissions as $permission_key => $permission)
+					<a href="/oauth/{{$git_provider}}/?perm_level={{$permission_key}}" class="row col s12 btn btn-info middle-red-purple waves-effect waves-light">{{$permission['description']}}</a>
+				@endforeach
 			</div>
-			<div class="modal-body">
-				<div class="alert alert-info">
-					You can change the permission level of your account by chosing any of the available permissions.
-					Please note that you will just be redirected to {{$git_provider}} with the relevant permission upgrade/downgrade request.
-					As such, <b>make sure you are logged in to the right {{$git_provider}} account before clicking the button.</b>
-				</div>
-				<div class="text-center">
-					<div class="btn-group-vertical" role="group">
-						@foreach ($git_permissions as $permission_key => $permission)
-						<a href="/oauth/{{$git_provider}}/?perm_level={{$permission_key}}" class="btn btn-info">{{$permission['description']}}</a>
-						@endforeach
-					</div>
-				</div>
-			</div>
-			<div class="modal-footer">
-				<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-			</div>
+		<div class="card-panel blue lighten-2">
+			You can change the permission level of your account by chosing any of the available permissions.
+			Please note that you will just be redirected to {{$git_provider}} with the relevant permission upgrade/downgrade request.
+			As such, <b>make sure you are logged in to the right {{$git_provider}} account before clicking the button.</b>
 		</div>
-	</div>
+    </div>
+    <div class="modal-footer">
+      <a href="#!" class="modal-action modal-close waves-effect waves-red btn-flat ">Cancel</a>
+    </div>
 </div>
 @endforeach
 <script type="text/javascript">
