@@ -87,3 +87,6 @@ nav ul li.active {
     border-right: 2px solid #FF5A23;
     border-bottom: 2px solid #FF5A23;
 }
+blockquote {
+    border-left: 5px solid #592E83;
+}

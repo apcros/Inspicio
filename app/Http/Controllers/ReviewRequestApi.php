@@ -82,6 +82,48 @@ class ReviewRequestApi extends Controller {
 		return $this->apiResponse("Successfully approved (+1 point)", 1);
 	}
 
+	public function getpermissions($id) {
+		$user_id = session('user_id');
+		$review_request         = new \App\ReviewRequest($user_id);
+		list($success, $review) = $review_request->load($id);
+
+		if (!$success) {
+			return $this->apiResponse($review);
+		}
+
+		$permissions = [
+			'is_owner' 	  => false,
+			'is_open' 	  => false,
+			'is_followed' => false,
+			'is_approved' => false
+		];
+
+		if($review_request->status == 'open') {
+			$permissions['is_open'] = true;
+		}
+
+		if($review_request->author_id == $user_id) {
+			$permissions['is_owner'] = true;
+			return $this->apiResponse($permissions,1);
+		}
+
+
+		$tracking = DB::table('request_tracking')->where([
+				['user_id', '=', $user_id],
+				['request_id', '=', $id],
+			])->first();
+
+		if(!$tracking){
+			return $this->apiResponse($permissions, 1);
+		}
+
+		$permissions['is_followed'] = $tracking->is_active;
+		$permissions['is_approved'] = $tracking->is_approved;
+
+		return $this->apiResponse($permissions, 1);
+
+	}
+
 	/*
 		Will enable or disable AutoImport entries for the current user
 	*/
