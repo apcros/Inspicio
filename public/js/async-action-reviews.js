@@ -1,64 +1,49 @@
-function reviewAction(id, endpoint, success_callback) {
-	$("#review-action").attr("disabled",true);
+function reviewAction(id, endpoint) {
+
 	$.post(window.location.origin+endpoint, function(data) {
 		if(data.success) {
-			displayPopup('snackbar-success',data.message,4000);
-			success_callback();
+			Materialize.toast(data.message,4000,'green');
+			loadActions();
 		} else {
-			$("#review-action").attr("disabled",false);
-			displayPopup('snackbar-error', 'Error '+data.message, 4000);
+			Materialize.toast('Error : '+data.message, 4000, 'red');
 		}
 	})
 	.fail(function() {
-		$("#review-action").attr("disabled",false);
-		displayPopup('snackbar-error','Error while executing the request',4000);
+		Materialize.toast('Unexpected error',4000, 'red');
 	});
 }
 function approveReview(id) {
-	reviewAction(id, "/ajax/reviews/"+id+"/approve",function() {
-		$("#review-approve").html('Approved');
-		$("#review-approve").attr("disabled",true);
-	});
+	reviewAction(id, "/ajax/reviews/"+id+"/approve");
 }
 
 function followReview(id) {
-	reviewAction(id,"/ajax/reviews/"+id+"/track",function() {
-		$("#review-approve").attr("disabled",false);
-
-		$("#review-follow").attr("disabled",false);
-		$("#review-follow").attr("onclick", "unfollowReview('"+id+"');");
-		$("#review-follow").removeClass("btn-info");
-		$("#review-follow").addClass("btn-danger");
-		$("#review-follow").html("Unfollow this review");
-	});
+	reviewAction(id,"/ajax/reviews/"+id+"/track";
 }
 
 function unfollowReview(id) {
-	reviewAction(id,"/ajax/reviews/"+id+"/untrack",function() {
-		$("#review-follow").attr("onclick", "followReview('"+id+"');");
-		$("#review-follow").html("Follow this review");
-		$("#review-follow").attr("disabled",false);
-		$("#review-follow").removeClass("btn-danger");
-		$("#review-follow").addClass("btn-info");
-		$("#review-approve").attr("disabled",false);
-	});
+	reviewAction(id,"/ajax/reviews/"+id+"/untrack");
 }
 
 function closeReview(id) {
 	showModalConfirm('Closing review','You are about to close your review, are you sure ?', function() {
-		reviewAction(id,"/ajax/reviews/"+id+"/close",function() {
-			$("#review-close-"+id).html("Re-open");
-			$("#review-edit-"+id).attr("disabled",true);
-			$("#review-edit-"+id).attr("href","#");
-			$("#review-close-"+id).attr("onclick","reopenReview('"+id+"');");
-		})
+		reviewAction(id,"/ajax/reviews/"+id+"/close")
 	});
 }
 function reopenReview(id) {
-	reviewAction(id,"/ajax/reviews/"+id+"/reopen",function() {
-			$("#review-close-"+id).html("Close");
-			$("#review-edit-"+id).attr("disabled",false);
-			$("#review-edit-"+id).attr("href","/reviews/"+id+"/edit");
-			$("#review-close-"+id).attr("onclick","closeReview('"+id+"');");
-		})
+	reviewAction(id,"/ajax/reviews/"+id+"/reopen")
 }
+
+function loadActions() {
+	var review_id = $("#review-id").val();
+	$.get(window.location.origin+'/api/reviews/'+review_id+'/permissions', function(data) {
+		if(data.success) {
+			updateOrCreateVue('reviewsactions','#review-actions', 'permissions', data.message);
+		} else {
+			Materialize.toast('snackbar-error', 'Failed to load review actions '+data.message,4000, 'red');
+		}
+	})
+}
+
+$(document).ready(function() {
+	loadActions();
+})

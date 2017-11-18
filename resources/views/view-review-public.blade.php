@@ -11,7 +11,9 @@
 @endsection
 
 @section('content')
+<script type="text/javascript" src="{{ secure_asset('js/vuejs-utils.js') }}"></script>
 <script type="text/javascript" src="{{ secure_asset('js/async-action-reviews.js') }}"></script>
+<input type="hidden" id="review-id" value="{{$review->id}}"/>
 <div class="card">
 	<div class="card-content">
 		<span class="card-title">{{$review->name}}</span>
@@ -33,37 +35,8 @@
             	<b>Description</b>
             <blockquote>{!! $review->description !!}</blockquote>
     </div>
-    <div class="card-action">
-		  	@if(session('user_id') && $review->status == 'open')
-		  		@if (session('user_id') != $review->author_id)
-			  		@if (isset($tracked))
-			  			@if ($tracked->is_approved)
-			  				<button class="btn btn-primary" disabled>Approved</button>
-			  			@else
-				  			<button onclick="approveReview('{{$review->id}}')" id="review-approve" class="btn btn-primary">Approve</button>
-			  			@endif
-
-			  			@if ($tracked->is_active)
-			  				<button onclick="unfollowReview('{{$review->id}}')" id="review-follow" class="btn btn-danger">Unfollow this review</button>
-			  			@else
-			  				<button onclick="followReview('{{$review->id}}')" id="review-follow" class="btn btn-info waves-effect waves-light middle-red-purple">Follow this review</button>
-			  			@endif
-			  		@else
-			  				<button onclick="approveReview('{{$review->id}}')" id="review-approve" class="btn btn-info waves-effect waves-light middle-red-purple disabled" disabled>Approve</button>
-				  			<button onclick="followReview('{{$review->id}}')" id="review-follow" class="btn btn-info waves-effect waves-light middle-red-purple">Follow this review</button>
-			  		@endif
-			  	@endif
-			@endif
-			@if(session('user_id') == $review->author_id)
-					@if ($review->status == 'open')
-			  			<a onclick="closeReview('{{$review->id}}')" id="review-close-{{$review->id}}" class="btn btn-warning">Close</a>
-			  			<a href="/reviews/{{$review->id}}/edit" id="review-edit-{{$review->id}}" class="btn btn-info">Edit</a>
-			  		@else
-			  			<a onclick="reopenReview('{{$review->id}}')" id="review-close-{{$review->id}}" class="btn btn-warning">Re-Open</a>
-			  			<a disabled href="#" id="review-edit-{{$review->id}}" class="btn btn-info waves-effect waves-light middle-red-purple disabled">Edit</a>
-			  		@endif
-			@endif
-			  		<a href="{{$review->url}}" target="_blank" class="btn btn-info waves-effect waves-light middle-red-purple">View</a>
+    <div class="card-action" v-cloak id="review-actions">
+    	@include('vuejs.review-action')
     </div>
 </div>
 @endsection

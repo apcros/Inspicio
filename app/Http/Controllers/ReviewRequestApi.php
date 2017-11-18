@@ -92,17 +92,25 @@ class ReviewRequestApi extends Controller {
 		}
 
 		$permissions = [
+			'review_id'   => $id,
+			'review_url'  => $review->url,
 			'is_owner' 	  => false,
 			'is_open' 	  => false,
 			'is_followed' => false,
+			'is_logged_in'   => false,
 			'is_approved' => false
 		];
 
-		if($review_request->status == 'open') {
+		if(!$user_id) {
+			return $this->apiResponse($permissions, 1);
+		}
+		$permissions['is_logged_in'] = true;
+	
+		if($review->status == 'open') {
 			$permissions['is_open'] = true;
 		}
 
-		if($review_request->author_id == $user_id) {
+		if($review->author_id == $user_id) {
 			$permissions['is_owner'] = true;
 			return $this->apiResponse($permissions,1);
 		}
