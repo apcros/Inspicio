@@ -39,4 +39,7 @@
     	@include('vuejs.review-action')
     </div>
 </div>
+<div id="confirm_modal_vue">
+	@include('vuejs.modal-confirm')
+</div>
 @endsection

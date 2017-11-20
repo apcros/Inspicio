@@ -17,7 +17,7 @@ function approveReview(id) {
 }
 
 function followReview(id) {
-	reviewAction(id,"/ajax/reviews/"+id+"/track";
+	reviewAction(id,"/ajax/reviews/"+id+"/track");
 }
 
 function unfollowReview(id) {
