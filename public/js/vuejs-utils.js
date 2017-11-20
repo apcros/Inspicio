@@ -1,4 +1,4 @@
-function initDynamicVue(element,data_key, data_val) {
+function initDynamicVue(element,data_key, data_val, on_refresh = null) {
 	var raw_data = {};
 	raw_data[data_key] = data_val;
 	var computed_data = {};
@@ -15,20 +15,30 @@ function initDynamicVue(element,data_key, data_val) {
 		el: element,
 		data: raw_data,
 		computed: computed_data,
+		updated: function() {
+			this.$nextTick(function() {
+				if(on_refresh) {
+					on_refresh();
+				}
+			})
+		},
 		methods: {
 			refreshData: function(data){
 				this['computed_'+data_key] = data;
 				this.$forceUpdate();
+				if(on_refresh) {
+					on_refresh();
+				}
 			}
 		}
 	});
 }
 
-function updateOrCreateVue(name,element, data_key, data_val) {
+function updateOrCreateVue(name,element, data_key, data_val, on_refresh = null) {
 	if(available_vues[name] != undefined) {
 		available_vues[name].refreshData(data_val);
 	}else {
-		available_vues[name] = initDynamicVue(element, data_key, data_val);
+		available_vues[name] = initDynamicVue(element, data_key, data_val, on_refresh);
 	}
 }
 
