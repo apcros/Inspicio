@@ -28,14 +28,14 @@ function deleteSkill(id) {
 	showModalConfirm('Deleting skill','You are about to delete this skill, are you sure ?', function() {
 		$.post(window.location.origin+"/ajax/account/skills/"+id+"/delete", function(data) {
 			if(data.success) {
-				displayPopup('snackbar-success',data.message,5000);
-				$("#skill-"+id).remove();
+				Materialize.toast(data.message,5000,"green");
+				window.loadSkills();
 			} else {
-				displayPopup('snackbar-error','Error: '+data.message,5000);
+				Materialize.toast("Error: "+data.message,5000,"red");
 			}
 		})
 		.fail(function() {
-			displayPopup('snackbar-error', 'Error while executing the request', 5000);
+			Materialize.toast("Unexpected error while executing the request",5000,"red");
 		})
 	});
 

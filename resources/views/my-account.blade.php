@@ -208,4 +208,7 @@
 </script>
 <script type="text/javascript" src="{{ secure_asset('js/async-action-skills.js') }}"></script>
 <script type="text/javascript" src="{{ secure_asset('js/async-action-settings.js') }}"></script>
+<div id="confirm_modal_vue">
+	@include('vuejs.modal-confirm')
+</div>
 @endsection
