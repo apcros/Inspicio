@@ -1,4 +1,4 @@
-@extends('layouts.bootstrap-main')
+@extends('layouts.materialize-main')
 @section('title', 'Register')
 
 @section('additional_head')
@@ -8,66 +8,55 @@
 @endsection
 
 @section('content')
+<div class="container">
 	  <h2>Auto-Import</h2>
 	  @if ($points < 1)
-	  	<div class="alert alert-warning">
+	  	<div class="card-panel yellow">
 	  		You don't have any points left.
 			This will cause any pull requests on your Git to be ignored at the next auto-import.
 			Please review someone else code to get some points.
 		</div>
 	  @endif
-	  @foreach ($statuses as $status)
-	  	<div class="panel panel-default">
-			<div class="panel-heading" role="tab" id="{{$status['auto_import']->id}}">
-				<h4 class="panel-title">
-					@if ($status['auto_import']->is_active)
-						<span class="label label-success pull-left">Active</span>
-						<button class="btn btn-danger btn-xs pull-right" onclick="updateAutoImport(false,'{{$status['auto_import']->id}}')"><span class="glyphicon glyphicon-remove-sign"></span> Disable ?</button>
-					@else
-						<span class="label label-danger pull-left">Disabled</span>
-						<button class="btn btn-success btn-xs pull-right" onclick="updateAutoImport(true,'{{$status['auto_import']->id}}')"><span class="glyphicon glyphicon-ok"></span> Enable ?</button>
-					@endif
-					&nbsp;
-					<a role="button" data-toggle="collapse" data-parent="#{{$status['auto_import']->id}}" href="#{{$status['auto_import']->id}}_result" aria-expanded="true" aria-controls="{{$status['auto_import']->id}}_result">
-					{{$status['auto_import']->repository}}
-					</a>
-				</h4>
+	  	  	<div class="card">
+	  		<div class="card-content">
+	  			<span class="card-title">Auto imports setup</span>
+	  			<ul class="collection">
+	  @foreach ($auto_imports as $auto_import)
+	  				<li class="collection-item">
+	  					<h5>{{$auto_import->repository}}</h5>
+	  					<div class="row">
+	  					@if ($auto_import->is_active)
+	  						<button conclick="updateAutoImport(false,'{{$auto_import->id}}')" class="green btn waves-effect waves-light tooltipped" data-position="top" data-delay="50" data-tooltip="Click to disable"><i class="fa fa-check left" aria-hidden="true"></i><b>Active</b></button>
+	  					@else
+	  						<button onclick="updateAutoImport(true,'{{$auto_import->id}}')" class="red btn waves-effect waves-light tooltipped" data-position="top" data-delay="50" data-tooltip="Click to enable"><i class="fa fa-exclamation-triangle left" aria-hidden="true"></i><b>Inactive</b></button>
+	  					@endif
+	  					    <a href="/auto-import/{{$auto_import->id}}/logs" class="btn btn-info middle-red-purple waves-effect waves-light"><i class="fa fa-file-text left" aria-hidden="true"></i>Logs</a>
+	  					</div>
+	  					Last run <b>2017-11-28 21:44:06</b>
+	  				</li>
+	  @endforeach
+	 	</ul>
+	</div>
+	</div>
+	<form method="POST">
+		<div class="card">
+			<div class="card-content">
+				<span class="card-title">Add to auto-import</span>
+					{{ csrf_field() }}
+				    <label for="repositories">Select your repository</label>
+				    <select style="width: 100%" name="repositories[]" id="repositories" class="form-control" placeholder="Repositories available for auto-import" multiple='multiple'>
+				    <option></option>
+				    @foreach ($reposPerAccount as $repos)
+				    	@foreach ($repos['repos'] as $repo)
+				    		<option value="{{ $repo->name }},{{$repos['account_id']}}">{{ $repo->name }}</option>
+				    	@endforeach
+				    @endforeach
+					</select>
 			</div>
-			<div id="{{$status['auto_import']->id}}_result" class="panel-collapse collapse" role="tabpanel" aria-labelledby="{{$status['auto_import']->id}}">
-				<div class="panel-body">
-					<div class="list-group">
-						@foreach ($status['results'] as $result)
-						    @if ($result->is_success)
-						    	<a class="list-group-item" target="_blank" href="/reviews/{{$result->request_id}}/view">Imported at <b>{{$result->created_at}}</b>
-						      	<i>(Click to view on Inspicio)</i>
-						      	<span class="label label-success pull-right">Imported</span>
-						    @else
-						    	<a class="list-group-item" disabled href="#">
-						    	Attempted at <b>{{$result->created_at}}</b>
-						    	<span class="label label-danger pull-right">Failed</span>
-						      	<div class="alert alert-danger">{{$result->error}}</div>
-						    @endif
-						 </a>
-						@endforeach
-					</div>
-				</div>
+			<div class="card-action">
+				<button type="submit" class="btn btn-info giants-orange waves-effect"><i class="fa fa-cloud-download left" aria-hidden="true"></i>Add to auto-import</button>
 			</div>
 		</div>
-	  @endforeach
-	  <hr>
-	  <form method="POST">
-		<div class="form-group">
-		{{ csrf_field() }}
-	    <label for="repositories">Select your repository</label>
-	    <select name="repositories[]" id="repositories" class="form-control" placeholder="Repositories available for auto-import" multiple='multiple'>
-	    <option></option>
-	    @foreach ($reposPerAccount as $repos)
-	    	@foreach ($repos['repos'] as $repo)
-	    		<option value="{{ $repo->name }},{{$repos['account_id']}}">{{ $repo->name }}</option>
-	    	@endforeach
-	    @endforeach
-		</select>
-	  </div>
-	  <button class="btn btn-primary" type="submit">Add to auto-import</button>
 	</form>
+</div>
 @endsection

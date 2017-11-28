@@ -48,26 +48,18 @@ class ReviewRequestController extends Controller {
 		$user_id      = session('user_id');
 		$user         = new User($user_id);
 		$auto_imports = DB::table('auto_imports')->where('user_id', $user_id)->get();
-		$statuses     = array();
-
-		foreach ($auto_imports as $auto_import) {
-
-			$results = DB::table('auto_imports_result')->where([
-				['created_at', '>=', \Carbon\Carbon::now()->subWeek()],
-				['auto_import_id', '=', $auto_import->id],
-			])->get();
-
-			$statuses[] = [
-				'auto_import' => $auto_import,
-				'results'     => $results,
-			];
-		}
 
 		return view('auto-import', [
-			'statuses'        => $statuses,
+			'auto_imports'    => $auto_imports,
 			'points'          => $user->getPoints(),
 			'reposPerAccount' => $this->listReposPerAccount($user),
 		]);
+	}
+
+	public function autoImportResults() {
+		$user_id = session('user_id');
+
+		//TODO Return results and logs
 	}
 
 	public function autoImportSetup(Request $request) {

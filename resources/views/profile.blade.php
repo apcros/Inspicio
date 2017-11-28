@@ -20,7 +20,7 @@
 				<ul class="collection">
 				@foreach ($skills as $skill)
 					@if ($skill->is_verified)
-						<li class="collection-item giants-orange-text tooltipped"data-position="left" data-delay="50" data-tooltip="Skill verified" aria-hidden="true">
+						<li class="collection-item giants-orange-text tooltipped" data-position="left" data-delay="50" data-tooltip="Skill verified" aria-hidden="true">
 		  					<i class="fa fa-certificate"></i>
 		  			@else
 		  				<li class="collection-item">
@@ -47,7 +47,7 @@
 			<span class="card-title">Open reviews</span>
 			<ul class="collection">
 				@foreach ($reviews as $review)
-					<a href="/reviews/{{$review->id}}/view" class="collection-item black-text">
+					<a href="/reviews/{{$review->id}}/view" class="collection-item black-text waves-effect">
 						<div class="row">
 				            <div class="col s6">
 				                <b><i class="fa fa-code left" aria-hidden="true"></i>{{$review->language}}</b>
