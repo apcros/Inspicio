@@ -41,6 +41,7 @@
 		</div>
 		<div class="card-action">
 			<button class="btn btn-info middle-red-purple waves-effect waves-light" onclick='$("#modal-account-update").modal("open");'><i class="fa fa-pencil-square-o left" aria-hidden="true"></i>Edit</button>
+			<a href="/members/{{$user->id}}/profile" class="btn btn-info middle-red-purple waves-effect waves-light"><i class="fa fa-globe left" aria-hidden="true"></i>View my public profile</a>
 		</div>
 	</div>
 	<div class="card">
