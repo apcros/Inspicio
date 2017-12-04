@@ -10,6 +10,7 @@ Route::post('/reviews/bulk-import', 'ReviewRequestController@bulkImport');
 
 Route::get('/reviews/auto-import', 'ReviewRequestController@autoImportStatus');
 Route::post('/reviews/auto-import', 'ReviewRequestController@autoImportSetup');
+Route::get('/reviews/auto-import/{import_id}/logs','ReviewRequestController@autoImportResults');
 
 Route::get('/reviews/{reviewid}/edit', 'ReviewRequestController@editForm');
 Route::post('/reviews/{reviewid}/edit', 'ReviewRequestController@edit');

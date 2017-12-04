@@ -56,10 +56,32 @@ class ReviewRequestController extends Controller {
 		]);
 	}
 
-	public function autoImportResults() {
+	public function autoImportResults($id) {
 		$user_id = session('user_id');
+		// TODO : Paginate
+		$auto_import = DB::table('auto_imports')
+		->where([
+			['user_id','=', $user_id],
+			['id', '=', $id]
+		])->first();
 
-		//TODO Return results and logs
+		if(!$auto_import) {
+			return view('home', ['error_message' => 'Auto import setup not found']);
+		}
+
+
+
+		$import_results = DB::table('auto_imports_result')
+		->select('auto_imports_result.*', 'requests.name as review_name', 'requests.id as review_id', 'requests.url as review_url')
+		->where('auto_import_id',$id)
+		->leftJoin('requests', 'auto_imports_result.request_id', '=', 'requests.id')
+		->orderBy('auto_imports_result.created_at', 'desc')
+		->get();
+
+		return view('auto-import-logs', [
+			'imports' => $import_results,
+			'setup' => $auto_import,
+		]);
 	}
 
 	public function autoImportSetup(Request $request) {

@@ -1,5 +1,5 @@
 @extends('layouts.materialize-main')
-@section('title', 'Register')
+@section('title', 'Auto-Import setup')
 
 @section('additional_head')
 	<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/css/select2.min.css" rel="stylesheet" />
@@ -26,13 +26,12 @@
 	  					<h5>{{$auto_import->repository}}</h5>
 	  					<div class="row">
 	  					@if ($auto_import->is_active)
-	  						<button conclick="updateAutoImport(false,'{{$auto_import->id}}')" class="green btn waves-effect waves-light tooltipped" data-position="top" data-delay="50" data-tooltip="Click to disable"><i class="fa fa-check left" aria-hidden="true"></i><b>Active</b></button>
+	  						<button onclick="updateAutoImport(false,'{{$auto_import->id}}')" class="green btn waves-effect waves-light tooltipped" data-position="top" data-delay="50" data-tooltip="Click to disable"><i class="fa fa-check left" aria-hidden="true"></i><b>Active</b></button>
 	  					@else
 	  						<button onclick="updateAutoImport(true,'{{$auto_import->id}}')" class="red btn waves-effect waves-light tooltipped" data-position="top" data-delay="50" data-tooltip="Click to enable"><i class="fa fa-exclamation-triangle left" aria-hidden="true"></i><b>Inactive</b></button>
 	  					@endif
-	  					    <a href="/auto-import/{{$auto_import->id}}/logs" class="btn btn-info middle-red-purple waves-effect waves-light"><i class="fa fa-file-text left" aria-hidden="true"></i>Logs</a>
+	  					    <a href="/reviews/auto-import/{{$auto_import->id}}/logs" class="btn btn-info middle-red-purple waves-effect waves-light"><i class="fa fa-file-text left" aria-hidden="true"></i>Logs</a>
 	  					</div>
-	  					Last run <b>2017-11-28 21:44:06</b>
 	  				</li>
 	  @endforeach
 	 	</ul>
