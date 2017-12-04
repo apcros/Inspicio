@@ -90,3 +90,20 @@ nav ul li.active {
 blockquote {
     border-left: 5px solid #592E83;
 }
+
+.tabs .tab a:hover, .tabs .tab a.active {
+    background-color: #230C33;
+    color: #FF5A23;
+}
+
+.indicator {
+    background-color: #FF5A23 !important;
+}
+
+.tabs .tab a {
+    color: black;
+}
+
+.tabs {
+overflow-x: hidden;
+}

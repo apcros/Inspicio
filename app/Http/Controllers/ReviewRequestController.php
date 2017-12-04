@@ -441,7 +441,7 @@ class ReviewRequestController extends Controller {
 		return DB::table('request_tracking')
 			->join('requests', 'request_tracking.request_id', '=', 'requests.id')
 			->join('skills', 'requests.skill_id', '=', 'skills.id')
-			->select('requests.id', 'requests.name', 'requests.updated_at', 'skills.name as language')
+			->select('requests.*','skills.name as language')
 			->orderBy('requests.updated_at', 'desc')
 			->where([
 				['request_tracking.user_id', '=', $user_id],
