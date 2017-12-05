@@ -431,24 +431,37 @@ class ReviewRequestController extends Controller {
 	public function viewAllTracked() {
 		$user_id = session('user_id');
 
-		$unapproved = $this->getTrackingsFor($user_id, false);
-		$approved   = $this->getTrackingsFor($user_id, true);
+		$archived = $this->getTrackingsFor($user_id, true, false);
+		$active   = $this->getTrackingsFor($user_id, false, true);
 
-		return view('my-tracked-reviews', ['reviews_unapproved' => $unapproved, 'reviews_approved' => $approved]);
+		return view('my-tracked-reviews', ['active' => $active, 'archived' => $archived]);
 	}
 
-	private function getTrackingsFor($user_id, $approved) {
+	private function getTrackingsFor($user_id, $approved, $is_open) {
+
+		$where_clause = [
+				['request_tracking.user_id', '=', $user_id],
+				['request_tracking.is_approved', '=', $approved]
+		];
+
+		if($is_open) {
+			$where_clause[] = ['requests.status', '=', 'open'];
+		}
+
 		return DB::table('request_tracking')
 			->join('requests', 'request_tracking.request_id', '=', 'requests.id')
 			->join('skills', 'requests.skill_id', '=', 'skills.id')
-			->select('requests.*','skills.name as language')
-			->orderBy('requests.updated_at', 'desc')
-			->where([
-				['request_tracking.user_id', '=', $user_id],
-				['request_tracking.is_approved', '=', $approved],
-				['requests.status', '=', 'open'],
-			])
+			->join('users', 'requests.author_id', '=', 'users.id')
+			->select(
+				'requests.*',
+				'skills.name as language',
+				'request_tracking.updated_at as tracking_time',
+				'users.nickname as author_name',
+				'request_tracking.is_approved')
+			->orderBy('tracking_time', 'desc')
+			->where($where_clause)
 			->get();
+
 	}
 
 }
