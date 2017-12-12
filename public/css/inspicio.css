@@ -107,3 +107,29 @@ blockquote {
 .tabs {
 overflow-x: hidden;
 }
+
+.landing-icon {
+    font-size: 1000%;
+}
+
+.landing-block-1 {
+    background-image: url("/img/background-about.jpg");
+    margin-top: 0px;
+    padding-top: 100px;
+    padding-bottom: 100px;
+    margin-bottom: 0px;
+    color: black;
+}
+
+.landing-block-2 {
+    margin-bottom: 0px;
+}
+.landing-block-3 {
+    background-image: url("/img/background-about.jpg");
+    background-position: center bottom;
+    padding-top: 100px;
+    margin-top: 0px;
+    padding-bottom: 100px;
+    margin-bottom: -40px;
+    color: black;
+}
