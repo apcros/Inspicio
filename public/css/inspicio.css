@@ -133,3 +133,7 @@ overflow-x: hidden;
     margin-bottom: -40px;
     color: black;
 }
+
+label {
+    color: black !important;
+}
