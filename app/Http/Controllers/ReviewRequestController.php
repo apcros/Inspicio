@@ -297,14 +297,23 @@ class ReviewRequestController extends Controller {
 		$account   = DB::table('accounts')->where('id', $review->account_id)->first();
 		$user_id   = session('user_id');
 
+		$user    = new User($user_id);
+		$account_checked = $user->getGitAccount($account->id);
+		$client          = $user->getAccountClient($account_checked);
+		$permissions     = $client->getAvailablePermissionLevels();
+		$current_permission = $permissions[$account_checked->permission_level];
+
 		if ($user_id != $review->author_id) {
 			return view('home', ['error_message' => "You can't edit someone else code review request"]);
 		}
 
+
+
 		return view('editreview', [
-			'review'    => $review,
-			'provider'  => ucfirst($account->provider),
-			'languages' => $languages,
+			'review'     => $review,
+			'provider'   => ucfirst($account->provider),
+			'languages'  => $languages,
+			'permission' => $current_permission
 		]);
 	}
 
