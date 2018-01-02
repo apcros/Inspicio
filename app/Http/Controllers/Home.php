@@ -104,8 +104,10 @@ class Home extends Controller {
 				'requests.id',
 				'requests.name',
 				'requests.repository',
+				'requests.created_at as created_at',
 				'users.nickname as author',
-				'skills.name as language'
+				'skills.name as language',
+				DB::raw('(SELECT count(request_tracking.request_id ) FROM request_tracking WHERE request_tracking.request_id = requests.id AND request_tracking.is_active = TRUE) as followers')
 			)
 			->orderBy('requests.created_at', 'desc')
 			->groupBy('skills.name', 'users.nickname', 'requests.id')
