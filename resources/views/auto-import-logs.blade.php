@@ -7,19 +7,23 @@
 
 @section('content')
 <div class="container">
+
+	<div class="card-panel">
+		<a href="../" class="btn-flat waves-effect waves-light"><i class="fa fa-arrow-left left" aria-hidden="true"></i>Back</a>
 	@if ($setup->is_active)
-		<div class="card-panel green-text">
+		<div class="green-text">
 			<h4>Logs for <b>{{$setup->repository}}</b></h4>
 			<p><i class="fa fa-check left" aria-hidden="true"></i>Currently active</p>
 	  		<button onclick="updateAutoImport(false,'{{$setup->id}}')" class="red btn waves-effect waves-light"><i class="fa fa-exclamation-triangle left" aria-hidden="true"></i><b>Disable</b></button>	
 		</div>
 	@else
-		<div class="card-panel red-text">
+		<div class="red-text">
 			<h4>Logs for <b>{{$setup->repository}}</b></h4>
 			<p><i class="fa fa-exclamation-triangle left" aria-hidden="true"></i>Currently disabled</p>
 			<button onclick="updateAutoImport(true,'{{$setup->id}}')" class="green btn waves-effect waves-light"><i class="fa fa-check left" aria-hidden="true"></i><b>Enable</b></button>
 		</div>
 	@endif
+	</div>
 	  @foreach ($imports as $import)
 	  	@if ($import->is_success)
 			<div class="card">
