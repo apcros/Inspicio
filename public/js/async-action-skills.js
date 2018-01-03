@@ -1,12 +1,10 @@
 function addSkill() {
-	var btn_status = window.startLoading("#new_skill_btn");
+	var btnStatus = window.startLoading("#new_skill_btn");
 
-	var skill_id = $('#skill').val();
-	var skill_name = $('#skill option:selected').text();
-	var level_id = $('#level').val();
-	var level_name = $('#level option:selected').text();
+	var skillId = $("#skill").val();
+	var levelId = $("#level").val();
 
-	$.post(window.location.origin+"/ajax/account/skills", {skill: skill_id, level: level_id}, function(data) {
+	$.post(window.location.origin+"/ajax/account/skills", {skill: skillId, level: levelId}, function(data) {
 		if(data.success) {
 			Materialize.toast(data.message, 4000, "green");
 			loadSkills();
@@ -19,13 +17,13 @@ function addSkill() {
 		Materialize.toast("Unexpected error while executing the request", 4000, "red");
 	})
 	.always(function() {
-		window.stopLoading("#new_skill_btn",btn_status);
+		window.stopLoading("#new_skill_btn",btnStatus);
 	});
 
 }
 
 function deleteSkill(id) {
-	showModalConfirm('Deleting skill','You are about to delete this skill, are you sure ?', function() {
+	showModalConfirm("Deleting skill","You are about to delete this skill, are you sure ?", function() {
 		$.post(window.location.origin+"/ajax/account/skills/"+id+"/delete", function(data) {
 			if(data.success) {
 				Materialize.toast(data.message,5000,"green");
