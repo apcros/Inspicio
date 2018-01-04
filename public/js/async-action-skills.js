@@ -1,3 +1,16 @@
+function loadSkills() {
+	$.get(window.location.origin+"/ajax/account/skills", function(data) {
+		if(data.success) {
+			window.updateOrCreateVue("skillslist","#skills-list", "skills", data.skills);
+		} else {
+			Materialize.toast("Failed to load skills : "+data.message, 5000, "red");
+		}
+	})
+	.fail(function() {
+		Materialize.toast("Unexpected error while loading skills", 5000, "red");
+	});
+}
+
 function addSkill() {
 	var btnStatus = window.startLoading("#new_skill_btn");
 
@@ -37,19 +50,6 @@ function deleteSkill(id) {
 		})
 	});
 
-}
-
-function loadSkills() {
-	$.get(window.location.origin+"/ajax/account/skills", function(data) {
-		if(data.success) {
-			window.updateOrCreateVue("skillslist","#skills-list", "skills", data.skills);
-		} else {
-			Materialize.toast("Failed to load skills : "+data.message, 5000, "red");
-		}
-	})
-	.fail(function() {
-		Materialize.toast("Unexpected error while loading skills", 5000, "red");
-	});
 }
 
 $(document).ready(function() {

@@ -24,21 +24,21 @@ function search(page, trigger_loading = true) {
 
 			if(result.reviews.prev_page_url != null){
 				$( "#previous-a" ).click(function() {
-				  var previous_btn_state = window.startLoading("#previous-a");
-				  var btn_state = window.startLoading("#start-search-btn");
-				  window.search((result.reviews.current_page-1),false);
-				  window.stopLoading("#previous-a", previous_btn_state);
-				  window.stopLoading("#start-search-btn",btn_state);
+					var previousBtnState = window.startLoading("#previous-a");
+					var btnState = window.startLoading("#start-search-btn");
+					window.search((result.reviews.current_page-1),false);
+					window.stopLoading("#previous-a", previousBtnState);
+					window.stopLoading("#start-search-btn",btnState);
 				});
 			}
 
 			if(result.reviews.next_page_url != null) {
 				$("#next-a").click(function() {
-					var next_btn_state = window.startLoading("#next-a");
-					var btn_state = window.startLoading("#start-search-btn");
+					var nextBtnState = window.startLoading("#next-a");
+					var btnState = window.startLoading("#start-search-btn");
 					window.search((result.reviews.current_page+1),false);
-					window.stopLoading("#next-a", next_btn_state);
-					window.stopLoading("#start-search-btn",btn_state);
+					window.stopLoading("#next-a", nextBtnState);
+					window.stopLoading("#start-search-btn",btnState);
 				});
 			}
 
