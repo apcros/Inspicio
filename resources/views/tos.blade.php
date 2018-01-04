@@ -1,22 +1,26 @@
-@extends('layouts.bootstrap-main')
+@extends('layouts.materialize-main')
 @section('title', 'Register')
 
 @section('content')
-	<div class="jumbotron">
-	  <h2>Generic Rules</h2>
-	  <ul>
-	  	<li>Respect other people's code</li>
-	  	<li>Don't insult anyone in a code review</li>
-	  	<li>Try to be as objective as possible</li>
-	  </ul>
+<div class="container">
+	<div class="card">
+    <div class="card-content">
+  	  <h2>Generic Rules</h2>
+  	  <ul>
+  	  	<li>Respect other people's code</li>
+  	  	<li>Don't insult anyone in a code review</li>
+  	  	<li>Try to be as objective as possible</li>
+  	  </ul>
+    </div>
 	</div>
 
-	<div class="jumbotron">
+<div class="card">
+  <div class="card-content">
 <h2>Inspicio Terms of Service and Privacy Policy</h2>
 
 <h3>1. Terms</h3>
 
-  <p>By accessing the website at <a href="http://inspicio.tech">http://inspicio.tech</a>, you are agreeing to be bound by these terms of service, all applicable laws and regulations, and agree that you are responsible for compliance with any applicable local laws. If you do not agree with any of these terms, you are prohibited from using or accessing this site. The materials contained in this website are protected by applicable copyright and trademark law.</p>
+  <p>By accessing the website at <a href="{{env('APP_URL')}}">{{env('APP_URL')}}</a>, you are agreeing to be bound by these terms of service, all applicable laws and regulations, and agree that you are responsible for compliance with any applicable local laws. If you do not agree with any of these terms, you are prohibited from using or accessing this site. The materials contained in this website are protected by applicable copyright and trademark law.</p>
 
 <h3>2. Use License</h3>
 
@@ -80,4 +84,6 @@
 
   <p>We are committed to conducting our business in accordance with these principles in order to ensure that the confidentiality of personal information is protected and maintained. Inspicio may change this privacy policy from time to time at Inspicio's sole discretion.</p>
 	</div>
+</div>
+</div>
 @endsection

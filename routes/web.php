@@ -27,3 +27,4 @@ Route::get('/reviews/{reviewid}/view', 'ReviewRequestController@displayReview');
 Route::get('/members/{userid}/profile', 'Profile@displayPublicProfile');
 
 Route::post('/api/reviews/search', 'Home@search');
+Route::get('/api/reviews/{reviewid}/permissions', 'ReviewRequestApi@getpermissions');

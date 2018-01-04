@@ -1,7 +1,13 @@
-function search(page) {
+function search(page, trigger_loading = true) {
 	var query_val = $("#review-keywords").val();
 	var languages_selected = $("#review-language").val();
 	var search_in_closed = $("#review-can-be-closed").prop('checked');
+	var button_state;
+
+	if(trigger_loading) {
+		button_state = window.startLoading("#start-search-btn");
+	}
+	
 
 	$.post(window.location.origin+"/api/reviews/search",
 		{
@@ -18,21 +24,34 @@ function search(page) {
 
 			if(result.reviews.prev_page_url != null){
 				$( "#previous-a" ).click(function() {
-				  window.search((result.reviews.current_page-1));
+					var previousBtnState = window.startLoading("#previous-a");
+					var btnState = window.startLoading("#start-search-btn");
+					window.search((result.reviews.current_page-1),false);
+					window.stopLoading("#previous-a", previousBtnState);
+					window.stopLoading("#start-search-btn",btnState);
 				});
 			}
 
 			if(result.reviews.next_page_url != null) {
 				$("#next-a").click(function() {
-					window.search((result.reviews.current_page+1));
+					var nextBtnState = window.startLoading("#next-a");
+					var btnState = window.startLoading("#start-search-btn");
+					window.search((result.reviews.current_page+1),false);
+					window.stopLoading("#next-a", nextBtnState);
+					window.stopLoading("#start-search-btn",btnState);
 				});
 			}
 
 	},'json')
 	.fail(function() {
-		window.displayPopup('snackbar-error','Error while searching. Please try again',4000);
+		Materialize.toast("Error while searching. Please try again", 4000, "red");
+	})
+	.always(function() {
+		if(trigger_loading) {
+			window.stopLoading("#start-search-btn",button_state);
+		}
 	})
 }
 $(document).ready(function() {
-	$('#review-language').select2({placeholder: "Languages"});
+	$('#review-language').select2({placeholder: "Language(s)"});
 })

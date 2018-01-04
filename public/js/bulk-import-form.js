@@ -1,39 +1,28 @@
-function displayLoader() {
-	$("#async_loading").html("<div class='progress'><div class='progress-bar progress-bar-striped active' role='progressbar' style='width: 100%'><b>Loading available pull requests..</b></div></div>");
-}
-
 function loadPrs() {
 	$.getJSON("/ajax/reviews/available-for-import", function (data) {
-		var html = "<select class='form-control' name='prs_selected[]' id='prs_selected' multiple='multiple'>";
-
 		if(data.success === 1) {
 			var repositories = data.message.repositories;
 			var points = data.message.points;
-			$.each(repositories, function (keyRepo, repository) {
-				$.each(repository.pull_requests, function (keyPr, pullRequest) {
-					html += "<option value='"+pullRequest.url+","+repository.account_id+"'>"+pullRequest.name+" (<b>"+repository.object.name+"</b>) </option>";
-				});
-				
-			});
-			html += "</select>";
 
-			$("#async_loading").html(html);
+			updateOrCreateVue("prs_to_import","#available_prs", "data", {is_loading: false, repositories: repositories, points: points});
+
 			$("#import-btn").attr("disabled", false);
 
-			$("#prs_selected").select2({
-				placeholder: "Available PRs to import",
-				maximumSelectionLength: points
-			});
 		} else {
-			$("#async_loading").html("<div class='alert alert-danger'>An error ocurred when loading your available pull requests : "+data.message+"</div>");
+			updateOrCreateVue("prs_to_import","#available_prs", "data", {is_loading: false, error_message: "An error ocurred when loading your available pull requests : "+data.message});
 		}
 
 	}).fail(function() {
-		$("#async_loading").html("<div class='alert alert-danger'>An unknown error ocurred when loading your available pull requests</div>");
+		updateOrCreateVue("prs_to_import","#available_prs", "data", {is_loading: false, error_message: "An ufnknown error ocurred when loading your available pull requests"});
 	});
 }
 
 $(document).ready(function() {
-	displayLoader();
+	updateOrCreateVue("prs_to_import","#available_prs", "data", {is_loading: true}, function() {
+			$("#prs_selected").select2({
+				placeholder: "Available PRs to import",
+				maximumSelectionLength: available_vues["prs_to_import"].data.points
+			});
+	});
 	loadPrs();
 });

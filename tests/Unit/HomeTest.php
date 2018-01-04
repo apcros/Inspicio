@@ -34,6 +34,7 @@ class HomeTest extends TestCase {
 
 	public function testReferralWithNotifications() {
 		$this->seed('DatabaseSeederForTests');
+		Notification::fake();
 		$referred_by = 'e6ca8f33-b196-4006-b7e6-3f2ffef3df92';
 		$user_data   = [
 			'email'         => 'referral@testest.co.uk',
