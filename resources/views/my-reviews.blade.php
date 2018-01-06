@@ -58,8 +58,10 @@
 		</div>
     </div>
     <div class="card-action">
+    	<div class="row">
             <a href="/reviews/{{$review->id}}/view" class="action-btn-orange btn btn-flat waves-effect waves-light"><i class="fa fa-info-circle left" aria-hidden="true"></i>More info</a>
     		<a href="/reviews/{{$review->id}}/view" class="btn btn-info waves-effect waves-light giants-orange"><i class="fa fa-pencil-square left" aria-hidden="true"></i>Edit</a>
+    	</div>
    </div>
 </div>
 @endforeach
