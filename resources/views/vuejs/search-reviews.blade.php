@@ -21,17 +21,11 @@
     </div>
 </div>
 <ul class="pagination">
-	<li v-if="reviews.prev_page_url != null">
-		<button class="waves-effect btn-flat" id='previous-a' aria-label='Previous'><i class="fa fa-chevron-left" aria-hidden="true"></i></button>
-	</li>
-	<li v-else class="disabled">
-		<button class="waves-effect btn-flat disabled" disabled id='previous-a' aria-label='Previous'><i class="fa fa-chevron-left" aria-hidden="true"></i></button>
+	<li>
+		<button class="waves-effect btn-flat" :disabled="!reviews.prev_page_url" id='previous-a' aria-label='Previous'><i class="fa fa-chevron-left" aria-hidden="true"></i></button>
 	</li>
 	<li class='active'><a href='#'>@{{reviews.current_page}}</a></li>
-	<li v-if="reviews.next_page_url != null">
-		<button class="waves-effect btn-flat" id='next-a' aria-label='Next'><i class="fa fa-chevron-right" aria-hidden="true"></i></button>
-	</li>
-	<li v-else class="disabled">
-		<button class="waves-effect btn-flat disabled" disabled id='next-a' aria-label='Next'><i class="fa fa-chevron-right" aria-hidden="true"></i></button>
+	<li>
+		<button class="waves-effect btn-flat" :disabled="!reviews.next_page_url" id='next-a' aria-label='Next'><i class="fa fa-chevron-right" aria-hidden="true"></i></button>
 	</li>
 </ul>
