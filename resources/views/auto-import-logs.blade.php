@@ -32,8 +32,14 @@
 			        <p>Imported with success at <b>{{$import->updated_at}} !</b></p>
 				</div>
 				<div class="card-action">
-					<a href="{{$import->review_url}}" target="_blank" class="btn btn-info middle-red-purple waves-effect waves-light"><i class="fa fa-external-link left" aria-hidden="true"></i>View on Git</a>
- 					<a href="/reviews/{{$import->review_id}}/view" target="_blank" class="btn btn-info giants-orange waves-effect waves-light"><i class="fa fa-info-circle left" aria-hidden="true"></i>View on Inspicio</a>
+					<div class="row">
+						<div class="row col s12 m3">
+							<a href="{{$import->review_url}}" target="_blank" class="col s12 btn btn-info middle-red-purple waves-effect waves-light"><i class="fa fa-external-link left" aria-hidden="true"></i>View on Git</a>
+ 						</div>
+ 						<div class="row col s12 m3">
+ 							<a href="/reviews/{{$import->review_id}}/view" target="_blank" class="col s12 btn btn-info giants-orange waves-effect waves-light"><i class="fa fa-info-circle left" aria-hidden="true"></i>View on Inspicio</a>
+						</div>
+					</div>
 				</div>
 			</div>
 	  	@else

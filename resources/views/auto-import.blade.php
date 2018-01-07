@@ -25,12 +25,16 @@
 	  				<li class="collection-item">
 	  					<h5>{{$auto_import->repository}}</h5>
 	  					<div class="row">
+	  						<div class="row col s12 m3">
 	  					@if ($auto_import->is_active)
-	  						<button onclick="updateAutoImport(false,'{{$auto_import->id}}')" class="green btn waves-effect waves-light tooltipped" data-position="top" data-delay="50" data-tooltip="Click to disable"><i class="fa fa-check left" aria-hidden="true"></i><b>Active</b></button>
+	  						<button onclick="updateAutoImport(false,'{{$auto_import->id}}')" class="col s12 green btn waves-effect waves-light tooltipped" data-position="top" data-delay="50" data-tooltip="Click to disable"><i class="fa fa-check left" aria-hidden="true"></i><b>Active</b></button>
 	  					@else
-	  						<button onclick="updateAutoImport(true,'{{$auto_import->id}}')" class="red btn waves-effect waves-light tooltipped" data-position="top" data-delay="50" data-tooltip="Click to enable"><i class="fa fa-exclamation-triangle left" aria-hidden="true"></i><b>Inactive</b></button>
+	  						<button onclick="updateAutoImport(true,'{{$auto_import->id}}')" class="col s12 red btn waves-effect waves-light tooltipped" data-position="top" data-delay="50" data-tooltip="Click to enable"><i class="fa fa-exclamation-triangle left" aria-hidden="true"></i><b>Inactive</b></button>
 	  					@endif
-	  					    <a href="/reviews/auto-import/{{$auto_import->id}}/logs" class="btn btn-info middle-red-purple waves-effect waves-light"><i class="fa fa-file-text left" aria-hidden="true"></i>Logs</a>
+	  						</div>
+	  						<div class="row col s12 m3">
+	  					    	<a href="/reviews/auto-import/{{$auto_import->id}}/logs" class="col s12 btn btn-info middle-red-purple waves-effect waves-light"><i class="fa fa-file-text left" aria-hidden="true"></i>Logs</a>
+	  						</div>
 	  					</div>
 	  				</li>
 	  @endforeach

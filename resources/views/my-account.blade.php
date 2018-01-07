@@ -40,42 +40,48 @@
 		    </ul>
 		</div>
 		<div class="card-action">
-			<button class="btn btn-info middle-red-purple waves-effect waves-light" onclick='$("#modal-account-update").modal("open");'><i class="fa fa-pencil-square-o left" aria-hidden="true"></i>Edit</button>
-			<a href="/members/{{$user->id}}/profile" class="btn btn-info middle-red-purple waves-effect waves-light"><i class="fa fa-globe left" aria-hidden="true"></i>View my public profile</a>
+			<div class="row">
+				<div class="row col s12 m3">
+					<button class="btn btn-info middle-red-purple waves-effect waves-light col s12" onclick='$("#modal-account-update").modal("open");'><i class="fa fa-pencil-square-o left" aria-hidden="true"></i>Edit</button>
+				</div>
+				<div class="row col s12 m4">
+					<a href="/members/{{$user->id}}/profile" class="btn btn-info middle-red-purple waves-effect waves-light col s12"><i class="fa fa-globe left" aria-hidden="true"></i>View my public profile</a>
+				</div>
+			</div>
 		</div>
 	</div>
 	<div class="card">
 		<div class="card-content">
 			<span class="card-title">GIT accounts</span>
-			<table class="bordered striped">
-		        <thead>
-		          <tr>
-		              <th>Provider</th>
-		              <th>Login</th>
-		              <th>Added on</th>
-		              <th>Last used</th>
-		              <th>Permission level</th>
-		              <th></th>
-		          </tr>
-		        </thead>
-		        <tbody>
-				    @foreach ($accounts as $account)
-					<tr>
-						<td>{{$account->provider }}</td>
-						<td>{{$account->login}}</td>
-						<td>{{$account->created_at}}</td>
-						<td>{{$account->updated_at}}</td>
-						<td>{{$permissions[$account->provider][$account->permission_level]['description']}}</td>
-						<td><button onclick="$('#modal-permissions-{{$account->provider}}').modal('open');" class="btn btn-info middle-red-purple waves-effect waves-light right"><i class="fa fa-cogs" aria-hidden="true"></i></button></div></td>
-					</tr>
-					@endforeach
-		        </tbody>
-		    </table>
+			<ul class="collection">
+				@foreach ($accounts as $account)
+				<li class="collection-item">
+					<i class="fa fa-user-o left" aria-hidden="true"></i>
+		      		<span class="title"><b>{{$account->login}}</b> ({{$account->provider }})</span>
+		      		<div class="row">
+		      		<p><b>Added at :</b> {{$account->created_at}}</p>
+		      		<p><b>Last used :</b> {{$account->updated_at}}</p>
+		      	</div>
+		      	<div class="row">
+		      		<p><i class="fa fa-key left" aria-hidden="true"></i> {{$permissions[$account->provider][$account->permission_level]['description']}}</p>
+		      		<p><button onclick="$('#modal-permissions-{{$account->provider}}').modal('open');" class="btn btn-info middle-red-purple waves-effect waves-light left"><i class="fa fa-cogs left" aria-hidden="true"></i>Update permissions</button></p>
+				</div>
+				</li>
+				@endforeach
+			</ul>
 		</div>
 		<div class="card-action">
-			<a href="/oauth/github/" class="btn btn-info waves-effect waves-light middle-red-purple"><i class="fa fa-github left" aria-hidden="true"></i> Link new GitHub</a>
-			<a href="/oauth/bitbucket/" class="btn btn-info waves-effect waves-light middle-red-purple"><i class="fa fa-bitbucket left" aria-hidden="true"></i> Link new Bitbucket</a>
-			<a href="#" class="btn btn-info waves-effect waves-light middle-red-purple disabled"><i class="fa fa-gitlab left" aria-hidden="true"></i> Link new  Gitlab</a>
+			<div class="row center-align">
+				<div class="row col s12 m4">
+					<a href="/oauth/github/" class="col s12 btn btn-info waves-effect waves-light middle-red-purple"><i class="fa fa-github left" aria-hidden="true"></i> Link new GitHub</a>
+				</div>
+				<div class="row col s12 m4">
+					<a href="/oauth/bitbucket/" class="col s12 btn btn-info waves-effect waves-light middle-red-purple"><i class="fa fa-bitbucket left" aria-hidden="true"></i> Link new Bitbucket</a>
+				</div>
+				<div class="row col s12 m4">
+					<a href="#" class="col s12 btn btn-info waves-effect waves-light middle-red-purple disabled"><i class="fa fa-gitlab left" aria-hidden="true"></i> Link new  Gitlab</a>
+				</div>
+			</div>
 		</div>
 	</div>
 	<div class="card">
