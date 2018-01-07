@@ -21,6 +21,8 @@ function search(page, trigger_loading = true) {
 		,function(result) {
 
 			window.updateOrCreateVue('searchreviews','#reviews-search-result', 'reviews', result.reviews);
+			$("#previous-a").off();
+			$("#next-a").off();
 
 			if(result.reviews.prev_page_url != null){
 				$( "#previous-a" ).click(function() {

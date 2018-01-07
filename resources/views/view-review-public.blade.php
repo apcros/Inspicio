@@ -24,11 +24,11 @@
 	              <div class="col s6 m3">
 	                  <i class="fa fa-code left" aria-hidden="true"></i>{{$review->language}}
 	              </div>
-	              <div class="col s6 m3">
+	              <div class="col s12 m3">
 	                  <i class="fa fa-calendar left" aria-hidden="true"></i>{{$review->created_at}}
 	              </div>
-	              <div class="col s6 m3">
-	                  <i class="fa fa-users left" aria-hidden="true"></i>{{$followers}} follower/reviewer(s)
+	              <div class="col s12 m3">
+	                  <i class="fa fa-users left" aria-hidden="true"></i>{{$followers}} follower(s)
 	              </div>
             </div>
             <div class="row">
@@ -36,7 +36,9 @@
             <blockquote>{!! $review->description !!}</blockquote>
     </div>
     <div class="card-action" v-cloak id="review-actions">
-    	@include('vuejs.review-action')
+    	<div class="row center-align">
+    		@include('vuejs.review-action')
+    	</div>
     </div>
 </div>
 <div id="confirm_modal_vue">
