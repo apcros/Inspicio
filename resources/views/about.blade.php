@@ -1,36 +1,56 @@
-@extends('layouts.bootstrap-main')
+@extends('layouts.materialize-main')
 @section('title', 'About')
 
 @section('content')
-    <div class="jumbotron">
-        <p>
-            <h2>What is Inspicio ?</h2>
-            You can see Inspicio as a social network exclusively focused around code reviews.
-            As hobbyist developers, it's often quite hard to find experienced people to review your code
-            </br>
-            That's where Inspicio come in play ! The goal is to put people that want to review code and people that want to get their code reviewed in relation.
-        </p>
-        <p>
-            <h2>How does it work ?</h2>
-            You can sign-in with Bitbucket or Github (Gitlab support coming soon) and go create a review.
-            Inspicio will load a list of your repo using all your linked Git accounts along with a list of branches and opened pull requests.
-            You can create an Inspicio code review request from an existing Bitbucket/Github pull request or create a new one from existing branches.
-            </br>
-            The actual review platform will be either Github or Bitbucket (Depending of where your repository is hosted)
-            Creating a code review request will cost you <b>1 point</b> (You get 5 points upon signup) and will put your code review request on the home page.
-            (Your code review can also be searched)
-            
-            From there, other users might choose to follow your review request, give you feedback and approve your review.
-            </br>
-            <h4>And how to I get points ?</h4>
-            It's easy ! You just have to do someone's review. Inspicio is built around a sharing mindset and it push you as a developer to be exposed
-            to code your normally wouldn't.
-        </p>
-        <p>
-            <h2>Skills ?</h2>
-            You can add skills to your profile, this is helpful to indicate to other users what language you write in and what's your level
-            </br>
-            If you do enough reviews or if you request it, you can get a skill verified.
-        </p>
-    </div>
+     <div class="row center-align landing-block-1">
+        <h2>Write better code !</h2>
+        <p>Pump up your personal projects to the next level !</p>
+        <p>Listen to experienced developers from all around the world and give your
+        Code the attention it deserves.</p>
+        <h5 class="middle-red-purple-text"><b>Gain Inspicio points by reviewing code and use theses points to put up code review requests</b></h5>
+     </div>
+     <div class="row center-align raisin-black white-text landing-block-2">
+        <br>
+        <h2>What is Inspicio ?</h2>
+           <div class="col s12 m4">
+                <div class="row">
+                    <div class="col s12 landing-icon giants-orange-text"><i class="fa fa-users" aria-hidden="true"></i></div>
+                    <div class="col s12">
+                        <h5>Take part in the community</h5>
+                        <p>Look at new languages, be involved in other developers projects.</p>
+                        <p>Build up your profile and your skills,
+                        The more skills you rack up and the more reviews you do, the most likely you are to be selected to be able to review private content and become a premium user</p>
+                    </div>
+                </div>
+          </div>
+           <div class="col s12 m4">
+                <div class="row">
+                    <div class="col s12 landing-icon giants-orange-text"><i class="fa fa-lock" aria-hidden="true"></i></div>
+                    <div class="col s12">
+                        <h5>Sensitive Content ?</h5>
+                                                <p>If you don’t want all eyes on your code you can create private reviews* using our premium plans. You can then rely on the verified professional developers using Inspicio to analyze in details your code.</p>
+                    </div>
+                </div>
+          </div>
+          <div class="col s12 m4">
+                <div class="row">
+                    <div class="col s12 landing-icon giants-orange-text"><i class="fa fa-bell" aria-hidden="true"></i></div>
+                    <div class="col s12">
+                        <h5>Reminders & Recommendations</h5>
+                        <p>Never forget a pull request or chase a co-worker again !</p>
+                        <p>Inspicio will remind you of forgotten pull requests</p>
+                        <p>If you're bored, you can enable the PR recommandation to be suggested with code you might be interested in</p>
+                    </div>
+                </div>
+          </div>
+          <p class="left">     <i>*Available soon</i></p>
+     </div>
+     <div class="row center-align landing-block-3">
+     @if (!Session::has('user_email'))
+     
+            <h2>Sign in now</h2>
+            <h5>It's easy, you just need a Github or Bitbucket account and you're all set !</h5>
+            <a href="/choose-auth" class="btn btn-large middle-red-purple action-btn-orange waves-effect waves-light"><i class="fa fa-sign-in left" aria-hidden="true"></i>Sign in</a>
+     @endif
+     </div>
 @endsection

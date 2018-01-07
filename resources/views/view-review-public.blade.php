@@ -1,4 +1,4 @@
-@extends('layouts.bootstrap-main')
+@extends('layouts.materialize-main')
 @section('title',  $review->name .' - View Review Request')
 
 @section('additional_head')
@@ -11,56 +11,37 @@
 @endsection
 
 @section('content')
-	  	<div class="panel panel-default">
-		  <div class="panel-heading">
-		    <h3 class="panel-title">{{ $review->name }} <span class="badge">{{$review->language}}</span></h3>
-		  </div>
-		  <div class="panel-body">
-		  	@if ($review->status == 'closed')
-				<div class="alert alert-warning"><b>This review is closed</b></div>
-			@endif
-		  	<i>Created at : {{$review->created_at}}, Last updated : {{$review->updated_at}}</i>
-		  	<hr>
-		    <b>Description :</b>
-		    <div class="well">{!! $review->description !!}</div>
-		    <hr>
-		    Created by <a href="/members/{{$review->author_id}}/profile">{{$review->nickname}}</a>
-		    <span class="badge">{{$followers}} Reviewers</span>
-		  </div>
-		  <div class="panel-footer">
-		  	@if(session('user_id') && $review->status == 'open')
-		  		@if (session('user_id') != $review->author_id)
-
-			  		@if (isset($tracked))
-			  			@if ($tracked->is_approved)
-			  				<button class="btn btn-primary" disabled>Approved</button>
-			  			@else
-				  			<button onclick="approveReview('{{$review->id}}')" id="review-approve" class="btn btn-primary">Approve</button>
-			  			@endif
-
-			  			@if ($tracked->is_active)
-			  				<button onclick="unfollowReview('{{$review->id}}')" id="review-follow" class="btn btn-danger">Unfollow this review</button>
-			  			@else
-			  				<button onclick="followReview('{{$review->id}}')" id="review-follow" class="btn btn-info">Follow this review</button>
-			  			@endif
-			  		@else
-			  				<button onclick="approveReview('{{$review->id}}')" id="review-approve" class="btn btn-primary" disabled>Approve</button>
-				  			<button onclick="followReview('{{$review->id}}')" id="review-follow" class="btn btn-info">Follow this review</button>
-			  		@endif
-			  	@endif
-			@endif
-
-			@if(session('user_id') == $review->author_id)
-					@if ($review->status == 'open')
-			  			<a onclick="closeReview('{{$review->id}}')" id="review-close-{{$review->id}}" class="btn btn-warning">Close</a>
-			  			<a href="/reviews/{{$review->id}}/edit" id="review-edit-{{$review->id}}" class="btn btn-info">Edit</a>
-			  		@else
-			  			<a onclick="reopenReview('{{$review->id}}')" id="review-close-{{$review->id}}" class="btn btn-warning">Re-Open</a>
-			  			<a disabled href="#" id="review-edit-{{$review->id}}" class="btn btn-info">Edit</a>
-			  		@endif
-			@endif
-			  		<a href="{{$review->url}}" target="_blank" class="btn btn-info">View</a>
-			  </div>
-		</div>
-		<script type="text/javascript" src="{{ secure_asset('js/async-action-reviews.js') }}"></script>
+<script type="text/javascript" src="{{ secure_asset('js/vuejs-utils.js') }}"></script>
+<script type="text/javascript" src="{{ secure_asset('js/async-action-reviews.js') }}"></script>
+<input type="hidden" id="review-id" value="{{$review->id}}"/>
+<div class="card">
+	<div class="card-content">
+		<span class="card-title">{{$review->name}}</span>
+            <div class="row">
+	              <div class="col s6 m3">
+	                  <a class="giants-orange-text" href="/members/{{$review->author_id}}/profile"><i class="fa fa-user left" aria-hidden="true"></i>{{$review->nickname}}</a>
+	              </div>
+	              <div class="col s6 m3">
+	                  <i class="fa fa-code left" aria-hidden="true"></i>{{$review->language}}
+	              </div>
+	              <div class="col s12 m3">
+	                  <i class="fa fa-calendar left" aria-hidden="true"></i>{{$review->created_at}}
+	              </div>
+	              <div class="col s12 m3">
+	                  <i class="fa fa-users left" aria-hidden="true"></i>{{$followers}} follower(s)
+	              </div>
+            </div>
+            <div class="row">
+            	<b>Description</b>
+            <blockquote>{!! $review->description !!}</blockquote>
+    </div>
+    <div class="card-action" v-cloak id="review-actions">
+    	<div class="row center-align">
+    		@include('vuejs.review-action')
+    	</div>
+    </div>
+</div>
+<div id="confirm_modal_vue">
+	@include('vuejs.modal-confirm')
+</div>
 @endsection

@@ -125,6 +125,11 @@ class ReviewRequest {
 		}
 
 		if (!isset($args['language'])) {
+
+			if(!isset($args['language_search_term'])) {
+				return [false, 'No language selected'];
+			}
+
 			$args['language'] = $this->guessLanguageId($args['language_search_term']);
 		}
 

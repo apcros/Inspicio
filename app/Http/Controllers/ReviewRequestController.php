@@ -48,25 +48,39 @@ class ReviewRequestController extends Controller {
 		$user_id      = session('user_id');
 		$user         = new User($user_id);
 		$auto_imports = DB::table('auto_imports')->where('user_id', $user_id)->get();
-		$statuses     = array();
-
-		foreach ($auto_imports as $auto_import) {
-
-			$results = DB::table('auto_imports_result')->where([
-				['created_at', '>=', \Carbon\Carbon::now()->subWeek()],
-				['auto_import_id', '=', $auto_import->id],
-			])->get();
-
-			$statuses[] = [
-				'auto_import' => $auto_import,
-				'results'     => $results,
-			];
-		}
 
 		return view('auto-import', [
-			'statuses'        => $statuses,
+			'auto_imports'    => $auto_imports,
 			'points'          => $user->getPoints(),
 			'reposPerAccount' => $this->listReposPerAccount($user),
+		]);
+	}
+
+	public function autoImportResults($id) {
+		$user_id = session('user_id');
+		// TODO : Paginate
+		$auto_import = DB::table('auto_imports')
+		->where([
+			['user_id','=', $user_id],
+			['id', '=', $id]
+		])->first();
+
+		if(!$auto_import) {
+			return view('home', ['error_message' => 'Auto import setup not found']);
+		}
+
+
+
+		$import_results = DB::table('auto_imports_result')
+		->select('auto_imports_result.*', 'requests.name as review_name', 'requests.id as review_id', 'requests.url as review_url')
+		->where('auto_import_id',$id)
+		->leftJoin('requests', 'auto_imports_result.request_id', '=', 'requests.id')
+		->orderBy('auto_imports_result.created_at', 'desc')
+		->get();
+
+		return view('auto-import-logs', [
+			'imports' => $import_results,
+			'setup' => $auto_import,
 		]);
 	}
 
@@ -287,10 +301,17 @@ class ReviewRequestController extends Controller {
 			return view('home', ['error_message' => "You can't edit someone else code review request"]);
 		}
 
+		$user    = new User($user_id);
+		$account_checked = $user->getGitAccount($account->id);
+		$client          = $user->getAccountClient($account_checked);
+		$permissions     = $client->getAvailablePermissionLevels();
+		$current_permission = $permissions[$account_checked->permission_level];
+
 		return view('editreview', [
-			'review'    => $review,
-			'provider'  => ucfirst($account->provider),
-			'languages' => $languages,
+			'review'     => $review,
+			'provider'   => ucfirst($account->provider),
+			'languages'  => $languages,
+			'permission' => $current_permission
 		]);
 	}
 
@@ -417,24 +438,37 @@ class ReviewRequestController extends Controller {
 	public function viewAllTracked() {
 		$user_id = session('user_id');
 
-		$unapproved = $this->getTrackingsFor($user_id, false);
-		$approved   = $this->getTrackingsFor($user_id, true);
+		$archived = $this->getTrackingsFor($user_id, true, false);
+		$active   = $this->getTrackingsFor($user_id, false, true);
 
-		return view('my-tracked-reviews', ['reviews_unapproved' => $unapproved, 'reviews_approved' => $approved]);
+		return view('my-tracked-reviews', ['active' => $active, 'archived' => $archived]);
 	}
 
-	private function getTrackingsFor($user_id, $approved) {
+	private function getTrackingsFor($user_id, $approved, $is_open) {
+
+		$where_clause = [
+				['request_tracking.user_id', '=', $user_id],
+				['request_tracking.is_approved', '=', $approved]
+		];
+
+		if($is_open) {
+			$where_clause[] = ['requests.status', '=', 'open'];
+		}
+
 		return DB::table('request_tracking')
 			->join('requests', 'request_tracking.request_id', '=', 'requests.id')
 			->join('skills', 'requests.skill_id', '=', 'skills.id')
-			->select('requests.id', 'requests.name', 'requests.updated_at', 'skills.name as language')
-			->orderBy('requests.updated_at', 'desc')
-			->where([
-				['request_tracking.user_id', '=', $user_id],
-				['request_tracking.is_approved', '=', $approved],
-				['requests.status', '=', 'open'],
-			])
+			->join('users', 'requests.author_id', '=', 'users.id')
+			->select(
+				'requests.*',
+				'skills.name as language',
+				'request_tracking.updated_at as tracking_time',
+				'users.nickname as author_name',
+				'request_tracking.is_approved')
+			->orderBy('tracking_time', 'desc')
+			->where($where_clause)
 			->get();
+
 	}
 
 }

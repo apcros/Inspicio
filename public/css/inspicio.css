@@ -1,7 +1,139 @@
 body {
-	font-family: 'Molengo', sans-serif;
+    font-family: 'Molengo',sans-serif;
 }
 
 [v-cloak] {
-	display: none;
+    display: none;
+}
+
+.raisin-black {
+    background-color: #251F2D;
+}
+
+.raisin-black-text {
+    color: #251F2D;
+}
+
+.lavender-mist {
+    background-color: #E3DDF3;
+}
+
+.lavender-mist-text {
+    color: #E3DDF3;
+}
+
+.regalia {
+    background-color: #592E83;
+}
+
+.regalia-text {
+    color: #592E83;
+}
+
+.middle-red-purple {
+    background-color: #230C33;
+}
+
+.middle-red-purple-text {
+    color: #230C33;
+}
+
+.giants-orange {
+    background-color: #FF5A23;
+}
+
+.giants-orange-text {
+    color: #FF5A23;
+}
+
+.dropdown-content li > a {
+    color: #230C33;
+}
+
+.navbar-logo {
+    height: 46px;
+    padding-top: 8px;
+    padding-left: 10px;
+}
+
+.dropdown-content {
+    width: auto !important;
+}
+
+.force-orange-highlight {
+    color: #FF5A23 !important;
+}
+
+.action-btn-orange {
+    color: #FF5A23 !important;
+}
+
+.action-btn-orange:hover {
+    background-color: #251F2D !important;
+}
+
+nav ul li.active {
+    background-color: rgba(0,0,0,0.3);
+}
+
+.btn-info:hover {
+    background-color: #592E83;
+}
+
+.pagination li.active {
+   background-color: #230C33 !important;
+}
+[type="checkbox"]:checked+label:before {
+    border-right: 2px solid #FF5A23;
+    border-bottom: 2px solid #FF5A23;
+}
+blockquote {
+    border-left: 5px solid #592E83;
+}
+
+.tabs .tab a:hover, .tabs .tab a.active {
+    background-color: #230C33;
+    color: #FF5A23;
+}
+
+.indicator {
+    background-color: #FF5A23 !important;
+}
+
+.tabs .tab a {
+    color: black;
+}
+
+.tabs {
+overflow-x: hidden;
+}
+
+.landing-icon {
+    font-size: 1000%;
+}
+
+.landing-block-1 {
+    background-image: url("/img/background-about.jpg");
+    margin-top: 0px;
+    padding-top: 100px;
+    padding-bottom: 100px;
+    margin-bottom: 0px;
+    color: black;
+}
+
+.landing-block-2 {
+    margin-bottom: 0px;
+}
+.landing-block-3 {
+    background-image: url("/img/background-about.jpg");
+    background-position: center bottom;
+    padding-top: 100px;
+    margin-top: 0px;
+    padding-bottom: 100px;
+    margin-bottom: -40px;
+    color: black;
+}
+
+label {
+    color: black !important;
 }

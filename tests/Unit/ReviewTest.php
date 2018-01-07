@@ -27,9 +27,6 @@ class ReviewTest extends TestCase {
 		$response = $this->withSession($this->user_data)->get('/reviews/' . $this->user_review_id . '/view');
 		$response->assertStatus(200);
 
-		$content = $response->getContent();
-		$this->assertNotRegExp('/Follow/', $content, 'No follow button on your own code review request');
-
 		$response = $this->withSession($this->user_data_bis)->get('/reviews/blah/view');
 		$content  = $response->getContent();
 		$this->assertNotRegExp('/Not Found/', $content, 'PR not found');

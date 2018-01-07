@@ -1,65 +1,66 @@
-@extends('layouts.bootstrap-main')
+@extends('layouts.materialize-main')
 @section('title', 'View Review Request')
 
 @section('content')
-	<h3>Public profile for {{$user->nickname}}</h3>
-		 <div class="panel panel-default">
-		  <div class="panel-heading">
-		    <h3 class="panel-title">General info</h3>
-		  </div>
-		  <div class="panel-body">
-		  	<ul>
-		  		<li><b>Email :</b> {{$user->email}}</li>
-		  		<li><b>Name :</b> {{$user->name}}</li>
-		  	</ul>
-		  </div>
+<div class="container">
+	<h3>{{$user->nickname}} - Profile</h3>
+	<div class="card">
+		<div class="card-content">
+			<span class="card-title">Informations</span>
+			<ul class="collection">
+				<li class="collection-item"><i class="fa fa-envelope left" aria-hidden="true"></i> {{$user->email}}</li>
+				<li class="collection-item"><i class="fa fa-address-book left" aria-hidden="true"></i> {{$user->name}} ({{$user->nickname}})</li>
+			</ul>
 		</div>
-	  	<div class="panel panel-default">
-		  <div class="panel-heading">
-		    <h3 class="panel-title">Skills</h3>
-		  </div>
-		  <div class="panel-body">
-		  	<table class="table table-bordered">
-			  	<tr>
-			  		<th>Name</th>
-			  		<th>Level</th>
-			  	</tr>
-		  	@foreach ($skills as $skill)
-		  		<tr>
-		  			<td>
-		  			{{$skill->name}}
-		  			@if ($skill->is_verified)
-		  				<span class="badge">Verified</span>
+	</div>
+	<div class="card">
+		<div class="card-content">
+			<span class="card-title">Skills</span>
+			@if (count($skills))
+				<ul class="collection">
+				@foreach ($skills as $skill)
+					@if ($skill->is_verified)
+						<li class="collection-item giants-orange-text tooltipped" data-position="left" data-delay="50" data-tooltip="Skill verified" aria-hidden="true">
+		  					<i class="fa fa-certificate"></i>
+		  			@else
+		  				<li class="collection-item">
 		  			@endif
-		  			</td>
-
-		  			<td>
+						<b>{{$skill->name}}</b>
+						<br>
 		  			@if ($skill->level == 1)
 		  				Beginner/Junior
 		  			@elseif ($skill->level == 2)
 		  				Intermediate
 		  			@else
 		  				Advanced/Senior
-		  			@endif
-		  			</td>
-		  		</tr>
-		  	@endforeach
-		  	</table>
-		  </div>
+		  			@endif						 
+					</li>
+				@endforeach
+				</ul>
+			@else
+				<b>This user has no skills added to their account</b>
+			@endif
 		</div>
-		<div class="panel panel-default">
-		  <div class="panel-heading">
-		    <h3 class="panel-title">Open reviews</h3>
-		  </div>
-		  <div class="panel-body">
-		  	<table class="table table-bordered">
-		  	@foreach ($reviews as $review)
-		  		<tr>
-		  			<td>{{$review->name}}</td>
-		  			<td><a class="btn btn-info" href="/reviews/{{$review->id}}/view">View</a></td>
-		  		</tr>
-		  	@endforeach
-		  	</table>
-		  </div>
+	</div>
+	<div class="card">
+		<div class="card-content">
+			<span class="card-title">Open reviews</span>
+			<ul class="collection">
+				@foreach ($reviews as $review)
+					<a href="/reviews/{{$review->id}}/view" class="collection-item black-text waves-effect">
+						<div class="row">
+				            <div class="col s6">
+				                <b><i class="fa fa-code left" aria-hidden="true"></i>{{$review->language}}</b>
+				            </div>
+				            <div class="col s6">
+				                <b><i class="fa fa-calendar left" aria-hidden="true"></i>{{$review->created_at}}</b>
+				            </div>
+				        </div>
+				        {{$review->name}}
+					</a>
+				@endforeach
+			</ul>
 		</div>
+	</div>
+</div>
 @endsection

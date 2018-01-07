@@ -1,7 +1,10 @@
 function search(page) {
 	var query_val = $("#review-keywords").val();
 	var languages_selected = $("#review-language").val();
-	var search_in_closed = $("#review-can-be-closed").prop('checked');
+	var search_in_closed = $("#review-can-be-closed").prop("checked");
+	var buttonState = window.startLoading("#start-search-btn");
+
+	
 
 	$.post(window.location.origin+"/api/reviews/search",
 		{
@@ -14,25 +17,35 @@ function search(page) {
 		}
 		,function(result) {
 
-			window.updateOrCreateVue('searchreviews','#reviews-search-result', 'reviews', result.reviews);
+			var previousHandler = function () {
+				window.search((result.reviews.current_page-1));
+			};
+
+			var nextHandler = function() {
+				window.search((result.reviews.current_page+1));
+			};
+
+			$("#previous-a").unbind();
+			$("#next-a").unbind();
+
+			window.updateOrCreateVue("searchreviews","#reviews-search-result", "reviews", result.reviews);
 
 			if(result.reviews.prev_page_url != null){
-				$( "#previous-a" ).click(function() {
-				  window.search((result.reviews.current_page-1));
-				});
+				$( "#previous-a" ).bind("click", previousHandler);
 			}
 
 			if(result.reviews.next_page_url != null) {
-				$("#next-a").click(function() {
-					window.search((result.reviews.current_page+1));
-				});
+				$("#next-a").bind("click", nextHandler);
 			}
 
-	},'json')
+	},"json")
 	.fail(function() {
-		window.displayPopup('snackbar-error','Error while searching. Please try again',4000);
+		Materialize.toast("Error while searching. Please try again", 4000, "red");
+	})
+	.always(function() {
+		window.stopLoading("#start-search-btn",buttonState);
 	})
 }
 $(document).ready(function() {
-	$('#review-language').select2({placeholder: "Languages"});
+	$("#review-language").select2({placeholder: "Language(s)"});
 })

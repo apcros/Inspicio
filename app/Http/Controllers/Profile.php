@@ -122,10 +122,15 @@ class Profile extends Controller {
 		}
 
 		$skills  = $this->getAllSkills($user->id);
-		$reviews = DB::table('requests')->where([
+		$reviews = DB::table('requests')
+		->where([
 			['author_id', '=', $userid],
 			['status', '=', 'open'],
-		])->get();
+		])
+		->join('skills', 'requests.skill_id', '=', 'skills.id')
+		->select('requests.*', 'skills.name as language')
+		->orderBy('updated_at', 'desc')
+		->get();
 
 		return view('profile', [
 			'user'    => $user,
@@ -234,6 +239,15 @@ class Profile extends Controller {
 			'message' => 'Skill deleted',
 		]);
 
+	}
+
+	public function listSkills() {
+		$user_id = session('user_id');
+
+		return response()->json([
+			'success' => 1,
+			'skills' => $this->getAllSkills($user_id)
+		]);
 	}
 
 	/*
